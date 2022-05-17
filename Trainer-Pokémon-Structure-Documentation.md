@@ -136,11 +136,11 @@ trainerdata TRAINER_JUAN_1
         move MOVE_WATER_PULSE
         move MOVE_AMNESIA
         move MOVE_EARTHQUAKE
-        ability ABILITY_SWIFT_SWIM
-        ball ITEM_GREAT_BALL
+        ability ABILITY_HYDRATION
+        ball ITEM_ULTRA_BALL
         setivs 31, 31, 31, 31, 31, 31 // hp, atk, def, spd, spatk, spdef
-        setevs 6, 0, 0, 252, 252, 0
-        nature NATURE_TIMID
+        setevs 172, 80, 34, 224, 0, 0
+        nature NATURE_ADAMANT
         shinylock 0
         additionalflags 0 // no further entries data will be read, but needs to be here as the trainer data structure specifies additionalflags
         ballseal 0
@@ -149,16 +149,16 @@ trainerdata TRAINER_JUAN_1
         abilityslot 0
         level 43
         pokemon SPECIES_SEALEO
-        item ITEM_NONE
+        item ITEM_LEFTOVERS
         move MOVE_ENCORE
         move MOVE_BODY_SLAM
         move MOVE_AURORA_BEAM
         move MOVE_WATER_PULSE
-        ability ABILITY_SWIFT_SWIM
+        ability ABILITY_THICK_FAT
         ball ITEM_GREAT_BALL
         setivs 31, 31, 31, 31, 31, 31 // hp, atk, def, spd, spatk, spdef
-        setevs 6, 0, 0, 252, 252, 0
-        nature NATURE_TIMID
+        setevs 6, 0, 252, 252, 254, 0 // do not have to respect 510 limit
+        nature NATURE_MODEST
         shinylock 0
         additionalflags 0 // no further entries data will be read, but needs to be here as the trainer data structure specifies additionalflags
         ballseal 0
@@ -167,16 +167,16 @@ trainerdata TRAINER_JUAN_1
         abilityslot 0
         level 43
         pokemon SPECIES_CRAWDAUNT
-        item ITEM_NONE
+        item ITEM_LIFE_ORB
         move MOVE_WATER_PULSE
         move MOVE_CRABHAMMER
         move MOVE_TAUNT
-        move MOVE_LEER
-        ability ABILITY_SWIFT_SWIM
+        move MOVE_CRUNCH
+        ability ABILITY_ADAPTABILITY
         ball ITEM_GREAT_BALL
         setivs 31, 31, 31, 31, 31, 31 // hp, atk, def, spd, spatk, spdef
-        setevs 6, 0, 0, 252, 252, 0
-        nature NATURE_TIMID
+        setevs 6, 0, 252, 252, 0, 0
+        nature NATURE_NAIVE
         shinylock 0
         additionalflags 0 // no further entries data will be read, but needs to be here as the trainer data structure specifies additionalflags
         ballseal 0
@@ -185,7 +185,7 @@ trainerdata TRAINER_JUAN_1
         abilityslot 0
         level 46
         pokemon SPECIES_KINGDRA
-        item ITEM_CHESTO_BERRY
+        item ITEM_BRIGHT_POWDER
         move MOVE_WATER_PULSE
         move MOVE_DOUBLE_TEAM
         move MOVE_ICE_BEAM
