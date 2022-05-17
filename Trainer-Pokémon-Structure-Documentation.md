@@ -92,10 +92,126 @@ New fields added:
 
 Trainers are now all editable in the repository itself.  Pokeditor plans on supporting them eventually as well, and I may end up continuing a fork of DSPRE that will end up supporting this, depending on demand.  This is done in the armips files located in armips/data/trainers.s.  As can be seen in there, the existing trainers have been dumped and are editable directly in that file.  These are then built on building the repository and automatically injected into the ROM.
 
+Already defined are macros that the assembler can use to populate these extra fields.  These are as follows, and must be in the order presented.  Taking a flag out of the trainermontype field allows that field to be omitted:
+
+```
+// example macro description
+
+macro params
+description of macro
+
+// trainer data macros
+
+trainerdata num
+creates the trainer data file for index num
+
+trainermontype flags
+specifies the trainer data_type
+
+trainerclass num
+specifies the trainer class
+
+battletype num
+specifies the battle type (single or double) that ensues when facing this trainer
+
+nummons num
+tells the game to read num mons from the trainer party file
+
+item num (x4)
+defines the hold items of the trainer
+
+aiflags flags
+defines the ai flags of the trainer.  not many are usable, it seems, but are labeled as they are in pokeditor
+
+battletype2 num
+not 100% sure what this is, but seems to define more battle type-like things
+
+endentry
+terminates the trainer data entry
+
+// pokemon party macros
+
+party num
+creates the party data file for index num
+
+ivs num
+specifies the iv of the pokemon from 0-255, which is scaled linearly to 0-31 and set as all the ivs
+
+abilityslot num
+num & 1 determines ability slot loaded in for the mon
+
+level num
+determines the level (0-100) that the mon is
+
+pokemon num
+determines the species num of the mon
+- monwithform species, formid
+- specifies that the trainer has a mon index species with a nonzero formid
+
+item num
+(conditional depending on trainermontype TRAINER_DATA_TYPE_ITEMS)
+gives the mon item with index num
+
+move num (x4)
+(conditional depending on trainermontype TRAINER_DATA_TYPE_MOVES)
+gives the mon the move specified by num
+
+ability num
+(conditional depending on trainermontype TRAINER_DATA_TYPE_ABILITY)
+gives the mon the ability specified by num, overwrites abilityslot assignment
+
+ball num
+(conditional depending on trainermontype TRAINER_DATA_TYPE_BALL)
+gives the mon the ball specified by num
+
+setivs hp, atk, def, spd, spatk, spdef
+(conditional depending on trainermontype TRAINER_DATA_TYPE_IV_EV_SET)
+gives the mon the ivs passed as parameters
+
+setevs hp, atk, def, spd, spatk, spdef
+(conditional depending on trainermontype TRAINER_DATA_TYPE_IV_EV_SET)
+gives the mon the evs passed as parameters
+
+nature num
+(conditional depending on trainermontype TRAINER_DATA_TYPE_NATURE_SET)
+gives the mon the specific nature num
+
+shinylock num
+(conditional depending on trainermontype TRAINER_DATA_TYPE_SHINY_LOCK)
+forces the mon to be shiny if num is nonzero
+
+additionalflags flags
+(conditional depending on trainermontype TRAINER_DATA_TYPE_ADDITIONAL_FLAGS)
+reads additional flags from the trainer mon structure.  these influence further reading of bytes from the mon structure
+
+status num
+(conditional depending on additionalflags TRAINER_DATA_EXTRA_TYPE_STATUS)
+pre-afflicts a mon with a status num at the start of battle (status flags passed as num)
+
+stathp/statatk/statdef/statspeed/statspatk/statspdef num
+(conditional depending on additionalflags TRAINER_DATA_EXTRA_TYPE_HP/ATK/DEF/SPEED/SP_ATK/SP_DEF)
+forces the mon to have the specific stat set to num
+
+types type1, type2
+(conditional depending on additionalflags TRAINER_DATA_EXTRA_TYPE_TYPES)
+forces the mon to have the two types type1 and type2 instead of the ones in its base stat structure
+
+ppcounts num1, num2, num3, num4
+(conditional depending on additionalflags TRAINER_DATA_EXTRA_TYPE_PP_COUNTS
+forces the mon to have the pp counts specified by num1, num2, num3, and num4, in order of the moves specified above
+
+nickname "string"
+(conditional depending on additionalflags TRAINER_DATA_EXTRA_TYPE_NICKNAME)
+forces the mon to have the nickname specified in the "string".  should be null padded, i.e. \0 out to 11 characters
+
+endparty
+ends the party file that is currently open
+```
+
 A fully decked out trainer using this system is buildable using macros that are already specified by the assembler armips.  The definitions of these can be changed in armips/include/macros.s near the end.  Here is an example of a trainer that utilizes new features of this system extensively:
 ```
 trainerdata TRAINER_JUAN_1
-    trainermontype TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_MOVES | TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_ABILITY | TRAINER_DATA_TYPE_BALL | TRAINER_DATA_TYPE_IV_EV_SET | TRAINER_DATA_TYPE_NATURE_SET | TRAINER_DATA_TYPE_SHINY_LOCK
+    trainermontype TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_MOVES | TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_ABILITY | TRAINER_DATA_TYPE_BALL | TRAINER_DATA_TYPE_IV_EV_SET | TRAINER_DATA_TYPE_NATURE_SET | TRAINER_DATA_TYPE_SHINY_LOCK | TRAINER_DATA_TYPE_ADDITIONAL_FLAGS
     trainerclass TRAINER_CLASS_LEADER_6
     battletype SINGLE_BATTLE
     nummons 5
