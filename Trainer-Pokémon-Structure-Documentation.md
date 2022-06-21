@@ -1,4 +1,4 @@
-## Trainer Pokémon Structure Documentation (as edited in hg-engine)
+## Trainer Pokémon Structure Documentation
 
 Trainers have both a data entry that specifies details about the trainer itself and a file that details the party that they have.  This page will detail the structure of the file that the party takes.
 
