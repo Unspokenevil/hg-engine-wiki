@@ -29,6 +29,16 @@ Files discussed are all in ``armips/data``.  These are discussed in alphabetical
 - ``tmlearnset.s``
 - ``tutordata.s``
 
+Finally, this repo also builds all (most) of the graphics files.  Due to differences in how the sprites are stored, the sprites are formatted differently, so it is important to pay attention to exactly how sprites are formatted to properly use and add entries.
+
+The graphics currently supported are:
+
+- ``data/graphics/icongfx``
+- ``data/graphics/overworlds``
+- ``data/graphics/sprites``
+
+For sprite manipulation, I personally recommend aseprite.  This tool does not, however, always report the indexed status accurately between 4bpp and 8bpp.  For this purpose, irfanview has always worked well for me personally.
+
 ### ``pokedex/sortlists/*.s``
 
 The Dex has options to search for Pokémon within certain criteria, including body form, type, weight, height, and alphabetical by name.
@@ -354,9 +364,9 @@ Pokeditor supports visualizing this very well and is recommended for getting val
 
 In this table located in the synthetic overlay, each Pokémon gets a byte that is 0, 1, or 2 that determines which of the 3 palettes are used for Pokémon icons that are displayed.
 
-Forms are coded to load an icon from after the end of the normal species defines.  As a result, form icons function similarly.
+Forms are originally coded to load an icon from after the end of the normal species defines.  This is actually the primary decision to make new species start at 544 instead of 494--old form icons take all the way up until 543.  As a result, new form icons function similarly.
 
-Exceptions involving gender are coded on a case-by-case basis, and are currently just Frillish, Jellicent, and Meowstic.
+Exceptions involving gender are coded on a case-by-case basis, and are currently just Frillish, Jellicent, Meowstic, and Pyroar.
 
 ### ``levelupdata.s``
 
@@ -492,15 +502,33 @@ Note that the Headbutt tutor has its own ID and actually has an entry here where
 
 The ``TOP_LEFT``, ``TOP_RIGHT``, and ``BOTTOM_RIGHT`` designations are based on the tutors' locations in the house and are arbitrary in that sense.  There is likely a script command parameter differentiating all of them, so this may be really easy to expand if there aren't any limiters and the code is all based around this table.
 
+### ``data/graphics/icongfx``
+
+The name format for this is a 4-letter number containing the species.  The image must be indexed to one of the 3 already-existing icon palettes and must be 4bpp in that each pixel is 4 bytes, and building this is handled by ``nitrogfx``, the tool from the decomps.  Ideally, all of the sprites are built using this tool eventually, as it is very flexible.
+
+### ``data/graphics/overworlds``
+
+The name format for this is a 4-letter number containing the entry id as it appears in narc a081.  This should correspond with the middle u16 from the overworld table (see Overworld System Documentation).
+
+The image handler from this is very versatile and indexes the image on its own.  However, a limit of 16 colors (including the background) must be observed--the tool will error out otherwise.
+
+### ``data/graphics/sprites``
+
+Each species gets a folder with its 4-digit ID on it.  Inside of this folder, there are 4 files:  00.png, 01.png, 02.png, and 03.png.  00 and 01 are the female and male shiny backsprites (respectively), while 02 and 03 are the female and male normal front sprites.  The shiny palette is derived entirely from the back sprite, while the normal palette is derived from the front sprite.  Be careful in creating shiny backsprite palettes to ensure that all colors are handled properly.  Genderless Pokémon only have male sprites.  Solely male or female Pokémon only have the sprites that correspond with their gender.
+
+Due to the sensitive nature of how this tool works, the sprite needs to be 8bpp indexed such that each pixel represents a byte.  However, the first 16 colors are the only ones that can be used--any more and the tool will quit out with an error.
+
+The top left 2 pixels in the first row also can not be any sprite data--they must be transparent.  This is due to how the encryption key is stored in the file, and it being messed up when other data is present there.
+
 ## Needs Further Research
 
 Pending further research, there are a few things that are currently not editable by this repo.  These are all TODO items.
 
 Known instances of these are:
-- athlon stats
-- footprints
+- Pokéathlon stats
 - dex forms that appear when viewing the forms tab (default is gender)
 - where the dex screen flashes when a species appears there (can edit where a species appears within the constraints of the areas already defined)
 - adding new evolution methods
 - adding new TM's
 - editing the moves taught by TM's
+- footprints
