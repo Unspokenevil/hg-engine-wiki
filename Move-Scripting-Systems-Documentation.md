@@ -39,7 +39,7 @@ a000_033:
     jumptocurmoveeffectscript
 ```
 
-This is the script that is present for almost all moves.  The move just jumps to the current move effect script.  Looking at the ``battleeffect`` field from its move data entry (see ``armips/data/moves.s``):
+This is the script that is present for almost all moves.  Because of this, I will omit looking at ``battle_move_seq`` in future examples to save space--what you can take away is basically that the ``battle_eff_seq`` is what is the main script and that a ``battle_move_seq`` script needs to be present for the mvoe lest the game crashes.  Most moves just jump to the current move effect script.  Looking at the ``battleeffect`` field from its move data entry (see ``armips/data/moves.s``):
 
 ```
 movedata MOVE_TACKLE
@@ -61,6 +61,95 @@ a030_000:
 ```
 
 No ``battle_sub_seq`` is run in this case because the effect completely handles it by itself.
+
+``critcalc`` calculates the critical multiplier (if any).  This script command takes all things into affect, like Razor Claw and Sniper.  If the move will be a critical hit, it makes sure to queue up a script stating that it is such.
+
+``damagecalc`` is the basic damage calculator.  It takes into account all of the abilities, held effects, etc.  Damage rolls are done later upon actually dealing the damage--the damage calculator returns the highest roll 100% damage.
+
+``endscript`` just ends the script and hands exection back to the overall battle engine.
+
+From there, we can look at other simple cases:  moves that lower the target's stats.  We can look at two examples of this to determine the differences, and this also introduces another core concept in move scripts with the connection between ``battle_eff_seq`` and ``battle_sub_seq``.
+
+Let's take a look at the battle scripts of Growl and Tail Whip:
+
+```
+movedata MOVE_TAIL_WHIP
+    battleeffect 19
+    pss SPLIT_STATUS
+    basepower 0
+...
+
+movedata MOVE_GROWL
+    battleeffect 18
+    pss SPLIT_STATUS
+    basepower 0
+...
+```
+
+``armips/move/battle_eff_seq/019.s`` (Tail Whip):
+```
+a030_019:
+    changevar VAR_OP_SET, VAR_ADD_STATUS1, 0x80000017
+    endscript
+```
+
+``armips/move/battle_eff_seq/018.s`` (Growl):
+```
+a030_018:
+    changevar VAR_OP_SET, VAR_ADD_STATUS1, 0x80000016
+    endscript
+```
+
+These ``battle_eff_seq`` scripts are queuing up a ``battle_sub_seq`` script that is executed after the ``endscript`` command seen here.
+
+This script also introduces the concept of battle variables.  Unlike overworld scripting variables, battle variables all have a specific purpose (as they are a way for the script commands to directly access and manipulate fields from the massive battle structure that is used in the code).
+These variables are mostly manipulated through the ``changevar`` script command, which has 3 parameters:
+```
+changevar, operator, var, value
+- operator is the math operation done on the variable
+- var is the variable to change
+- value is the argument for the operator
+```
+A list of operators for use with ``changevar`` are in the Battle Script Command Reference at the end.
+
+The variable ``VAR_ADD_STATUS1`` tells the engine code that there is still something to be done to a Pokémon on the field when it is nonzero.  The engine code then moves to interpret ``VAR_ADD_STATUS1`` to map it to another battle script with the move's effect described.
+
+There are two parts to the value that it sets:  the first part in the most significant bits (the 0x80000000).  More on those later.  The rest of it is a way that the game grabs the desired subscript.
+
+We can break down Tail Whip's script as such:
+```
+a030_019:
+    changevar VAR_OP_SET, VAR_ADD_STATUS1, 0x80000000 | 23 // 0x17 = 23, hexadecimal to decimal
+    endscript
+```
+The most significant bits are dedicated to determining which Pokémon on the field the effect should apply to.  0x80000000 signals to the code that the target is the Pokémon that the effect applies to, and 0x40000000 signals that the effect applies to the attacker.  There are a few more values as well, but those are the more important ones at the moment.  These have convenient defines in ``armips/include/battlescriptcmd.s`` that allow us to break this down further:
+```
+a030_019:
+    changevar VAR_OP_SET, VAR_ADD_STATUS1, ADD_STATUS_DEFENDER | 23 // 0x17 = 23, hexadecimal to decimal
+    endscript
+```
+Now we know that this battle script tells the game to apply a certain effect to the defender.
+
+The ``23`` correlates to a subscript through the table ``move_effect_to_subscripts`` in ``src/moves.c``:
+```c
+u32 move_effect_to_subscripts[] =
+{
+// ...
+    [ 22] =  12, // attack -1
+    [ 23] =  12, // defense -1
+    [ 24] =  12, // speed -1
+// ...
+};
+```
+Now subscript 12 (``armips/move/battle_sub_seq/012.s``) is responsible for every single stat adjustment in battles, just fed slightly different parameters.  The modularity makes it difficult to understand, and we will cover it more comprehensively later.
+
+The big takeaway currently is that Growl, when treated similarly to Tail Whip:
+```
+a030_018:
+    changevar VAR_OP_SET, VAR_ADD_STATUS1, ADD_STATUS_DEFENDER | 22 // 0x16 = 22 decimal
+    endscript
+```
+That 22 gives the ``attack -1`` entry from ``move_effect_to_subscripts``, right above Tail Whip's ``defense -1``.
 
 # Battle Script Command Reference
 
