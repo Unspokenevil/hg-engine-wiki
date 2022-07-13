@@ -62,11 +62,16 @@ a030_000:
 
 No ``battle_sub_seq`` is run in this case because the effect completely handles it by itself.
 
-``critcalc`` calculates the critical multiplier (if any).  This script command takes all things into affect, like Razor Claw and Sniper.  If the move will be a critical hit, it makes sure to queue up a script stating that it is such.
+```
+critcalc
+calculates the critical multiplier (set to 1 in the case that there isn't one)
 
-``damagecalc`` is the basic damage calculator.  It takes into account all of the abilities, held effects, etc.  Damage rolls are done later upon actually dealing the damage--the damage calculator returns the highest roll 100% damage.
+damagecalc
+the basic damage calculator.
 
-``endscript`` just ends the script and hands exection back to the overall battle engine.
+endscript
+ends the script and hands exection back to the overall battle engine
+```
 
 From there, we can look at other simple cases:  moves that lower the target's stats.  We can look at two examples of this to determine the differences, and this also introduces another core concept in move scripts with the connection between ``battle_eff_seq`` and ``battle_sub_seq``.
 
@@ -105,7 +110,8 @@ These ``battle_eff_seq`` scripts are queuing up a ``battle_sub_seq`` script that
 This script also introduces the concept of battle variables.  Unlike overworld scripting variables, battle variables all have a specific purpose (as they are a way for the script commands to directly access and manipulate fields from the massive battle structure that is used in the code).
 These variables are mostly manipulated through the ``changevar`` script command, which has 3 parameters:
 ```
-changevar, operator, var, value
+changevar operator, var, value
+perform math operations on "var" using "value"
 - operator is the math operation done on the variable
 - var is the variable to change
 - value is the argument for the operator
@@ -150,6 +156,119 @@ a030_018:
     endscript
 ```
 That 22 gives the ``attack -1`` entry from ``move_effect_to_subscripts``, right above Tail Whip's ``defense -1``.
+
+
+
+A sort of complicated ``battle_eff_seq`` script that goes into a simple ``battle_sub_seq`` script, Rain Dance:
+```
+movedata MOVE_RAIN_DANCE
+    battleeffect 136
+    pss SPLIT_STATUS
+    basepower 0
+...
+```
+``armips/move/battle_eff_seq/136.s``:
+```
+a030_136:
+    if IF_MASK, VAR_FIELD_EFFECT, 0x3, _0094
+    preparemessage 0x31F, 0x0, "NaN", "NaN", "NaN", "NaN", "NaN", "NaN"
+    changevar VAR_OP_CLEARMASK, VAR_FIELD_EFFECT, 0x80FF
+    changevar VAR_OP_SETMASK, VAR_FIELD_EFFECT, 0x1
+    changevar VAR_OP_SET, VAR_WEATHER_TURNS, 0x5
+    changevar VAR_OP_SET, VAR_ADD_STATUS2, 0x2000005D
+    checkitemeffect 0x1, BATTLER_ATTACKER, 0x71, _0090
+    getitempower BATTLER_ATTACKER, VAR_09
+    changevar2 VAR_OP_ADD, VAR_WEATHER_TURNS, VAR_09
+_0090:
+    endscript
+_0094:
+    changevar VAR_OP_SETMASK, VAR_10, 0x40
+    endscript
+```
+Here we are introduced to some control flow things that the script system supports as well as some new commands:
+```
+if operator, var, value, address
+conditional flow command
+- operator is the math operation done on the variable, see Battle Script Command Reference
+- var is the variable with the value to test
+- value is the argument for the operator, always a constant for if
+- address is the destination that the script will jump to if the if operator returns true
+
+preparemessage id, tag, battlers 1-6
+prepares a message to be used by printpreparedmessage
+- id is the message index in the narc a027 file 197
+- tag determines the strings that are buffered in which order from the Pokémon on the field
+- the battlers determine which battlers on the field to grab information to buffer strings from
+  - the tag detemines how many battlers are specified--"NaN" signifies that no battler will be built from that parameter
+
+checkitemeffect checker, battler, effect, address
+conditional flow command that is based on item effect
+- when "checker" is true, checkitemeffect jumps to "address" if battler doesn't have the item with effect "effect"
+  - if false, checkitemeffect jumps to "address" if the battler does have the item with effect "effect"
+- battler is the battler to check against
+- effect is the held item effect to compare to
+- address is the address to jump to
+
+getitempower battler, variable
+grabs the item power field from the item data narc and puts it in variable
+- battler is the battler to grab the item power from
+- variable is the variable to store the item power in
+
+changevar2 operator, destvar, srcvar
+changevar except the constant is now a variable
+- operator is the same as changevar
+- destvar is a variable that may or may not hold a value already that will be changed
+- srcvar is a variable that operator uses to complete its operation
+```
+DSPRE introduces a separation between what it calls "scripts" and "functions."  Those do not exist here at all.  Conditional execution is handled much similarly as in raw assembly:  there are a number of conditional branches that go to other areas, and identicality to the original script files was a goal of this system to prevent complications.
+
+Now to break down what exactly is happening in the script.
+
+The ``if`` at the beginning checks to make sure that the field effect variable doesn't already have the rain bits set.  If the rain bits are already set, then the script jumps to ``_0094`` where ``VAR_10``, which stores move results among other things, has its "move failed" bit set.  If the move does not fail, the script continues at the ``preparemessage`` immediately following.  The ``preparemessage`` takes its ``id`` as 0x31F (799), which according to ``data/text/197.txt`` is the line ``It started to rain!``  As there are no string buffers in this, there is nothing to buffer, so it takes a ``tag`` of ``0x0`` and just prepares that message to print.  The ``changevar`` that clears the mask ``0x80FF`` from the field effect variable is ensuring that all other weathers that are active at the time of using Rain Dance are dissipated.  The script then sets the rain bit, sets the turns to 5, and queues up a subscript.  The Damp Rock's item effect is checked for, and if the attacker doesn't have a Damp Rock (as the ``checker`` is ``0x1``), then the script ends and jumps to ``_0090``.  Otherwise, the ``VAR_WEATHER_TURNS`` has the item power field from the ``getitempower`` script command added to it.  VAR_09 is typically used as a (very) temporary variable--random number calculations are stored there on top of other calculation interim steps that are necessary, both in battle script usage as well as the battle engine.
+
+The script queues up the ``0x5D (93)`` status effect in the var and says that the target is the whole field (``0x200000000``).  Looking at ``move_effect_to_subscripts`` again...
+```c
+u32 move_effect_to_subscripts[] =
+{
+// ...
+    [ 92] = 101,
+    [ 93] = 103, // subscript 103 is the queued subscript
+    [ 94] = 105,
+// ...
+};
+```
+This takes us down a rabbit trail (``armips/move/battle_sub_seq/103.s``):
+```
+a001_103:
+    gotosubscript 57
+    endscript
+```
+New command, but the name is pretty explanatory:
+```
+gotosubscript num
+goes to subscript "num"
+- num is the index of the subscript to jump to
+```
+Which ends at (``armips/move/battle_sub_seq/057.s``):
+```
+a001_057:
+    printpreparedmessage
+    waitmessage
+    wait 0x1E
+    endscript
+```
+Two new script commands:
+```
+wait time
+pause script execution for "time" frames
+- time is the amount of frames to pause for
+
+waitmessage
+pause script execution until current message is done printing.  not just done for messages, also used for various states that take up time that script execution needs to pause for (although not animations).
+```
+The queued subscript is solely responsible for printing the message prepared in the ``battle_eff_seq`` script!  How comical.
+
+There are a number of "optimizations" like this that are done for whatever reason.  In dissecting how even simple attacks like Rain Dance work, you end up down massive trails of redundancy that make things challenging to dissect sometimes.  It is alright to be confused!  Just keep reading over and over what the script was doing.
 
 # Battle Script Command Reference
 
