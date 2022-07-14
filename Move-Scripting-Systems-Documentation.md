@@ -380,7 +380,7 @@ preparehpgaugeslide
 <br>
 <pre>
 waitmessage
-- 
+pause script execution until current message is done printing.  not just done for messages, also used for various states that take up time that script execution needs to pause for (although not animations).
 </pre>
 </details>
 <details>
@@ -587,8 +587,9 @@ dofaintanimation
 <summary>wait - 0x1E</summary>
 <br>
 <pre>
-wait
-- 
+wait time
+pause script execution for "time" frames
+- time is the amount of frames to pause for
 </pre>
 </details>
 <details>
@@ -864,8 +865,9 @@ goto
 <summary>gotosubscript - 0x3C</summary>
 <br>
 <pre>
-gotosubscript
-- 
+gotosubscript num
+calls battle_sub_seq script "num".  returns to the caller after an endscript is reached
+- num is the index of the subscript to jump to
 </pre>
 </details>
 <details>
