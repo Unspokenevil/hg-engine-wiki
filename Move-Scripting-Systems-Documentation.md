@@ -125,7 +125,7 @@ a030_019:
 ```
 Now we know that this battle script tells the game to apply a certain effect to the defender.
 
-The ``23`` correlates to a subscript through the table ``move_effect_to_subscripts`` in ``src/moves.c``:
+The ``23`` correlates to a ``battle_sub_seq`` script through the table ``move_effect_to_subscripts`` in ``src/moves.c``:
 ```c
 u32 move_effect_to_subscripts[] =
 {
@@ -136,7 +136,7 @@ u32 move_effect_to_subscripts[] =
 // ...
 };
 ```
-Now subscript 12 (``armips/move/battle_sub_seq/012.s``) is responsible for every single stat adjustment in battles, just fed slightly different parameters.  The modularity makes it difficult to understand, and we will cover it more comprehensively later.
+Now ``battle_sub_seq`` script 12 (``armips/move/battle_sub_seq/012.s``) is responsible for every single stat adjustment in battles, just fed slightly different parameters.  The modularity makes it difficult to understand, and we will cover it more comprehensively later.
 
 The big takeaway currently is that Growl, when treated similarly to Tail Whip:
 ```
@@ -209,11 +209,11 @@ changevar except the constant is now a variable
 - destvar is a variable that may or may not hold a value already that will be changed
 - srcvar is a variable that operator uses to complete its operation
 ```
-DSPRE introduces a separation between what it calls "scripts" and "functions."  Those do not exist here at all.  Conditional execution is handled much similarly as in raw assembly:  there are a number of conditional branches that go to other areas, and identicality to the original script files was a goal of this system to prevent complications.
+DSPRE introduces a separation between what it calls "scripts" and "functions."  Those do not exist here at all, at least not how DSPRE handles what the game is actually doing.  Conditional execution is handled much similarly as in raw assembly:  there are a number of conditional branches that go to other areas, and identicality to the original script files was a goal of this system to prevent complications.
 
 Now to break down what exactly is happening in the script.
 
-The ``if`` at the beginning checks to make sure that the field effect variable doesn't already have the rain bits set.  If the rain bits are already set, then the script jumps to ``_0094`` where ``VAR_10``, which stores move results among other things, has its "move failed" bit set.  If the move does not fail, the script continues at the ``preparemessage`` immediately following.  The ``preparemessage`` takes its ``id`` as 0x31F (799), which according to ``data/text/197.txt`` is the line ``It started to rain!``  As there are no string buffers in this, there is nothing to buffer, so it takes a ``tag`` of ``0x0`` and just prepares that message to print.  The ``changevar`` that clears the mask ``0x80FF`` from the field effect variable is ensuring that all other weathers that are active at the time of using Rain Dance are dissipated.  The script then sets the rain bit, sets the turns to 5, and queues up a subscript.  The Damp Rock's item effect is checked for, and if the attacker doesn't have a Damp Rock (as the ``checker`` is ``0x1``), then the script ends and jumps to ``_0090``.  Otherwise, the ``VAR_WEATHER_TURNS`` has the item power field from the ``getitempower`` script command added to it.  VAR_09 is typically used as a (very) temporary variable--random number calculations are stored there on top of other calculation interim steps that are necessary, both in battle script usage as well as the battle engine.
+The ``if`` at the beginning checks to make sure that the field effect variable doesn't already have the rain bits set.  If the rain bits are already set, then the script jumps to ``_0094`` where ``VAR_10``, which stores move results among other things, has its "move failed" bit set.  If the move does not fail, the script continues at the ``preparemessage`` immediately following.  The ``preparemessage`` takes its ``id`` as 0x31F (799), which according to ``data/text/197.txt`` is the line ``It started to rain!``  As there are no string buffers in this, there is nothing to buffer, so it takes a ``tag`` of ``0x0`` and just prepares that message to print.  The ``changevar`` that clears the mask ``0x80FF`` from the field effect variable is ensuring that all other weathers that are active at the time of using Rain Dance are dissipated.  The script then sets the rain bit, sets the turns to 5, and queues up a ``battle_sub_seq`` script.  The Damp Rock's item effect is checked for, and if the attacker doesn't have a Damp Rock (as the ``checker`` is ``0x1``), then the script ends and jumps to ``_0090``.  Otherwise, the ``VAR_WEATHER_TURNS`` has the item power field from the ``getitempower`` script command added to it.  VAR_09 is typically used as a (very) temporary variable--random number calculations are stored there on top of other calculation interim steps that are necessary, both in battle script usage as well as the battle engine.
 
 The script queues up the ``0x5D (93)`` status effect in the var and says that the target is the whole field (``0x200000000``).  Looking at ``move_effect_to_subscripts`` again...
 ```c
@@ -221,7 +221,7 @@ u32 move_effect_to_subscripts[] =
 {
 // ...
     [ 92] = 101,
-    [ 93] = 103, // subscript 103 is the queued subscript
+    [ 93] = 103, // subscript 103 is the queued ``battle_sub_seq`` script
     [ 94] = 105,
 // ...
 };
@@ -236,7 +236,7 @@ New command, but the name is pretty explanatory:
 ```
 gotosubscript num
 calls battle_sub_seq script "num".  returns to the caller after an endscript is reached
-- num is the index of the subscript to jump to
+- num is the index of the ``battle_sub_seq`` script to jump to
 ```
 Which ends at (``armips/move/battle_sub_seq/057.s``):
 ```
@@ -255,9 +255,13 @@ pause script execution for "time" frames
 waitmessage
 pause script execution until current message is done printing.  not just done for messages, also used for various states that take up time that script execution needs to pause for (although not animations).
 ```
-The queued subscript is solely responsible for printing the message prepared in the ``battle_eff_seq`` script!  How comical.
+This script just prints the prepared message from the ``preparemessage`` command back in ``armips/move/battle_eff_seq/136.s``, waits for 30 frames, and ends the script.
+
+The queued ``battle_sub_seq`` script, despite taking us through another ``battle_sub_seq`` script, is solely responsible for printing the message prepared in the ``battle_eff_seq`` script!  
 
 There are a number of "optimizations" like this that are done for whatever reason.  In dissecting how even simple attacks like Rain Dance work, sometimes you end up down massive trails of redundancy that make things challenging to dissect sometimes.  It is alright to be confused!  But it is especially important that the control flow commands (if, goto, gotosubscript, etc.) are well understood.
+
+
 
 # Battle Script Command Reference
 <details>
@@ -268,79 +272,97 @@ There are a number of "optimizations" like this that are done for whatever reaso
 <br>
 <pre>
 startencounter
-- initializes battle information
+initializes battle information.  not much is known on this command, and the name is speculative
 </pre>
 </details>
 <details>
 <summary>pokemonencounter - 0x01</summary>
 <br>
 <pre>
-pokemonencounter
-- 
+pokemonencounter battler
+initalizes wild information.  not much is known on this command, and the name is speculative
+- battler is the pokémon that is being initialized, i.e. is called twice for doubles
 </pre>
 </details>
 <details>
 <summary>pokemonslidein - 0x02</summary>
 <br>
 <pre>
-pokemonslidein
-- 
+pokemonslidein battler
+queues up the animation for the pokémon sliding in as in a wild battle.
+- battler is the pokémon sliding in
 </pre>
 </details>
 <details>
 <summary>pokemonappear - 0x03</summary>
 <br>
 <pre>
-pokemonappear
-- 
+pokemonappear battler
+sends out the pokémon from the poké ball it is in, solely initializing the sprite.  not much is known on this command, and the name is speculative
+- battler is the pokémon being sent out
 </pre>
 </details>
 <details>
 <summary>returnpokemon - 0x04</summary>
 <br>
 <pre>
-returnpokemon
-- 
+returnpokemon battler
+returns the pokémon to the trainer in its ball.  not much is known on this command, and the name is speculative
+- battler is the pokémon returning
 </pre>
 </details>
 <details>
 <summary>deletepokemon - 0x05</summary>
 <br>
 <pre>
-deletepokemon
-- 
+deletepokemon battler
+deletes the sprite of battler.  not much is known on this command, and the name is speculative
+- battler is the pokémon whose sprite is being deleted
 </pre>
 </details>
 <details>
 <summary>starttrainerencounter - 0x06</summary>
 <br>
 <pre>
-starttrainerencounter
-- 
+starttrainerencounter battler
+initalizes the trainer party.  not much is known on this command, and the name is speculative
+- battler is the trainer being initialized
 </pre>
 </details>
 <details>
 <summary>throwpokeball - 0x07</summary>
 <br>
 <pre>
-throwpokeball
-- 
+throwpokeball battler, type
+throws a poké ball at the enemy.
+- battler is always "BATTLER_PLAYER" or "BATTLER_OPPONENT" depending on where the ball is being thrown from
+- type is the animation to be played
+<br>
+type enumerations:
+#define THROWPOKEBALL_TYPE_SEND_OUT_MON 0
+#define THROWPOKEBALL_TYPE_THROW_BALL_AT_WILD 1
+#define THROWPOKEBALL_TYPE_THROW_MUD 2
+#define THROWPOKEBALL_TYPE_THROW_BAIT 3
+#define THROWPOKEBALL_TYPE_RETURN_MON_TO_BALL 4
 </pre>
 </details>
 <details>
 <summary>preparetrainerslide - 0x08</summary>
 <br>
 <pre>
-preparetrainerslide
-- 
+preparetrainerslide battler
+load in the gfx for the trainer.  not much is known on this command, and the name is speculative
+- battler is the trainer position about to slide in
 </pre>
 </details>
 <details>
 <summary>trainerslidein - 0x09</summary>
 <br>
 <pre>
-trainerslidein
-- 
+trainerslidein battler, pos
+not much is known on this command, and the name is speculative
+- battler is the trainer sliding in
+- pos is where the trainer is sliding to
 </pre>
 </details>
 <details>
@@ -348,23 +370,25 @@ trainerslidein
 <br>
 <pre>
 backgroundslidein
-- 
+not much is known on this command, and the name is speculative
 </pre>
 </details>
 <details>
 <summary>hpgaugeslidein - 0x0B</summary>
 <br>
 <pre>
-hpgaugeslidein
-- 
+hpgaugeslidein battler
+not much is known on this command, and the name is speculative
+- battler is the hp gauge sliding in
 </pre>
 </details>
 <details>
 <summary>hpgaugeslidewait - 0x0C</summary>
 <br>
 <pre>
-hpgaugeslidewait
-- 
+hpgaugeslidewait battler
+not much is known on this command, and the name is speculative
+- battler is the hp gauge sliding in to wait for
 </pre>
 </details>
 <details>
@@ -372,7 +396,8 @@ hpgaugeslidewait
 <br>
 <pre>
 preparehpgaugeslide
-- 
+not much is known on this command, and the name is speculative
+- battler is the hp gauge to initialize to slide in
 </pre>
 </details>
 <details>
@@ -396,7 +421,7 @@ the basic damage calculator.  called for all damaging moves, but will disable it
 <br>
 <pre>
 damagecalc2
-- 
+not much is known on this command, and the name is speculative
 </pre>
 </details>
 <details>
@@ -404,7 +429,7 @@ damagecalc2
 <br>
 <pre>
 printattackmessage
-- 
+prints the current attack message from a027 file 003 (data/text/003.txt).
 </pre>
 </details>
 <details>
@@ -867,7 +892,7 @@ goto
 <pre>
 gotosubscript num
 calls battle_sub_seq script "num".  returns to the caller after an endscript is reached
-- num is the index of the subscript to jump to
+- num is the index of the battle_sub_seq script to jump to
 </pre>
 </details>
 <details>
