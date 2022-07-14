@@ -200,7 +200,7 @@ conditional flow command that is based on item effect
 
 getitempower battler, variable
 grabs the item power field from the item data narc and puts it in variable
-- battler is the battler to grab the item power from
+- battler is the battler that has the item to grab the item power from
 - variable is the variable to store the item power in
 
 changevar2 operator, destvar, srcvar
@@ -235,7 +235,7 @@ a001_103:
 New command, but the name is pretty explanatory:
 ```
 gotosubscript num
-goes to subscript "num"
+calls battle_sub_seq script "num".  returns to the caller after an endscript is reached
 - num is the index of the subscript to jump to
 ```
 Which ends at (``armips/move/battle_sub_seq/057.s``):
@@ -411,9 +411,14 @@ printattackmessage
 <summary>printmessage - 0x12</summary>
 <br>
 <pre>
-printmessage
-- 
-
+printmessage id, tag, (varargs) battlers 1-6
+prints a message
+- id is the message index in the narc a027 file 197 (data/text/197.txt)
+- tag determines the strings that are buffered in which order from the Pokémon on the field
+- the battlers determine which battlers on the field to grab information to buffer strings from
+  - the tag detemines how many battlers are specified--"NaN" signifies that no battler will be built from that parameter
+    - this is because of a limitation with armips where i can't overload a macro name to have different types
+<br>
 message tags:
 #define TAG_NONE                        (0)     //nothing
 
@@ -604,6 +609,15 @@ conditional flow command
 - var is the variable with the value to test
 - value is the argument for the operator, always a constant for if
 - address is the destination that the script will jump to if the if operator returns true
+<br>
+if conditional operators:
+#define IF_EQUAL    0 // equal
+#define IF_NOTEQUAL 1 // not equal
+#define IF_GREATER  2 // greater than
+#define IF_LESSTHAN 3 // less than
+#define IF_MASK     4 // mask on
+#define IF_NOTMASK  5 // mask off
+#define IF_AND      6 // exact and
 </pre>
 </details>
 <details>
@@ -751,6 +765,22 @@ perform math operations on "var" using a constant "value"
 - operator is the math operation done on the variable
 - var is the variable to change
 - value is the argument for the operator
+<br>
+changevar operators:
+#define VAR_OP_SET         ( 7)
+#define VAR_OP_ADD         ( 8)
+#define VAR_OP_SUB         ( 9)
+#define VAR_OP_SETMASK     (10)
+#define VAR_OP_CLEARMASK   (11)
+#define VAR_OP_MUL         (12)
+#define VAR_OP_DIV         (13)
+#define VAR_OP_LSH         (14)
+#define VAR_OP_RSH         (15)
+#define VAR_OP_TO_BIT      (16)
+#define VAR_OP_GET_RESULT  (17)
+#define VAR_OP_SUB_TO_ZERO (18)
+#define VAR_OP_XOR         (19)
+#define VAR_OP_AND         (20)
 </pre>
 </details>
 <details>
@@ -805,8 +835,13 @@ random
 <summary>changevar2 - 0x39</summary>
 <br>
 <pre>
-changevar2
-- 
+changevar2 operator, destvar, srcvar
+changevar except the constant is now a battle variable
+- operator is the same as changevar
+- destvar is a variable that may or may not hold a value already that will be changed
+- srcvar is a variable that operator uses to complete its operation
+
+see changevar for operator enumerations
 </pre>
 </details>
 <details>
@@ -1677,8 +1712,13 @@ checkmovefinished
 <summary>checkitemeffect - 0xA6</summary>
 <br>
 <pre>
-checkitemeffect
-- 
+checkitemeffect checker, battler, effect, address
+conditional flow command that is based on item effect
+- when "checker" is true, checkitemeffect jumps to "address" if battler doesn't have the item with effect "effect"
+  - if false, checkitemeffect jumps to "address" if the battler does have the item with effect "effect"
+- battler is the battler to check against
+- effect is the held item effect to compare to
+- address is the address to jump to
 </pre>
 </details>
 <details>
@@ -1693,8 +1733,10 @@ getitemeffect
 <summary>getitempower - 0xA8</summary>
 <br>
 <pre>
-getitempower
-- 
+getitempower battler, variable
+grabs the item power field from the item data narc and puts it in variable
+- battler is the battler that has the item to grab the item power from
+- variable is the variable to store the item power in
 </pre>
 </details>
 <details>
