@@ -60,10 +60,10 @@ critcalc
 calculates the critical multiplier (set to 1 in the case that there isn't one)
 
 damagecalc
-the basic damage calculator.
+the basic damage calculator.  called for all damaging moves, but will disable itself if a separate damage calc is detected
 
 endscript
-ends the script and hands exection back to the overall battle engine
+ends the script and hands exection back to the overall battle engine if nothing else is queued
 ```
 From there, we can look at other simple cases:  moves that lower the target's stats.  We can look at two examples of this to determine the differences, and this also introduces another core concept in move scripts with the connection between ``battle_eff_seq`` and ``battle_sub_seq``.
 
@@ -388,7 +388,7 @@ waitmessage
 <br>
 <pre>
 damagecalc
-- 
+the basic damage calculator.  called for all damaging moves, but will disable itself if a separate damage calc is detected
 </pre>
 </details>
 <details>
@@ -413,6 +413,75 @@ printattackmessage
 <pre>
 printmessage
 - 
+
+message tags:
+#define TAG_NONE                        (0)     //nothing
+
+#define TAG_NONE_DIR                    (1)     //nothing (but judgment type?)
+#define TAG_NICK                        (2)     //nickname
+#define TAG_MOVE                        (3)     //move
+#define TAG_STAT                        (4)     //stat
+#define TAG_ITEM                        (5)     //helditem
+#define TAG_NUM                         (6)     //number
+#define TAG_NUMS                        (7)     //number(right aligned)
+#define TAG_TRNAME                      (8)     //trainername
+
+#define TAG_NICK_NICK                   (9)     //nickname      nickname
+#define TAG_NICK_MOVE                   (10)    //nickname      move
+#define TAG_NICK_ABILITY                (11)    //nickname      ability
+#define TAG_NICK_STAT                   (12)    //nickname      stat
+#define TAG_NICK_TYPE                   (13)    //nickname      type
+#define TAG_NICK_POKE                   (14)    //nickname      pokemon
+#define TAG_NICK_ITEM                   (15)    //nickname      helditem
+#define TAG_NICK_UNK                    (16)    //nickname      ?
+#define TAG_NICK_NUM                    (17)    //nickname      number
+#define TAG_NICK_TRNAME                 (18)    //nickname      trainername
+#define TAG_NICK_BOX                    (19)    //nickname      boxname
+#define TAG_MOVE_DIR                    (20)    //move          (but judgment type?)
+#define TAG_MOVE_NICK                   (21)    //move          nickname
+#define TAG_MOVE_MOVE                   (22)    //move          move
+#define TAG_ABILITY_NICK                (23)    //ability       nickname
+#define TAG_ITEM_MOVE                   (24)    //helditem      move
+#define TAG_NUM_NUM                     (25)    //number        number
+#define TAG_TRNAME_TRNAME               (26)    //trainername   trainername
+#define TAG_TRNAME_NICK                 (27)    //trainername   nickname
+#define TAG_TRNAME_ITEM                 (28)    //trainername   helditem
+#define TAG_TRNAME_NUM                  (29)    //trainername   number
+#define TAG_TRTITLE_TRNAME              (30)    //trainertitle  trainername
+
+#define TAG_NICK_NICK_MOVE              (31)    //nickname      nickname        move
+#define TAG_NICK_NICK_ABILITY           (32)    //nickname      nickname        ability
+#define TAG_NICK_NICK_ITEM              (33)    //nickname      nickname        helditem
+#define TAG_NICK_MOVE_MOVE              (34)    //nickname      move            move
+#define TAG_NICK_MOVE_NUM               (35)    //nickname      move            number
+#define TAG_NICK_ABILITY_NICK           (36)    //nickname      ability         nickname
+#define TAG_NICK_ABILITY_MOVE           (37)    //nickname      ability         move
+#define TAG_NICK_ABILITY_ITEM           (38)    //nickname      ability         helditem
+#define TAG_NICK_ABILITY_STAT           (39)    //nickname      ability         stat
+#define TAG_NICK_ABILITY_TYPE           (40)    //nickname      ability         type
+#define TAG_NICK_ABILITY_COND           (41)    //nickname      ability         condition
+#define TAG_NICK_ABILITY_NUM            (42)    //nickname      ability         number
+#define TAG_NICK_ITEM_NICK              (43)    //nickname      helditem        nickname
+#define TAG_NICK_ITEM_MOVE              (44)    //nickname      helditem        move
+#define TAG_NICK_ITEM_STAT              (45)    //nickname      helditem        stat
+#define TAG_NICK_ITEM_COND              (46)    //nickname      helditem        condition
+#define TAG_NICK_BOX_BOX                (47)    //nickname      box             box
+#define TAG_ITEM_NICK_TASTE             (48)    //helditem      nickname        taste
+#define TAG_TRNAME_NICK_NICK            (49)    //trainername   nickname        nickname
+#define TAG_TRTYPE_TRNAME_NICK          (50)    //trainertitle  trainername     nickname
+#define TAG_TRTYPE_TRNAME_ITEM          (51)    //trainertitle  trainername     helditem
+
+#define TAG_NICK_ABILITY_NICK_MOVE      (52)    //nickname      ability         nickname        move
+#define TAG_NICK_ABILITY_NICK_ABILITY   (53)    //nickname      ability         nickname        ability
+#define TAG_NICK_ABILITY_NICK_STAT      (54)    //nickname      ability         nickname        stat
+#define TAG_NICK_ITEM_NICK_ITEM         (55)    //nickname      helditem        nickname        helditem
+#define TAG_TRNAME_NICK_TRNAME_NICK     (56)    //trainername   nickname        trainername     nickname
+#define TAG_TRTYPE_TRNAME_NICK_NICK     (57)    //trainertitle  trainername     nickname        nickname
+#define TAG_TRTYPE_TRNAME_NICK_TRNAME   (58)    //trainertitle  trainername     nickname        trainername
+#define TAG_TRTYPE_TRNAME_TRTYPE_TRNAME (59)    //trainertitle  trainername     trainertitle    trainername
+
+#define TAG_TRTYPE_TRNAME_NICK_TRTYPE_TRNAME_NICK (60)    //trainertitle  trainername     nickname        trainertitle  trainername     nickname
+
 </pre>
 </details>
 <details>
@@ -435,8 +504,14 @@ printpreparedmessage
 <summary>preparemessage - 0x15</summary>
 <br>
 <pre>
-preparemessage
-- 
+preparemessage id, tag, (varargs) battlers 1-6
+prepares a message to be used by printpreparedmessage
+- id is the message index in the narc a027 file 197
+- tag determines the strings that are buffered in which order from the Pokémon on the field
+- the battlers determine which battlers on the field to grab information to buffer strings from
+  - the tag detemines how many battlers are specified--"NaN" signifies that no battler will be built from that parameter
+
+see printmessage for tag id documentation
 </pre>
 </details>
 <details>
@@ -523,8 +598,12 @@ playse
 <summary>if - 0x20</summary>
 <br>
 <pre>
-if
-- 
+if operator, var, value, address
+conditional flow command
+- operator is the math operation done on the variable, see Battle Script Command Reference
+- var is the variable with the value to test
+- value is the argument for the operator, always a constant for if
+- address is the destination that the script will jump to if the if operator returns true
 </pre>
 </details>
 <details>
@@ -572,7 +651,7 @@ jumptoeffectscript
 <br>
 <pre>
 critcalc
-- 
+calculates the critical multiplier (set to 1 in the case that there isn't one)
 </pre>
 </details>
 <details>
@@ -667,8 +746,11 @@ setmultihit
 <summary>changevar - 0x32</summary>
 <br>
 <pre>
-changevar
-- 
+changevar operator, var, value
+perform math operations on "var" using a constant "value"
+- operator is the math operation done on the variable
+- var is the variable to change
+- value is the argument for the operator
 </pre>
 </details>
 <details>
@@ -2060,7 +2142,7 @@ cmd_DF
 <br>
 <pre>
 endscript
-- 
+ends the script and hands exection back to the overall battle engine if nothing else is queued
 </pre>
 </details>
 </details>
