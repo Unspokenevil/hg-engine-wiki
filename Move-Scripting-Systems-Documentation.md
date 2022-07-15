@@ -29,7 +29,7 @@ Every move has its own animation in this file, and they are performed by these s
 ## ``move_sub_anim`` - a061
 I believe this is used intermittently for when an animation needs to happen and there isn't a move slot that has the animation already defined.  I haven't looked too much into this as of yet, but things like Thief's animation for stealing an item (as opposed to the attack animation) and Pokémon using an item to heal are probably in this narc.
 
-# Examples
+# Battle Script Examples
 I personally learn primarily by example.  A lot of what the beginning stages of battle script editing were in Gens 2 and 3 was mashing hexadecimal together and seeing what all worked--before there were any competent editors (and even for a while after there were, as people preferred pasting assembled hex into the rom directly for some reason).  A similar approach can be taken for this, identifying certain blocks that look like, when isolated, can be ported and placed wherever.
 
 To start out, we can look at Tackle and how it works.  Tackle, with move index 33, uses ``armips/move/battle_move_seq/033.s`` as the script that it immediately executes:
@@ -136,7 +136,7 @@ u32 move_effect_to_subscripts[] =
 // ...
 };
 ```
-Now ``battle_sub_seq`` script 12 (``armips/move/battle_sub_seq/012.s``) is responsible for every single stat adjustment in battles, just fed slightly different parameters.  The modularity makes it difficult to understand, and we will cover it more comprehensively later.
+Now ``battle_sub_seq`` script 12 (``armips/move/battle_sub_seq/012.s``) is responsible for every single stat adjustment in battles, just fed slightly different parameters.  The modularity makes it difficult to understand, and we may cover it more comprehensively later.  Just know off the bat that it is responsible for stat changes--it will come up later.
 
 The big takeaway currently is that Growl, when treated similarly to Tail Whip:
 ```
@@ -221,7 +221,7 @@ u32 move_effect_to_subscripts[] =
 {
 // ...
     [ 92] = 101,
-    [ 93] = 103, // subscript 103 is the queued ``battle_sub_seq`` script
+    [ 93] = 103, // subscript 103 is the queued battle_sub_seq script
     [ 94] = 105,
 // ...
 };
@@ -261,7 +261,279 @@ The queued ``battle_sub_seq`` script, despite taking us through another ``battle
 
 There are a number of "optimizations" like this that are done for whatever reason.  In dissecting how even simple attacks like Rain Dance work, sometimes you end up down massive trails of redundancy that make things challenging to dissect sometimes.  It is alright to be confused!  But it is especially important that the control flow commands (if, goto, gotosubscript, etc.) are well understood.
 
+What about moves that raise a stat when attacking (or have a chance to)?  For that we can look to Metal Claw and Charge Beam:
 
+```
+movedata MOVE_METAL_CLAW
+    battleeffect 139
+    pss SPLIT_PHYSICAL
+    basepower 50
+...
+
+movedata MOVE_CHARGE_BEAM
+    battleeffect 276
+    pss SPLIT_SPECIAL
+    basepower 50
+...
+```
+``armips/battle_eff_seq/139.s``:
+```
+a030_139:
+    changevar VAR_OP_SET, VAR_ADD_STATUS2, 0x4000000F // ADD_STATUS_ATTACKER | 15
+    critcalc
+    damagecalc
+    endscript
+```
+``armips/battle_eff_seq/276.s``:
+```
+a030_276:
+    changevar VAR_OP_SET, VAR_ADD_STATUS2, 0x40000012 // ADD_STATUS_ATTACKER | 18
+    critcalc
+    damagecalc
+    endscript
+```
+Making a damaging move that also raises a stat is almost exactly like mashing the two effect scripts together!  A damaging attack, with the 3 basic ``critcalc``/``damagecalc``/``endscript`` commands!  Note that since the ``changevar`` queues up a script, it makes sense that the damage still occurs before the stat raise despite it queuing before the other script commands that one would expect to do the damaging--the script it queues actually occurs after the ``endscript`` of this script.
+
+Both this and Rain Dance used ``VAR_ADD_STATUS2`` instead of just ``VAR_ADD_STATUS1``.  While I am not 100% sure why, I believe it is because ``VAR_ADD_STATUS1`` queues up a script to do a primary effect, whereas ``VAR_ADD_STATUS2`` queues up a secondary effect script.  Regardless, we can look again to ``move_effect_to_subscripts`` to see which subscript is queued up:
+```c
+u32 move_effect_to_subscripts[] =
+{
+...
+    [ 14] =  63,
+    [ 15] =  12, // attack +1
+    [ 16] =  12, // defense +1
+    [ 17] =  12, // speed +1
+    [ 18] =  12, // spatk +1
+    [ 19] =  12, // spdef +1
+...
+};
+```
+As we can see, Metal Claw queues up an attack +1 while Charge Beam queues up a spatk +1.
+
+So how do moves that manipulate multiple stats work?  We can look at moves like Curse and then AncientPower for that case:
+```
+movedata MOVE_CURSE
+    battleeffect 109
+    pss SPLIT_STATUS
+    basepower 0
+...
+
+movedata MOVE_ANCIENT_POWER
+    battleeffect 140
+    pss SPLIT_SPECIAL
+    basepower 60
+...
+```
+``armips/move/battle_eff_seq/109.s``:
+```
+a030_109:
+    ifmonstat IF_EQUAL, BATTLER_ATTACKER, MON_DATA_TYPE_1, TYPE_GHOST, _0044
+    ifmonstat IF_EQUAL, BATTLER_ATTACKER, MON_DATA_TYPE_2, TYPE_GHOST, _0044
+    changevar VAR_OP_SET, VAR_ADD_STATUS1, 0x40000058 // ADD_STATUS_ATTACKER | 88
+    endscript
+_0044:
+    if2 IF_NOTEQUAL, VAR_ATTACKER, 0x10, _0060
+    cmd_D4 BATTLER_ATTACKER
+_0060:
+    changevar VAR_OP_SET, VAR_ADD_STATUS1, 0x20000059 // ADD_STATUS_WORK | 89
+    changevar VAR_OP_SET, VAR_MOVE_EFFECT, 0x1
+    endscript
+```
+``armips/move/battle_eff_seq/140.s``:
+```
+a030_140:
+    changevar VAR_OP_SET, VAR_ADD_STATUS2, 0x40000022 // ADD_STATUS_ATTACKER | 34
+    critcalc
+    damagecalc
+    endscript
+```
+First off, new script commands from the Curse battle script:
+```
+ifmonstat operator, battler, field, value, address
+jump to "address" if the "battler"'s stat designated by "field" is related to "value" as determined by "operator"
+- operator is the same as the "if" operators
+- battler is the pokémon to get data from
+- field is the data to grab from.  see field enumerations in the ifmonstat documentation
+- value is the value to check against, used in the operator calculations as they appear in "if"
+- address is the location to jump to when the if is true
+
+if2 operator, var1, var2, address
+jump to "address" if "var1" is related to "var2" as determined by "operator"
+- operator is the same as the "if" operators
+- var1 is a var to compare
+- var2 is another var to compare against
+- address is the location to jump to when the if is true
+
+cmd_D4 battler
+not sure what this command does.
+- battler is the battler to affect
+```
+As can be seen, Curse has a number of extra things that come into play because of the Ghost type check!  We will look at AncientPower first.
+```c
+u32 move_effect_to_subscripts[] =
+{
+...
+    [ 33] =  93,
+    [ 34] = 119, // ancient power battle_sub_seq script
+    [ 35] = 115,
+...
+};
+```
+``armips/battle_eff_seq/119.s``:
+```
+a001_119:
+    changevar VAR_OP_SETMASK, VAR_60, 0x80
+    changevar VAR_OP_SET, VAR_34, 0xF // 15
+    gotosubscript 12
+    changevar VAR_OP_SET, VAR_34, 0x10 // 16
+    gotosubscript 12
+    changevar VAR_OP_SET, VAR_34, 0x11 // 17
+    gotosubscript 12
+    changevar VAR_OP_SET, VAR_34, 0x12 // 18
+    gotosubscript 12
+    changevar VAR_OP_SET, VAR_34, 0x13 // 19
+    gotosubscript 12
+    changevar VAR_OP_CLEARMASK, VAR_60, 0x2
+    changevar VAR_OP_CLEARMASK, VAR_60, 0x80
+    endscript
+```
+AncientPower raises all of the main 6 stats that can be raised when successful.  This is clear here: it jumps to ``battle_sub_seq`` script 12 a total of 5 times each with a different value in ``VAR_34``.  These values hopefully by now look a bit familiar:
+```c
+u32 move_effect_to_subscripts[] =
+{
+...
+    [ 14] =  63,
+    [ 15] =  12, // attack +1
+    [ 16] =  12, // defense +1
+    [ 17] =  12, // speed +1
+    [ 18] =  12, // spatk +1
+    [ 19] =  12, // spdef +1
+    [ 20] =  12, // accuracy +1
+...
+};
+```
+So in order to manipulate multiple stats in a move, one just needs to call subscript 12 over and over with different values in ``VAR_34``.  This is further confirmed by Superpower:
+```
+movedata MOVE_SUPERPOWER
+    battleeffect 182
+    pss SPLIT_PHYSICAL
+    basepower 120
+...
+```
+``armips/move/battle_sub_seq/182.s``:
+```
+a030_182:
+    changevar VAR_OP_SET, VAR_ADD_STATUS2, 0x60000025 // ADD_STATUS_ATTACKER | ADD_STATUS_WORK | 37
+    critcalc
+    damagecalc
+    endscript
+```
+``move_effect_to_subscripts`` in ``src/moves.c``:
+```c
+u32 move_effect_to_subscripts[] =
+{
+...
+    [ 36] = 130,
+    [ 37] = 138, // superpower's battle_sub_seq script
+    [ 38] = 147,
+...
+};
+```
+``armips/move/battle_sub_seq/138.s``:
+```
+a001_138:
+    changevar VAR_OP_SETMASK, VAR_60, 0x80
+    changevar VAR_OP_SET, VAR_34, 0x16 // 22
+    gotosubscript 12
+    changevar VAR_OP_SET, VAR_34, 0x17 // 23
+    gotosubscript 12
+    changevar VAR_OP_CLEARMASK, VAR_60, 0x2
+    changevar VAR_OP_CLEARMASK, VAR_60, 0x80
+    endscript
+```
+``move_effect_to_subscripts`` in ``src/moves.c``:
+```c
+u32 move_effect_to_subscripts[] =
+{
+...
+    [ 21] =  12, // evasion +1
+    [ 22] =  12, // attack -1
+    [ 23] =  12, // defense -1
+    [ 24] =  12, // speed -1
+...
+};
+```
+I am honestly not sure of what the masks that it sets are, but pretty sure one toggles animations (the 0x80) instead of having them replay for every stat gain.  The last one probably signals that everything is over and the stat gains are done with.
+
+Finally, we can look at the rest of Curse (battle script repasted here for convenience, ``armips/move/battle_eff_seq/109.s``):
+```
+a030_109:
+    ifmonstat IF_EQUAL, BATTLER_ATTACKER, MON_DATA_TYPE_1, TYPE_GHOST, _0044 // if the pokémon is of type ghost, go to _0044
+    ifmonstat IF_EQUAL, BATTLER_ATTACKER, MON_DATA_TYPE_2, TYPE_GHOST, _0044
+    changevar VAR_OP_SET, VAR_ADD_STATUS1, 0x40000058 // ADD_STATUS_ATTACKER | 88
+    endscript
+_0044:
+    if2 IF_NOTEQUAL, VAR_ATTACKER, 0x10, _0060
+    cmd_D4 BATTLER_ATTACKER
+_0060:
+    changevar VAR_OP_SET, VAR_ADD_STATUS1, 0x20000059 // ADD_STATUS_WORK | 89
+    changevar VAR_OP_SET, VAR_MOVE_EFFECT, 0x1
+    endscript
+```
+I am not sure what setting the ``VAR_MOVE_EFFECT`` to ``0x1`` does here.  Perhaps it is done when showing that the move effect is changing somehow?  I suspect that it has something to do with Curse explicitly, as I can't seem to nail it down.
+
+``armips/move/battle_eff_seq/140.s``:
+```
+a030_140:
+    changevar VAR_OP_SET, VAR_ADD_STATUS2, 0x40000022 // ADD_STATUS_ATTACKER | 34
+    critcalc
+    damagecalc
+    endscript
+```
+Checking the ``battle_sub_seq`` scripts that Curse queues up from its ``battle_eff_seq`` script:
+```c
+u32 move_effect_to_subscripts[] =
+{
+...
+    [ 87] =  95,
+    [ 88] =  96, // curse not ghost - what we are currently interested in
+    [ 89] =  97, // curse ghost
+    [ 90] = 126,
+...
+};
+```
+``armips/battle_sub_seq/096.s``
+```
+a001_096:
+    changevar VAR_OP_SET, VAR_34, 0x18 // 24
+    gotosubscript 12
+    changevar VAR_OP_SETMASK, VAR_06, 0x4001
+    changevar VAR_OP_SETMASK, VAR_60, 0x80
+    changevar VAR_OP_SET, VAR_34, 0xF // 15
+    gotosubscript 12
+    changevar VAR_OP_SET, VAR_34, 0x10 // 16
+    gotosubscript 12
+    changevar VAR_OP_CLEARMASK, VAR_60, 0x2
+    changevar VAR_OP_CLEARMASK, VAR_60, 0x80
+    endscript
+```
+Looking back at those familiar numbers:
+```c
+u32 move_effect_to_subscripts[] =
+{
+...
+    [ 15] =  12, // attack +1
+    [ 16] =  12, // defense +1
+    [ 17] =  12, // speed +1
+...
+    [ 23] =  12, // defense -1
+    [ 24] =  12, // speed -1
+...
+};
+```
+We can see that the speed -1 is queued first, followed by the attack +1 and the speed +1.  We can further see that when switching from the negative stat boosts to the positive stat boosts, ``VAR_06`` is masked with ``0x4001``.  Furthermore, the animation plays twice--once for the decrease, and once again for the increase--we can tell because the ``VAR_60`` mask with ``0x80`` thus doesn't happen until after the speed decrease happens.
+
+Finding out how the rest of Curse may work is an exercise left to you.  You should at least be able to tell which ``battle_sub_seq`` script is queued up when the Pokémon is Ghost-type.
 
 # Battle Script Command Reference
 <details>
@@ -637,21 +909,128 @@ conditional flow command
 - address is the destination that the script will jump to if the if operator returns true
 <br>
 if conditional operators:
-#define IF_EQUAL    0 // equal
-#define IF_NOTEQUAL 1 // not equal
-#define IF_GREATER  2 // greater than
-#define IF_LESSTHAN 3 // less than
-#define IF_MASK     4 // mask on
-#define IF_NOTMASK  5 // mask off
-#define IF_AND      6 // exact and
+#define IF_EQUAL    0 // var == value
+#define IF_NOTEQUAL 1 // var != value
+#define IF_GREATER  2 // var > value
+#define IF_LESSTHAN 3 // var < value
+#define IF_MASK     4 // var | value // i think
+#define IF_NOTMASK  5 // !(var | value) // i think
+#define IF_AND      6 // (var & value) // i think
 </pre>
 </details>
 <details>
 <summary>ifmonstat - 0x21</summary>
 <br>
 <pre>
-ifmonstat
-- 
+ifmonstat operator, battler, field, value, address
+jump to "address" if the "battler"'s stat designated by "field" is related to "value" as determined by "operator"
+- operator is the same as the "if" operators
+- battler is the pokémon to get data from
+- field is the data to grab from.  enumerations below
+- value is the value to check against, used in the operator calculations as they appear in "if"
+- address is the location to jump to when the if is true
+<br>
+ifmonstat fields:
+#define MON_DATA_SPECIES (0)
+#define MON_DATA_ATTACK (1)
+#define MON_DATA_DEFENSE (2)
+#define MON_DATA_SPEED (3)
+#define MON_DATA_SPATK (4)
+#define MON_DATA_SPDEF (5)
+#define MON_DATA_MOVE_1 (6)
+#define MON_DATA_MOVE_2 (7)
+#define MON_DATA_MOVE_3 (8)
+#define MON_DATA_MOVE_4 (9)
+#define MON_DATA_10 (10)
+#define MON_DATA_11 (11)
+#define MON_DATA_12 (12)
+#define MON_DATA_13 (13)
+#define MON_DATA_14 (14)
+#define MON_DATA_15 (15)
+#define MON_DATA_EGG_FLAG (16)
+#define MON_DATA_NICKNAME_FLAG (17)
+#define MON_DATA_18 (18)
+#define MON_DATA_STAT_STAGE_ATTACK (19)
+#define MON_DATA_STAT_STAGE_DEFENSE (20)
+#define MON_DATA_STAT_STAGE_SPEED (21)
+#define MON_DATA_STAT_STAGE_SPATK (22)
+#define MON_DATA_STAT_STAGE_SPDEF (23)
+#define MON_DATA_STAT_STAGE_ACCURACY (24)
+#define MON_DATA_STAT_STAGE_EVASION (25)
+#define MON_DATA_ABILITY (26)
+#define MON_DATA_TYPE_1 (27)
+#define MON_DATA_TYPE_2 (28)
+#define MON_DATA_GENDER (29)
+#define MON_DATA_30 (30)
+#define MON_DATA_PP_1 (31)
+#define MON_DATA_PP_2 (32)
+#define MON_DATA_PP_3 (33)
+#define MON_DATA_PP_4 (34)
+#define MON_DATA_PP_BONUS_1 (35)
+#define MON_DATA_PP_BONUS_2 (36)
+#define MON_DATA_PP_BONUS_3 (37)
+#define MON_DATA_PP_BONUS_4 (38)
+#define MON_DATA_PP_MAX_1 (39)
+#define MON_DATA_PP_MAX_2 (40)
+#define MON_DATA_PP_MAX_3 (41)
+#define MON_DATA_PP_MAX_4 (42)
+#define MON_DATA_LEVEL (43)
+#define MON_DATA_FRIENDSHIP (44)
+#define MON_DATA_NICKNAME (45)
+#define MON_DATA_46 (46)
+#define MON_DATA_HP (47)
+#define MON_DATA_MAX_HP (48)
+#define MON_DATA_49 (49)
+#define MON_DATA_EXP (50)
+#define MON_DATA_PID (51)
+#define MON_DATA_STATUS_1 (52)
+#define MON_DATA_STATUS_2 (53)
+#define MON_DATA_54 (54)
+#define MON_DATA_ITEM (55)
+#define MON_DATA_56 (56)
+#define MON_DATA_57 (57)
+#define MON_DATA_58 (58)
+#define MON_DATA_MOVE_STATE (59)
+#define MON_DATA_MOVE_STATE_2 (60)
+#define MON_DATA_DISABLE_COUNTER (61)
+#define MON_DATA_ENCORE_COUNTER (62)
+#define MON_DATA_CHARGE_COUNTER (63)
+#define MON_DATA_TAUNT_COUNTER (64)
+#define MON_DATA_65 (65)
+#define MON_DATA_PERISH_SONG_COUNTER (66)
+#define MON_DATA_ROLLOUT_COUNTER (67)
+#define MON_DATA_FURY_CUTTER_COUNTER (68)
+#define MON_DATA_STOCKPILE_COUNT (69)
+#define MON_DATA_STOCKPILE_DEF_COUNT (70)
+#define MON_DATA_STOCKPILE_SPDEF_COUNT (71)
+#define MON_DATA_72 (72)
+#define MON_DATA_73 (73)
+#define MON_DATA_LOCKON_TARGET (74)
+#define MON_DATA_MIMIC_BIT (75)
+#define MON_DATA_BIND_TARGET (76)
+#define MON_DATA_MEAN_LOOK_TARGET (77)
+#define MON_DATA_LAST_RESORT_COUNTER (78)
+#define MON_DATA_79 (79)
+#define MON_DATA_HEAL_BLOCK_COUNTER (80)
+#define MON_DATA_81 (81)
+#define MON_DATA_82 (82)
+#define MON_DATA_METRONOME_VAR (83)
+#define MON_DATA_84 (84)
+#define MON_DATA_85 (85)
+#define MON_DATA_86 (86)
+#define MON_DATA_87 (87)
+#define MON_DATA_FAKE_OUT_COUNTER (88)
+#define MON_DATA_SLOW_START_COUNTER (89)
+#define MON_DATA_SUBSTITUTE_HP (90)
+#define MON_DATA_91 (91)
+#define MON_DATA_DISABLED_MOVE (92)
+#define MON_DATA_ENCORED_MOVE (93)
+#define MON_DATA_94 (94)
+#define MON_DATA_HP_RECOVERED_BY_ITEM (95)
+#define MON_DATA_SLOW_START_ACTIVE (96)
+#define MON_DATA_SLOW_START_INACTIVE (97)
+#define MON_DATA_FORM (98)
+#define MON_DATA_VARIABLE (100)
 </pre>
 </details>
 <details>
@@ -793,20 +1172,20 @@ perform math operations on "var" using a constant "value"
 - value is the argument for the operator
 <br>
 changevar operators:
-#define VAR_OP_SET         ( 7)
-#define VAR_OP_ADD         ( 8)
-#define VAR_OP_SUB         ( 9)
-#define VAR_OP_SETMASK     (10)
-#define VAR_OP_CLEARMASK   (11)
-#define VAR_OP_MUL         (12)
-#define VAR_OP_DIV         (13)
-#define VAR_OP_LSH         (14)
-#define VAR_OP_RSH         (15)
-#define VAR_OP_TO_BIT      (16)
-#define VAR_OP_GET_RESULT  (17)
-#define VAR_OP_SUB_TO_ZERO (18)
-#define VAR_OP_XOR         (19)
-#define VAR_OP_AND         (20)
+#define VAR_OP_SET         ( 7) // var = value;
+#define VAR_OP_ADD         ( 8) // var += value;
+#define VAR_OP_SUB         ( 9) // var -= value;
+#define VAR_OP_SETMASK     (10) // var |= value;
+#define VAR_OP_CLEARMASK   (11) // var &= ~(value);
+#define VAR_OP_MUL         (12) // var *= value;
+#define VAR_OP_DIV         (13) // var /= value;
+#define VAR_OP_LSH         (14) // var <<= value;
+#define VAR_OP_RSH         (15) // var >>= value;
+#define VAR_OP_TO_BIT      (16) // var = 1 << value;
+#define VAR_OP_GET_RESULT  (17) // var = unsure // needs research
+#define VAR_OP_SUB_TO_ZERO (18) // while (var > value) { var -= value; }
+#define VAR_OP_XOR         (19) // var ^= value;
+#define VAR_OP_AND         (20) // var &= value;
 </pre>
 </details>
 <details>
