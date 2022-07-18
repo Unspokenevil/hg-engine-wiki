@@ -215,7 +215,7 @@ Now to break down what exactly is happening in the script.
 
 The ``if`` at the beginning checks to make sure that the field effect variable doesn't already have the rain bits set.  If the rain bits are already set, then the script jumps to ``_0094`` where ``VAR_10``, which stores move results among other things, has its "move failed" bit set.  If the move does not fail, the script continues at the ``preparemessage`` immediately following.  The ``preparemessage`` takes its ``id`` as 0x31F (799), which according to ``data/text/197.txt`` is the line ``It started to rain!``  As there are no string buffers in this, there is nothing to buffer, so it takes a ``tag`` of ``0x0`` and just prepares that message to print.  The ``changevar`` that clears the mask ``0x80FF`` from the field effect variable is ensuring that all other weathers that are active at the time of using Rain Dance are dissipated.  The script then sets the rain bit, sets the turns to 5, and queues up a ``battle_sub_seq`` script.  The Damp Rock's item effect is checked for, and if the attacker doesn't have a Damp Rock (as the ``checker`` is ``0x1``), then the script ends and jumps to ``_0090``.  Otherwise, the ``VAR_WEATHER_TURNS`` has the item power field from the ``getitempower`` script command added to it.  VAR_09 is typically used as a (very) temporary variable--random number calculations are stored there on top of other calculation interim steps that are necessary, both in battle script usage as well as the battle engine.
 
-The script queues up the ``0x5D (93)`` status effect in the var and says that the target is the whole field (``0x200000000``).  Looking at ``move_effect_to_subscripts`` again...
+The script queues up the ``0x5D (93)`` status effect in the var and says that the target is the temporary work battler (``0x200000000``).  Looking at ``move_effect_to_subscripts`` again...
 ```c
 u32 move_effect_to_subscripts[] =
 {
@@ -533,7 +533,174 @@ u32 move_effect_to_subscripts[] =
 ```
 We can see that the speed -1 is queued first, followed by the attack +1 and the speed +1.  We can further see that when switching from the negative stat boosts to the positive stat boosts, ``VAR_06`` is masked with ``0x4001``.  Furthermore, the animation plays twice--once for the decrease, and once again for the increase--we can tell because the ``VAR_60`` mask with ``0x80`` thus doesn't happen until after the speed decrease happens.
 
-Finding out how the rest of Curse may work is an exercise left to you.  You should at least be able to tell which ``battle_sub_seq`` script is queued up when the Pokémon is Ghost-type.
+Now let's look at Curse as a Ghost type (``armips/battle_sub_seq/097.s``):
+```
+a001_097:
+    if IF_MASK, VAR_10, 0x10000, _00D0
+    checknostatus BATTLER_DEFENDER, _00D0
+    ifmonstat IF_MASK, BATTLER_DEFENDER, MON_DATA_STATUS_2, 0x10000000, _00D0
+    gotosubscript 76
+    changevartomonvalue VAR_OP_SETMASK, BATTLER_DEFENDER, MON_DATA_STATUS_2, 0x10000000
+    changevartomonvalue2 VAR_OP_GET_RESULT, BATTLER_ATTACKER, MON_DATA_MAX_HP, VAR_HP_TEMP
+    changevar VAR_OP_MUL, VAR_HP_TEMP, -1
+    damagediv VAR_HP_TEMP, 2
+    changevar VAR_OP_SETMASK, VAR_06, 0x40
+    changevar2 VAR_OP_SET, VAR_BATTLER_SOMETHING, VAR_ATTACKER
+    gotosubscript 2
+    printmessage 0x1A1, 0x9, 0x1, 0x2, "NaN", "NaN", "NaN", "NaN"
+    waitmessage
+    wait 0x1E
+    endscript
+_00D0:
+    changevar VAR_OP_SETMASK, VAR_10, 0x40
+    endscript
+```
+A few new script commands here:
+```
+changevartomonvalue operator, battler, field, value
+a more accurate name would be "changemondatabyvalue," will work on fixing this.
+changes mon data "field" by "value" as specified by "operator"
+- operator is the same as the "changevar" operators
+- battler is the battler to grab the data from
+- field is the data to grab/set from the battler
+- value is the argument for the operator
+
+changevartomonvalue2 operator, battler, field, var
+a more accurate name would be "changemondatabyvar," will work on fixing this.
+changes mon data "field" by "var"'s value as specified by "operator"
+- operator is the same as the "changevar" operators.  if looking to set the var to the mon data field, use VAR_OP_GET_RESULT
+- battler is the battler to grab the data from
+- field is the data to grab/set from the battler
+- var is the variable the engine grabs from to manipulate the mon data field
+
+damagediv var, value
+sets damage to be "var" / "value"
+- var is the numerator in the division
+- value is the denominator in the division
+```
+If ``VAR_10`` has ``0x10000`` set, the script sets the move failed bit in ``VAR_10`` and ends the script.  Similar for the ``checknostatus`` command, where if the ``BATTLER_DEFENDER`` has some status then the move fails and the script ends.  Finally, if the curse bit is set in the Pokémon's ``MON_DATA_STATUS_2`` field, then the move fails as well.  The move then calls ``battle_sub_seq`` script 76 (``armips/move/battle_sub_seq/076.s``):
+```
+a001_076:
+    printattackmessage
+    waitmessage
+    seteffectprimary BATTLER_ATTACKER
+    waitmessage
+    endscript
+```
+Two new very simple commands from this one:
+```
+printattackmessage
+prints the current attack message from a027 file 003 (data/text/003.txt).
+
+seteffectprimary battler
+a more accurate name would be "playanimation," will work on fixing this.
+plays the current attack's animation based on "battler"
+- battler is the primary battler to base the animation on
+```
+This is a simple battle script that generically prints the attack message and plays the move animation before ending.
+
+So at ``gotosubscript 76`` from the Curse subscript above, the attack name is printed and the animation played.  Repasting the Curse script:
+```
+a001_097:
+...
+    gotosubscript 76
+    changevartomonvalue VAR_OP_SETMASK, BATTLER_DEFENDER, MON_DATA_STATUS_2, 0x10000000
+    changevartomonvalue2 VAR_OP_GET_RESULT, BATTLER_ATTACKER, MON_DATA_MAX_HP, VAR_HP_TEMP
+    changevar VAR_OP_MUL, VAR_HP_TEMP, -1
+    damagediv VAR_HP_TEMP, 2
+    changevar VAR_OP_SETMASK, VAR_06, 0x40
+    changevar2 VAR_OP_SET, VAR_BATTLER_SOMETHING, VAR_ATTACKER
+    gotosubscript 2
+    printmessage 0x1A1, 0x9, 0x1, 0x2, "NaN", "NaN", "NaN", "NaN"
+    waitmessage
+    wait 0x1E
+    endscript
+_00D0:
+    changevar VAR_OP_SETMASK, VAR_10, 0x40
+    endscript
+```
+The Curse bit is then set (you can think of this as the ``BATTLER_DEFENDER`` is inflicted with Curse by the ``changevartomonvalue`` command there), and the ``BATTLER_ATTACKER``'s max HP is placed into ``VAR_HP_TEMP``.  ``VAR_HP_TEMP`` is made to be negative (by multiplying by -1), and the damage to be dealt is set to ``VAR_HP_TEMP / 2``--half of the max HP.  The bit in ``VAR_06`` is set to signal to subscript 2 that is coming up that the move sound effect should not be played, that the HP should just be manipulated (as we will see in a moment).  Finally, the ``VAR_BATTLER_SOMETHING`` is set to be ``VAR_ATTACKER``--the temporary work battler is set to be the attacker so that subscript 2, which is written to be generic, will know what to do.  We go to subscript 2 (``armips/move/battle_sub_seq/002.s``):
+```
+a001_002:
+    if IF_MASK, VAR_06, 0x40, _0044
+    playmovesoundeffect BATTLER_xFF
+    monflicker 0xFF
+    waitmessage
+    if IF_EQUAL, VAR_69, 0x0, _0044
+    gotosubscript 264
+_0044:
+    changevar VAR_OP_CLEARMASK, VAR_06, 0x40
+    healthbarupdate BATTLER_xFF
+    waitmessage
+    datahpupdate BATTLER_xFF
+    tryfaintmon BATTLER_xFF
+    if IF_GREATER, VAR_HP_TEMP, 0x0, _0094
+    changevar2 VAR_OP_SET, VAR_ASSURANCE_DAMAGE, VAR_HP_TEMP
+_0094:
+    endscript
+```
+Documenting more new script commands:
+```
+playmovesoundeffect battler
+plays the move's damaging sound effect
+- battler is the basis of the sound pan
+
+monflicker battler
+makes "battler" flicker
+- battler is the Pokémon to flicker
+
+healthbarupdate battler
+updates "battler"'s hp bar
+- battler is the battler that has the hp bar to update
+
+datahpupdate battler
+updates the information on the "battler"'s hp bar
+- battler is the owner of the hp bar to update
+
+tryfaintmon battler
+tries to faint "battler".  nothing happens if fails, the mon will slide down otherwise
+- battler is the mon to faint
+```
+So we can see that this is another generic subscript made to be used under many circumstances.  It deals damage and then does all the updating of the HP bars as necessary.  I will let you check out subscript 264 if you want, but it is not relevant to the current case, as ``VAR_06`` has its ``0x40`` bit set and the script jumps to ``_0044`` instead of executing all of that.  It is the script responsible for the super-effective weakening berries, and we may be looking at it as a specific use-case later where we want to add something like, say, the Roseli Berry.
+
+Finally, back to the ``printmessage`` command from the Curse script:
+```
+a001_097:
+...
+    gotosubscript 2
+    printmessage 0x1A1, 0x9, 0x1, 0x2, "NaN", "NaN", "NaN", "NaN"
+    waitmessage
+    wait 0x1E
+    endscript
+_00D0:
+    changevar VAR_OP_SETMASK, VAR_10, 0x40
+    endscript
+```
+This ``printmessage`` finally gets to a different ``tag`` (that isn't 0)!  Here, we can grab the ``tag`` from the documentation:
+```c
+#define TAG_TRNAME                      (8)     //trainername
+
+#define TAG_NICK_NICK                   (9)     //nickname      nickname
+#define TAG_NICK_MOVE                   (10)    //nickname      move
+```
+Here we see that there are two fields that it grabs, so it requires 2 of the 6 ``battler`` parameters.  The rest are left as "NaN" as before.  To understand what is going on, we check out line ``0x1A1 (417)`` from ``data/text/197.txt``:
+```
+[417] {STRVAR_1 1, 0, 0} cut its own HP\nand laid a curse on {STRVAR_1 1, 1, 0}!
+[418] {STRVAR_1 1, 0, 0} cut its own HP\nand laid a curse on the wild\f{STRVAR_1 1, 1, 0}!
+[419] {STRVAR_1 1, 0, 0} cut its own HP\nand laid a curse on the foe’s\f{STRVAR_1 1, 1, 0}!
+[420] The wild {STRVAR_1 1, 0, 0} cut its own HP\nand laid a curse on {STRVAR_1 1, 1, 0}!
+[421] The wild {STRVAR_1 1, 0, 0} cut its own HP\nand laid a curse on the wild\f{STRVAR_1 1, 1, 0}!
+[422] The foe’s {STRVAR_1 1, 0, 0} cut its own HP\nand laid a curse on {STRVAR_1 1, 1, 0}!
+[423] The foe’s {STRVAR_1 1, 0, 0} cut its own HP\nand laid a curse on the foe’s\f{STRVAR_1 1, 1, 0}!
+```
+Here we are introduced to a way of doing things that is rather interesting and is very much a massive waste of space:  The only string variables used are for the nicknames directly.  Otherwise, the ``printmessage`` command will just add on for the correct circumstance to achieve a new message that correctly reflects the battle at hand.  Generally speaking, most moves that only buffer 1 battler from the field will have 3 messages, one for the player, the wild mon, and the foe's mon--this is even the case for the ``printattackmessage`` text archive, ``data/text/003.txt``.  In Curse's case, because one battler is using the move on another battler and both are buffered, there are 7 cases, all automatically adjusted for like the above.  It then takes two battlers, and the command looks somewhat better like this:
+```
+    printmessage 417, TAG_NICK_NICK, BATTLER_ATTACKER, BATTLER_DEFENDER, "NaN", "NaN", "NaN", "NaN"
+```
+Meaning that the first ``{STRVAR_1 1, 0, 0}`` will be replaced with the nickname of the attacker, and the second ``{STRVAR_1 1, 1, 0}`` will be replaced with the nickname of the defender.  The script then ends after waiting for the message to print.
+
+
+
 
 # Battle Script Command Reference
 <details>
@@ -825,15 +992,17 @@ printmessagepassbattler
 </pre>
 </details>
 <details>
-<summary>seteffectprimary  - 0x17 (playanimation)</summary>
+<summary>seteffectprimary  - 0x17 (suggested name: playanimation)</summary>
 <br>
 <pre>
-seteffectprimary
-- 
+seteffectprimary battler
+a more accurate name would be "playanimation," will work on fixing this.
+plays the current attack's animation based on "battler"
+- battler is the primary battler to base the animation on
 </pre>
 </details>
 <details>
-<summary>seteffectsecondary  - 0x18 (playanimation2)</summary>
+<summary>seteffectsecondary  - 0x18 (suggested name: playanimation2)</summary>
 <br>
 <pre>
 seteffectsecondary
@@ -844,32 +1013,36 @@ seteffectsecondary
 <summary>monflicker - 0x19</summary>
 <br>
 <pre>
-monflicker
-- 
+monflicker battler
+makes "battler" flicker
+- battler is the Pokémon to flicker
 </pre>
 </details>
 <details>
 <summary>datahpupdate - 0x1A</summary>
 <br>
 <pre>
-datahpupdate
-- 
+datahpupdate battler
+updates the information on the "battler"'s hp bar
+- battler is the owner of the hp bar to update
 </pre>
 </details>
 <details>
 <summary>healthbarupdate - 0x1B</summary>
 <br>
 <pre>
-healthbarupdate
-- 
+healthbarupdate battler
+updates "battler"'s hp bar
+- battler is the battler that has the hp bar to update
 </pre>
 </details>
 <details>
 <summary>tryfaintmon - 0x1C</summary>
 <br>
 <pre>
-tryfaintmon
-- 
+tryfaintmon battler
+tries to faint "battler".  nothing happens if fails, the mon will slide down otherwise
+- battler is the mon to faint
 </pre>
 </details>
 <details>
@@ -1182,7 +1355,7 @@ changevar operators:
 #define VAR_OP_LSH         (14) // var <<= value;
 #define VAR_OP_RSH         (15) // var >>= value;
 #define VAR_OP_TO_BIT      (16) // var = 1 << value;
-#define VAR_OP_GET_RESULT  (17) // var = unsure // needs research
+#define VAR_OP_GET_RESULT  (17) // var = result of script command?  used with changemondatabyvar to put mondata in var // needs research
 #define VAR_OP_SUB_TO_ZERO (18) // while (var > value) { var -= value; }
 #define VAR_OP_XOR         (19) // var ^= value;
 #define VAR_OP_AND         (20) // var &= value;
@@ -1197,11 +1370,16 @@ statbuffchange
 </pre>
 </details>
 <details>
-<summary>changevartomonvalue - 0x34</summary>
+<summary>changevartomonvalue - 0x34 (suggested name:  changemondatabyvalue)</summary>
 <br>
 <pre>
-changevartomonvalue
-- 
+changevartomonvalue operator, battler, field, value
+a more accurate name would be "changemondatabyvalue," will work on fixing this.
+changes mon data "field" by "value" as specified by "operator"
+- operator is the same as the "changevar" operators
+- battler is the battler to grab the data from
+- field is the data to grab/set from the battler
+- value is the argument for the operator
 </pre>
 </details>
 <details>
@@ -1250,11 +1428,16 @@ see changevar for operator enumerations
 </pre>
 </details>
 <details>
-<summary>changevartomonvalue2 - 0x3A</summary>
+<summary>changevartomonvalue2 - 0x3A (suggested name:  changemondatabyvar)</summary>
 <br>
 <pre>
-changevartomonvalue2
-- 
+changevartomonvalue2 operator, battler, field, var
+a more accurate name would be "changemondatabyvar," will work on fixing this.
+changes mon data "field" by "var"'s value as specified by "operator"
+- operator is the same as the "changevar" operators.  if looking to set the var to the mon data field, use VAR_OP_GET_RESULT
+- battler is the battler to grab the data from
+- field is the data to grab/set from the battler
+- var is the variable the engine grabs from to manipulate the mon data field
 </pre>
 </details>
 <details>
@@ -1470,8 +1653,10 @@ tryonehitko
 <summary>damagediv - 0x55</summary>
 <br>
 <pre>
-damagediv
-- 
+damagediv var, value
+sets damage to be "var" / "value"
+- var is the numerator in the division
+- value is the denominator in the division
 </pre>
 </details>
 <details>
@@ -2517,8 +2702,9 @@ cmd_D6
 <summary>playmovesoundeffect - 0xD7</summary>
 <br>
 <pre>
-playmovesoundeffect
-- 
+playmovesoundeffect battler
+plays the move's damaging sound effect
+- battler is the basis of the sound pan
 </pre>
 </details>
 <details>
