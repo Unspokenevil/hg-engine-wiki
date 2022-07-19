@@ -676,7 +676,7 @@ _00D0:
     changevar VAR_OP_SETMASK, VAR_10, 0x40
     endscript
 ```
-This ``printmessage`` finally gets to a different ``tag`` (that isn't 0)!  Here, we can grab the ``tag`` from the documentation:
+This ``printmessage`` finally gets to a different ``tag`` (that isn't 0)!  Here, we can grab the ``tag`` value from the documentation at the bottom:
 ```c
 #define TAG_TRNAME                      (8)     //trainername
 
@@ -695,10 +695,98 @@ Here we see that there are two fields that it grabs, so it requires 2 of the 6 `
 ```
 Here we are introduced to a way of doing things that is rather interesting and is very much a massive waste of space:  The only string variables used are for the nicknames directly.  Otherwise, the ``printmessage`` command will just add on for the correct circumstance to achieve a new message that correctly reflects the battle at hand.  Generally speaking, most moves that only buffer 1 battler from the field will have 3 messages, one for the player, the wild mon, and the foe's mon--this is even the case for the ``printattackmessage`` text archive, ``data/text/003.txt``.  In Curse's case, because one battler is using the move on another battler and both are buffered, there are 7 cases, all automatically adjusted for like the above.  It then takes two battlers, and the command looks somewhat better like this:
 ```
-    printmessage 417, TAG_NICK_NICK, BATTLER_ATTACKER, BATTLER_DEFENDER, "NaN", "NaN", "NaN", "NaN"
+printmessage 417, TAG_NICK_NICK, BATTLER_ATTACKER, BATTLER_DEFENDER, "NaN", "NaN", "NaN", "NaN"
 ```
 Meaning that the first ``{STRVAR_1 1, 0, 0}`` will be replaced with the nickname of the attacker, and the second ``{STRVAR_1 1, 1, 0}`` will be replaced with the nickname of the defender.  The script then ends after waiting for the message to print.
 
+## Synthesizing new move effects
+In adding a new move that doesn't have an effect that already exists, we need to add a new ``battle_eff_seq`` script.  In this repo, it's simply a matter of creating a new `.s` file in the folder.  As an example, I will be looking to implement Simple Beam--an effect that isn't currently done in the repo--as move effect 292 that will queue up subscript 330 to do its effect.  Simple Beam sets the defender's ability to Simple unless if the ability it would overwrite is any of Truant, Multitype, Stance Change, Schooling, Comatose, Shields Down, Disguise, RKS System, Battle Bond, Power Construct, Ice Face, Gulp Missile, or As One.  All of these checks can be done directly from the battle scripts themselves using ``ifmonstat`` and ``changevartomonvalue``.
+
+To start out, we can finally discuss the headers of each script file, which you'd see if you opened any of the files directly from the repo.  These will largely be the same for each scripts, with exceptions depending on if more constants are needed:
+```
+.nds
+.thumb
+
+.include "armips/include/battlescriptcmd.s"
+.include "armips/include/abilities.s"
+.include "armips/include/itemnums.s"
+.include "armips/include/monnums.s"
+.include "armips/include/movenums.s"
+```
+These are all directives that tell armips to either set things up differently or read separate files for defines and other asm if included.  The ``.nds`` directive configures the output to be little-endian and sets the assembler to output ARM 9 code in ARM mode.  The ``.thumb`` directive fixes the ARM mode output to be in thumb mode, which for ARM assembly code is a cut-down space-conserving instruction set.  The ``.include`` directive opens up the file specified by the filepath in the string, assembling said file similar to the ``#include`` directive from C.
+```
+.create "build/move/battle_eff_seq/0_001", 0
+```
+The ``.create`` directive tells armips to create the file at the filepath in the string and will start writing to it from the base offset 0.
+
+Finally, each file ends with the ``.close`` directive to tell armips to close out of the file and make no further changes.
+
+So we create a new file in ``armips/move/battle_eff_seq`` called ``292.s`` with the contents at the moment solely:
+```
+.nds
+.thumb
+
+.include "armips/include/battlescriptcmd.s"
+.include "armips/include/abilities.s"
+.include "armips/include/itemnums.s"
+.include "armips/include/monnums.s"
+.include "armips/include/movenums.s"
+
+.create "build/move/battle_eff_seq/0_292", 0
+
+simpleBeamScript: // a030_292
+```
+There is nothing that we can actually do from the ``battle_eff_seq`` that needs to be done for Simple Beam, which just gives the defender the Simple ability (instead of changing move damage or something like that that isn't battler-specific).  As a result, we just go straight to queuing up a ``battle_sub_seq`` and ending the script right away:
+```
+simpleBeamScript: // a030_292
+    changevar VAR_OP_SET, VAR_ADD_STATUS1, ADD_STATUS_DEFENDER | xxx
+    endscript
+```
+So now we know that we queue up a script that affects the defender.  What do we put in for ``xx``, the index of ``move_effect_to_subscripts``?  In this repo, you can actually just add on to the end of ``move_effect_to_subscripts`` in ``src/moves.c``.  So we add on a new entry to the end:
+```c
+u32 move_effect_to_subscripts[] =
+{
+...
+    [152] = 318, // shell smash
+    [153] = 319, // v create
+    [154] = 320, // autotomize
+    [155] = 330, // simple beam - new entry
+};
+```
+Which makes the ``battle_eff_seq`` script:
+```
+simpleBeamScript: // a030_292
+    changevar VAR_OP_SET, VAR_ADD_STATUS1, ADD_STATUS_DEFENDER | 155 // queue up simple beam subscript
+    endscript
+```
+Now we look to make the Simple Beam subscript, adding a ``battle_sub_seq`` script to the end of the folder as ``330.s``:
+```
+.nds
+.thumb
+
+.include "armips/include/battlescriptcmd.s"
+.include "armips/include/abilities.s"
+.include "armips/include/itemnums.s"
+.include "armips/include/monnums.s"
+.include "armips/include/movenums.s"
+
+.create "build/move/battle_sub_seq/1_330", 0
+
+simpleBeamSubScript: // a001_330
+```
+Now to build the script.  We need to change the defender's ability to Simple.  We've covered a command to do so, ``changevartomonvalue`` (which should be ``changemondatabyvalue``):
+```
+simpleBeamSubScript: // a001_330
+    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SIMPLE // set the defender's ability to simple
+    endscript
+```
+But now the animation just plays and the move ends with no indication of what happened.  From there, we need to print a message, for which we need to add a new message as well:
+```
+simpleBeamSubScript: // a001_330
+    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SIMPLE // set the defender's ability to simple
+    printmessage 1348, TAG_NICK_ABILITY, BATTLER_DEFENDER, BATTLER_DEFENDER, "NaN", "NaN", "NaN", "NaN"
+    endscript
+```
 
 
 
@@ -1378,7 +1466,7 @@ a more accurate name would be "changemondatabyvalue," will work on fixing this.
 changes mon data "field" by "value" as specified by "operator"
 - operator is the same as the "changevar" operators
 - battler is the battler to grab the data from
-- field is the data to grab/set from the battler
+- field is the data to grab/set from the battler, same as "ifmonstat"
 - value is the argument for the operator
 </pre>
 </details>
