@@ -32,6 +32,7 @@ I believe this is used intermittently for when an animation needs to happen and 
 # Battle Script Examples
 I personally learn primarily by example.  A lot of what the beginning stages of battle script editing were in Gens 2 and 3 was mashing hexadecimal together and seeing what all worked--before there were any competent editors (and even for a while after there were, as people preferred pasting assembled hex into the rom directly for some reason).  A similar approach can be taken for this, identifying certain blocks that look like, when isolated, can be ported and placed wherever.
 
+## Example 1 - Tackle
 To start out, we can look at Tackle and how it works.  Tackle, with move index 33, uses ``armips/move/battle_move_seq/033.s`` as the script that it immediately executes:
 ```
 a000_033:
@@ -67,6 +68,7 @@ ends the script and hands exection back to the overall battle engine if nothing 
 ```
 From there, we can look at other simple cases:  moves that lower the target's stats.  We can look at two examples of this to determine the differences, and this also introduces another core concept in move scripts with the connection between ``battle_eff_seq`` and ``battle_sub_seq``.
 
+## Example 2 - Tail Whip/Growl
 Let's take a look at the battle scripts of Growl and Tail Whip:
 ```
 movedata MOVE_TAIL_WHIP
@@ -146,8 +148,7 @@ a030_018:
 ```
 That 22 gives the ``attack -1`` entry from ``move_effect_to_subscripts``, right above Tail Whip's ``defense -1``.
 
-
-
+## Example 3 - Rain Dance
 A sort of complicated ``battle_eff_seq`` script that goes into a simple ``battle_sub_seq`` script, Rain Dance:
 ```
 movedata MOVE_RAIN_DANCE
@@ -261,6 +262,7 @@ The queued ``battle_sub_seq`` script, despite taking us through another ``battle
 
 There are a number of "optimizations" like this that are done for whatever reason.  In dissecting how even simple attacks like Rain Dance work, sometimes you end up down massive trails of redundancy that make things challenging to dissect sometimes.  It is alright to be confused!  But it is especially important that the control flow commands (if, goto, gotosubscript, etc.) are well understood.
 
+## Example 4 - Metal Claw/Charge Beam
 What about moves that raise a stat when attacking (or have a chance to)?  For that we can look to Metal Claw and Charge Beam:
 
 ```
@@ -310,6 +312,8 @@ u32 move_effect_to_subscripts[] =
 ```
 As we can see, Metal Claw queues up an attack +1 while Charge Beam queues up a spatk +1.
 
+
+## Example 5 - Curse/Ancient Power/Superpower
 So how do moves that manipulate multiple stats work?  We can look at moves like Curse and then AncientPower for that case:
 ```
 movedata MOVE_CURSE
@@ -463,8 +467,9 @@ u32 move_effect_to_subscripts[] =
 ...
 };
 ```
-I am honestly not sure of what the masks that it sets are, but pretty sure one toggles animations (the 0x80) instead of having them replay for every stat gain.  The last one probably signals that everything is over and the stat gains are done with.
+I am honestly not sure of what the masks that it sets are, but pretty sure one toggles animations (the ``0x80``) instead of having them replay for every stat gain.  The last one probably signals that everything is over and the stat gains are done with.
 
+### Curse as a stat-changing move
 Finally, we can look at the rest of Curse (battle script repasted here for convenience, ``armips/move/battle_eff_seq/109.s``):
 ```
 a030_109:
@@ -533,6 +538,7 @@ u32 move_effect_to_subscripts[] =
 ```
 We can see that the speed -1 is queued first, followed by the attack +1 and the speed +1.  We can further see that when switching from the negative stat boosts to the positive stat boosts, ``VAR_06`` is masked with ``0x4001``.  Furthermore, the animation plays twice--once for the decrease, and once again for the increase--we can tell because the ``VAR_60`` mask with ``0x80`` thus doesn't happen until after the speed decrease happens.
 
+### Curse as a Ghost type
 Now let's look at Curse as a Ghost type (``armips/battle_sub_seq/097.s``):
 ```
 a001_097:
@@ -699,10 +705,10 @@ printmessage 417, TAG_NICK_NICK, BATTLER_ATTACKER, BATTLER_DEFENDER, "NaN", "NaN
 ```
 Meaning that the first ``{STRVAR_1 1, 0, 0}`` will be replaced with the nickname of the attacker, and the second ``{STRVAR_1 1, 1, 0}`` will be replaced with the nickname of the defender.  The script then ends after waiting for the message to print.
 
-## Synthesizing new move effects
+# Synthesizing new move effects
 In adding a new move that doesn't have an effect that already exists, we need to add a new ``battle_eff_seq`` script.  In this repo, it's simply a matter of creating a new `.s` file in the folder.  As an example, I will be looking to implement Simple Beam--an effect that isn't currently done in the repo--as move effect 292 that will queue up subscript 330 to do its effect.  
 
-### Adding Simple Beam's Effect
+## Adding Simple Beam's Effect
 Simple Beam sets the defender's ability to Simple unless if the ability it would overwrite is any of Truant, Multitype, Stance Change, Schooling, Comatose, Shields Down, Disguise, RKS System, Battle Bond, Power Construct, Ice Face, Gulp Missile, or As One.  All of these checks can be done directly from the battle scripts themselves using ``ifmonstat`` and ``changevartomonvalue``.
 
 To start out, we can finally discuss the headers of each script file, which you'd see if you opened any of the files directly from the repo.  These will largely be the same for each scripts, with exceptions depending on if more constants are needed:
