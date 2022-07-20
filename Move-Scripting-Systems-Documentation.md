@@ -683,7 +683,7 @@ This ``printmessage`` finally gets to a different ``tag`` (that isn't 0)!  Here,
 #define TAG_NICK_NICK                   (9)     //nickname      nickname
 #define TAG_NICK_MOVE                   (10)    //nickname      move
 ```
-Here we see that there are two fields that it grabs, so it requires 2 of the 6 ``battler`` parameters.  The rest are left as "NaN" as before.  To understand what is going on, we check out line ``0x1A1 (417)`` from ``data/text/197.txt``:
+Here we see that there are two fields that it grabs, so it requires 2 of the 6 ``battler`` parameters.  The rest are left as "NaN" as before.  To understand what is going on, we check out line ``0x1A1 (417)`` from ``data/text/197.txt`` (with brackets added for ease of reference):
 ```
 [417] {STRVAR_1 1, 0, 0} cut its own HP\nand laid a curse on {STRVAR_1 1, 1, 0}!
 [418] {STRVAR_1 1, 0, 0} cut its own HP\nand laid a curse on the wild\f{STRVAR_1 1, 1, 0}!
@@ -700,7 +700,10 @@ printmessage 417, TAG_NICK_NICK, BATTLER_ATTACKER, BATTLER_DEFENDER, "NaN", "NaN
 Meaning that the first ``{STRVAR_1 1, 0, 0}`` will be replaced with the nickname of the attacker, and the second ``{STRVAR_1 1, 1, 0}`` will be replaced with the nickname of the defender.  The script then ends after waiting for the message to print.
 
 ## Synthesizing new move effects
-In adding a new move that doesn't have an effect that already exists, we need to add a new ``battle_eff_seq`` script.  In this repo, it's simply a matter of creating a new `.s` file in the folder.  As an example, I will be looking to implement Simple Beam--an effect that isn't currently done in the repo--as move effect 292 that will queue up subscript 330 to do its effect.  Simple Beam sets the defender's ability to Simple unless if the ability it would overwrite is any of Truant, Multitype, Stance Change, Schooling, Comatose, Shields Down, Disguise, RKS System, Battle Bond, Power Construct, Ice Face, Gulp Missile, or As One.  All of these checks can be done directly from the battle scripts themselves using ``ifmonstat`` and ``changevartomonvalue``.
+In adding a new move that doesn't have an effect that already exists, we need to add a new ``battle_eff_seq`` script.  In this repo, it's simply a matter of creating a new `.s` file in the folder.  As an example, I will be looking to implement Simple Beam--an effect that isn't currently done in the repo--as move effect 292 that will queue up subscript 330 to do its effect.  
+
+### Adding Simple Beam's Effect
+Simple Beam sets the defender's ability to Simple unless if the ability it would overwrite is any of Truant, Multitype, Stance Change, Schooling, Comatose, Shields Down, Disguise, RKS System, Battle Bond, Power Construct, Ice Face, Gulp Missile, or As One.  All of these checks can be done directly from the battle scripts themselves using ``ifmonstat`` and ``changevartomonvalue``.
 
 To start out, we can finally discuss the headers of each script file, which you'd see if you opened any of the files directly from the repo.  These will largely be the same for each scripts, with exceptions depending on if more constants are needed:
 ```
@@ -787,8 +790,155 @@ simpleBeamSubScript: // a001_330
     printmessage 1348, TAG_NICK_ABILITY, BATTLER_DEFENDER, BATTLER_DEFENDER, "NaN", "NaN", "NaN", "NaN"
     endscript
 ```
+Adding the message to the ``197.txt``, just have to add as line 1348 (when the first line is zero, brackets added as reference and not actually inserted):
+```
+[1348] {STRVAR_1 1, 0, 0}’s ability\nchanged to {STRVAR_1 5, 1, 0}!
+[1349] The wild {STRVAR_1 1, 0, 0}’s\nability changed to {STRVAR_1 5, 1, 0}!
+[1350] The foe’s {STRVAR_1 1, 0, 0}’s\nability changed to {STRVAR_1 5, 1, 0}!
+```
+This text entry (specifically the string variables used) is based on Flash Fire's, at entry 656:
+```
+[656] {STRVAR_1 1, 0, 0}’s {STRVAR_1 5, 1, 0} raised\nthe power of its Fire-type moves!
+[657] The wild {STRVAR_1 1, 0, 0}’s\n{STRVAR_1 5, 1, 0} raised the power\fof its Fire-type moves!
+[658] The foe’s {STRVAR_1 1, 0, 0}’s\n{STRVAR_1 5, 1, 0} raised the power\fof its Fire-type moves!
+```
+Now we have Simple Beam, which replaces the defender's ability with Simple, printing a message that will look something like:
+```
+The foe's Elgyem's
+ability changed to Simple!
+```
+Finally, we have to add that the move fails when the defender's ability is any number of abilities.  A move fails when ``VAR_10`` has its ``0x40`` bit set, as discussed previously:
+```
+moveFails:
+    changevar VAR_OP_SETMASK, VAR_10, 0x40
+    endscript
+```
+So now we add a check for the ability Truant that will jump to ``moveFails`` if the defender has the ability using ``ifmonstat``.
+```
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_TRUANT, moveFails
+```
+Combining it all together:
+```
+simpleBeamSubScript: // a001_330
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_TRUANT, moveFails // move fails if the defender has truant
 
+    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SIMPLE // set the defender's ability to simple
+    printmessage 1348, TAG_NICK_ABILITY, BATTLER_DEFENDER, BATTLER_DEFENDER, "NaN", "NaN", "NaN", "NaN"
+    endscript
 
+moveFails:
+    changevar VAR_OP_SETMASK, VAR_10, 0x40
+    endscript
+```
+Now Simple Beam fails when it's used on a defender with Truant.  Adding the rest of the abilities:
+```
+simpleBeamSubScript: // a001_330
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_TRUANT, moveFails // move fails if the defender has truant
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_MULTITYPE, moveFails // move fails if the defender has multitype
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_STANCE_CHANGE, moveFails // move fails if the defender has stance change
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SCHOOLING, moveFails // move fails if the defender has schooling
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_COMATOSE, moveFails // move fails if the defender has comatose
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SHIELDS_DOWN, moveFails // move fails if the defender has shields down
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_DISGUISE, moveFails // move fails if the defender has disguise
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_RKS_SYSTEM, moveFails // move fails if the defender has rks system
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_BATTLE_BOND, moveFails // move fails if the defender has battle bond
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_POWER_CONSTRUCT, moveFails // move fails if the defender has power construct
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_ICE_FACE, moveFails // move fails if the defender has ice face
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_GULP_MISSILE, moveFails // move fails if the defender has gulp missile
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_AS_ONE, moveFails // move fails if the defender has as one
+
+    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SIMPLE // set the defender's ability to simple
+    printmessage 1348, TAG_NICK_ABILITY, BATTLER_DEFENDER, BATTLER_DEFENDER, "NaN", "NaN", "NaN", "NaN"
+    endscript
+
+moveFails:
+    changevar VAR_OP_SETMASK, VAR_10, 0x40
+    endscript
+```
+That should be all needed to do the effect for Simple Beam!  For future examples, I will be skipping the header creation for simplicity--just know that it will be there.
+
+To recap:  Add a new ``battle_eff_seq`` script that queues up a ``battle_sub_seq`` script, add a new entry to ``move_effect_to_subscripts`` in ``src/moves.c`` that corresponds to the one you queued up in the ``battle_eff_seq`` script, and then add a new ``battle_sub_seq`` that corresponds to the entry you just added to ``move_effect_to_subscripts`` that then performs all of the effects.
+
+### Adding Fairy Type Handling to Judgment
+Old moves are also updatable in hg-engine--a few that have been are Rapid Spin and Judgment.  Let's look at what Judgment does to see how we can add Fairy type handling to it, quick look back at ``armips/data/moves.s``:
+```
+movedata MOVE_JUDGMENT
+    battleeffect 268
+    pss SPLIT_SPECIAL
+    basepower 100
+```
+So we look at ``battle_eff_seq`` script 268 (``armips/move/battle_eff_seq/268.s``) (the old version [here](https://github.com/BluRosie/hg-engine/blob/7180691503c90a80ff184802d069f299584013d4/armips/move/battle_eff_seq/268.s)):
+```
+a030_268:
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x83, _0148
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x86, _0160
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x84, _0178
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x85, _0190
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x89, _01A8
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x88, _01C0
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x8A, _01D8
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x8D, _01F0
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x7E, _0208
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x7F, _0220
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x81, _0238
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x80, _0250
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x87, _0268
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x82, _0280
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x8B, _0298
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x8C, _02B0
+    goto _02C0
+_0148:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, 0x1
+    goto _02C0
+_0160:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, 0x2
+    goto _02C0
+_0178:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, 0x3
+    goto _02C0
+_0190:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, 0x4
+    goto _02C0
+_01A8:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, 0x5
+    goto _02C0
+_01C0:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, 0x6
+    goto _02C0
+_01D8:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, 0x7
+    goto _02C0
+_01F0:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, 0x8
+    goto _02C0
+_0208:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, 0xA
+    goto _02C0
+_0220:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, 0xB
+    goto _02C0
+_0238:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, 0xC
+    goto _02C0
+_0250:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, 0xD
+    goto _02C0
+_0268:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, 0xE
+    goto _02C0
+_0280:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, 0xF
+    goto _02C0
+_0298:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, 0x10
+    goto _02C0
+_02B0:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, 0x11
+_02C0:
+    critcalc
+    damagecalc
+    endscript
+```
 
 # Battle Script Command Reference
 <details>
