@@ -865,7 +865,7 @@ That should be all needed to do the effect for Simple Beam!  For future examples
 
 To recap:  Add a new ``battle_eff_seq`` script that queues up a ``battle_sub_seq`` script, add a new entry to ``move_effect_to_subscripts`` in ``src/moves.c`` that corresponds to the one you queued up in the ``battle_eff_seq`` script, and then add a new ``battle_sub_seq`` that corresponds to the entry you just added to ``move_effect_to_subscripts`` that then performs all of the effects.
 
-### Adding Fairy Type Handling to Judgment
+## Adding Fairy Type Handling to Judgment
 Old moves are also updatable in hg-engine--a few that have been are Rapid Spin and Judgment.  Let's look at what Judgment does to see how we can add Fairy type handling to it, quick look back at ``armips/data/moves.s``:
 ```
 movedata MOVE_JUDGMENT
