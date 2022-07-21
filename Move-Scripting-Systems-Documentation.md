@@ -12,7 +12,7 @@ Move animation scripts are often called within battle scripts to show something 
 - ``move_anim``
 - ``move_sub_anim``
 
-
+A lot of what this documentation will deal with is the initial output of the script dumper from well over a year ago.  Many script command names are in progress.  Many fields hadn't (still haven't!) been identified properly as vars/battlers/etc. and are thus dumped as raw numbers.  ``printmessage`` in particular is all of common, fully known, and dumped such that all of its parameters are initially raw numbers.  It is not all that high a priority to revamp the initial dump such that it's perfectly readable, instead preferring to add new entries/revamp old ones as they become relevant.  The initial dump will be shown, then the "prettyified" version will be commented next to it--just a better-readable version that corresponds to the same thing/interpretation of the value.
 
 ## ``battle_move_seq`` - a000
 Every single move has a script in this narc.  Very few moves actually have substance in their script in here, instead jumping to the current ``battle_eff_seq`` script corresponding to the move that was selected.  Adding new moves requires that a new script be added to this narc, else no script will be dumped when the game looks for a move to run and the game crashes.  The ``battle_eff_seq`` file index that is chosen is the same as the ``battleeffect`` field in the moves structure.
@@ -1114,6 +1114,7 @@ This is actually the method used directly in hg-engine for updating Judgment:
 <details>
 <summary>Fully-Updated Fairy Judgment (click to drop down!)</summary>
 
+Fairy handling has spaces around it for emphasis:
 ```
 .nds
 .thumb
@@ -1137,9 +1138,9 @@ a030_268:
     checkitemeffect 0x0, BATTLER_ATTACKER, 0x88, _setBug        // TYPE_BUG     
     checkitemeffect 0x0, BATTLER_ATTACKER, 0x8A, _setGhost      // TYPE_GHOST   
     checkitemeffect 0x0, BATTLER_ATTACKER, 0x8D, _setSteel      // TYPE_STEEL  
-.if FAIRY_TYPE_IMPLEMENTED == 1
+
     checkitemeffect 0x0, BATTLER_ATTACKER, 0x93, _setFairy      // TYPE_FAIRY
-.endif
+
     checkitemeffect 0x0, BATTLER_ATTACKER, 0x7E, _setFire       // TYPE_FIRE    
     checkitemeffect 0x0, BATTLER_ATTACKER, 0x7F, _setWater      // TYPE_WATER   
     checkitemeffect 0x0, BATTLER_ATTACKER, 0x81, _setGrass      // TYPE_GRASS   
@@ -1173,11 +1174,11 @@ _setGhost:
 _setSteel:
     changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_STEEL
     goto _return
-.if FAIRY_TYPE_IMPLEMENTED == 1
+
 _setFairy:
     changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_FAIRY
     goto _return
-.endif
+
 _setFire:
     changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_FIRE
     goto _return
@@ -1207,6 +1208,214 @@ _return:
     endscript
 
 .close
+```
+</details>
+
+## Adding Fairy Type Reduction Berry
+Gen 4 introduced all of the berries that activate when a super-effective move is used against the holder.  The damage they take is then halved as a result, making them very frequent in competitive play as a result, with every turn being important in the overall scheme of battles.  As mentioned previously when covering Curse as a Ghost type, the type-halving berries are covered in ``battle_sub_seq`` script 264, a generic script that actually has that as its primary purpose--check if the damage being done should be halved by the berries or not.
+
+The script dump as it originally appears is as follows, taken from [here](https://github.com/BluRosie/hg-engine/blob/7180691503c90a80ff184802d069f299584013d4/armips/move/battle_sub_seq/264.s):
+<details>
+<summary>a001_264 - Type Reduction Berries</summary>
+
+```
+a001_264:
+    if IF_MASK, VAR_06, 0x8800, _041C
+    if IF_MASK, VAR_10, 0x20, _041C
+    abilitycheck 0x1, BATTLER_ATTACKER, ABILITY_NORMALIZE, _0054
+    changevar VAR_OP_SET, VAR_09, 0x0
+    goto _0088
+_0054:
+    if IF_EQUAL, VAR_MOVE_TYPE, 0x0, _0080
+    changevar2 VAR_OP_GET_RESULT, VAR_MOVE_TYPE, VAR_09
+    goto _0088
+_0080:
+    getmoveparameter 0x3
+_0088:
+    getitemeffect BATTLER_xFF, 0x2B
+    if IF_EQUAL, VAR_43, 0x23, _0204
+    if IF_NOTMASK, VAR_10, 0x2, _041C
+    if IF_EQUAL, VAR_43, 0x13, _0220
+    if IF_EQUAL, VAR_43, 0x14, _023C
+    if IF_EQUAL, VAR_43, 0x15, _0258
+    if IF_EQUAL, VAR_43, 0x16, _0274
+    if IF_EQUAL, VAR_43, 0x17, _0290
+    if IF_EQUAL, VAR_43, 0x18, _02AC
+    if IF_EQUAL, VAR_43, 0x19, _02C8
+    if IF_EQUAL, VAR_43, 0x1A, _02E4
+    if IF_EQUAL, VAR_43, 0x1B, _0300
+    if IF_EQUAL, VAR_43, 0x1C, _031C
+    if IF_EQUAL, VAR_43, 0x1D, _0338
+    if IF_EQUAL, VAR_43, 0x1E, _0354
+    if IF_EQUAL, VAR_43, 0x1F, _0370
+    if IF_EQUAL, VAR_43, 0x20, _038C
+    if IF_EQUAL, VAR_43, 0x21, _03A8
+    if IF_EQUAL, VAR_43, 0x22, _03C4
+    goto _041C
+_0204:
+    if IF_EQUAL, VAR_09, 0x0, _03D8
+    goto _041C
+_0220:
+    if IF_EQUAL, VAR_09, 0xA, _03D8
+    goto _041C
+_023C:
+    if IF_EQUAL, VAR_09, 0xB, _03D8
+    goto _041C
+_0258:
+    if IF_EQUAL, VAR_09, 0xD, _03D8
+    goto _041C
+_0274:
+    if IF_EQUAL, VAR_09, 0xC, _03D8
+    goto _041C
+_0290:
+    if IF_EQUAL, VAR_09, 0xF, _03D8
+    goto _041C
+_02AC:
+    if IF_EQUAL, VAR_09, 0x1, _03D8
+    goto _041C
+_02C8:
+    if IF_EQUAL, VAR_09, 0x3, _03D8
+    goto _041C
+_02E4:
+    if IF_EQUAL, VAR_09, 0x4, _03D8
+    goto _041C
+_0300:
+    if IF_EQUAL, VAR_09, 0x2, _03D8
+    goto _041C
+_031C:
+    if IF_EQUAL, VAR_09, 0xE, _03D8
+    goto _041C
+_0338:
+    if IF_EQUAL, VAR_09, 0x6, _03D8
+    goto _041C
+_0354:
+    if IF_EQUAL, VAR_09, 0x5, _03D8
+    goto _041C
+_0370:
+    if IF_EQUAL, VAR_09, 0x7, _03D8
+    goto _041C
+_038C:
+    if IF_EQUAL, VAR_09, 0x10, _03D8
+    goto _041C
+_03A8:
+    if IF_EQUAL, VAR_09, 0x11, _03D8
+    goto _041C
+_03C4:
+    if IF_NOTEQUAL, VAR_09, 0x8, _041C
+_03D8:
+    setstatus2effect BATTLER_xFF, 0xA
+    waitmessage
+    damagediv 32, 2
+    printmessage 0x46B, 0x18, 0x15, 0x1, "NaN", "NaN", "NaN", "NaN"
+    waitmessage
+    wait 0x1E
+    removeitem BATTLER_xFF
+_041C:
+    endscript
+```
+</details>
+
+Making it easier to read with various defines and label names:
+<details>
+<summary>a001_264 - Type Reduction Berries (Nicer)</summary>
+
+```
+a001_264:
+    if IF_MASK, VAR_06, 0x8800, _endScript
+    if IF_MASK, VAR_10, 0x20, _endScript
+    abilitycheck 0x1, BATTLER_ATTACKER, ABILITY_NORMALIZE, _skipNormalize
+    changevar VAR_OP_SET, VAR_09, TYPE_NORMAL
+    goto _checkBerries
+_skipNormalize:
+    if IF_EQUAL, VAR_MOVE_TYPE, 0x0, _grabDefaultType
+    changevar2 VAR_OP_GET_RESULT, VAR_MOVE_TYPE, VAR_09
+    goto _checkBerries
+_grabDefaultType:
+    getmoveparameter 0x3 // stores the move type from the move data table in VAR_09
+
+_checkBerries:
+    getitemeffect BATTLER_xFF, VAR_43
+    if IF_EQUAL, VAR_43, 0x23, _checkNormal
+    if IF_NOTMASK, VAR_10, 0x2, _endScript // if the move used was not supereffective, end the script
+    if IF_EQUAL, VAR_43, 0x13, _checkFire
+    if IF_EQUAL, VAR_43, 0x14, _checkWater
+    if IF_EQUAL, VAR_43, 0x15, _checkElectric
+    if IF_EQUAL, VAR_43, 0x16, _checkGrass
+    if IF_EQUAL, VAR_43, 0x17, _checkIce
+    if IF_EQUAL, VAR_43, 0x18, _checkFighting
+    if IF_EQUAL, VAR_43, 0x19, _checkPoison
+    if IF_EQUAL, VAR_43, 0x1A, _checkGround
+    if IF_EQUAL, VAR_43, 0x1B, _checkFlying
+    if IF_EQUAL, VAR_43, 0x1C, _checkPsychic
+    if IF_EQUAL, VAR_43, 0x1D, _checkBug
+    if IF_EQUAL, VAR_43, 0x1E, _checkRock
+    if IF_EQUAL, VAR_43, 0x1F, _checkGhost
+    if IF_EQUAL, VAR_43, 0x20, _checkDragon
+    if IF_EQUAL, VAR_43, 0x21, _checkDark
+    if IF_EQUAL, VAR_43, 0x22, _checkSteel
+    goto _endScript
+_checkNormal:
+    if IF_EQUAL, VAR_09, TYPE_NORMAL, _halveDamage
+    goto _endScript
+_checkFire:
+    if IF_EQUAL, VAR_09, TYPE_FIRE, _halveDamage
+    goto _endScript
+_checkWater:
+    if IF_EQUAL, VAR_09, TYPE_WATER, _halveDamage
+    goto _endScript
+_checkElectric:
+    if IF_EQUAL, VAR_09, TYPE_ELECTRIC, _halveDamage
+    goto _endScript
+_checkGrass:
+    if IF_EQUAL, VAR_09, TYPE_GRASS, _halveDamage
+    goto _endScript
+_checkIce:
+    if IF_EQUAL, VAR_09, TYPE_ICE, _halveDamage
+    goto _endScript
+_checkFighting:
+    if IF_EQUAL, VAR_09, TYPE_FIGHTING, _halveDamage
+    goto _endScript
+_checkPoison:
+    if IF_EQUAL, VAR_09, TYPE_POISON, _halveDamage
+    goto _endScript
+_checkGround:
+    if IF_EQUAL, VAR_09, TYPE_GROUND, _halveDamage
+    goto _endScript
+_checkFlying:
+    if IF_EQUAL, VAR_09, TYPE_FLYING, _halveDamage
+    goto _endScript
+_checkPsychic:
+    if IF_EQUAL, VAR_09, TYPE_PSYCHIC, _halveDamage
+    goto _endScript
+_checkBug:
+    if IF_EQUAL, VAR_09, TYPE_BUG, _halveDamage
+    goto _endScript
+_checkRock:
+    if IF_EQUAL, VAR_09, TYPE_ROCK, _halveDamage
+    goto _endScript
+_checkGhost:
+    if IF_EQUAL, VAR_09, TYPE_GHOST, _halveDamage
+    goto _endScript
+_checkDragon:
+    if IF_EQUAL, VAR_09, TYPE_DRAGON, _halveDamage
+    goto _endScript
+_checkDark:
+    if IF_EQUAL, VAR_09, TYPE_DARK, _halveDamage
+    goto _endScript
+_checkSteel:
+    if IF_NOTEQUAL, VAR_09, TYPE_STEEL, _endScript
+
+_halveDamage:
+    setstatus2effect BATTLER_xFF, 0xA
+    waitmessage
+    damagediv VAR_HP_TEMP, 2
+    printmessage 1131, TAG_ITEM_MOVE, BATTLER_x15, BATTLER_ATTACKER, "NaN", "NaN", "NaN", "NaN"
+    waitmessage
+    wait 0x1E
+    removeitem BATTLER_xFF
+
+_endScript:
+    endscript
 ```
 </details>
 
