@@ -471,6 +471,9 @@ I am honestly not sure of what the masks that it sets are, but pretty sure one t
 
 ### Curse as a stat-changing move
 Finally, we can look at the rest of Curse (battle script repasted here for convenience, ``armips/move/battle_eff_seq/109.s``):
+<details>
+<summary>a030_109 - Curse effect script (click to dropdown!)</summary>
+
 ```
 a030_109:
     ifmonstat IF_EQUAL, BATTLER_ATTACKER, MON_DATA_TYPE_1, TYPE_GHOST, _0044 // if the pokémon is of type ghost, go to _0044
@@ -485,6 +488,7 @@ _0060:
     changevar VAR_OP_SET, VAR_MOVE_EFFECT, 0x1
     endscript
 ```
+</details>
 I am not sure what setting the ``VAR_MOVE_EFFECT`` to ``0x1`` does here.  Perhaps it is done when showing that the move effect is changing somehow?  I suspect that it has something to do with Curse explicitly, as I can't seem to nail it down.
 
 ``armips/move/battle_eff_seq/140.s``:
@@ -839,19 +843,19 @@ moveFails:
 Now Simple Beam fails when it's used on a defender with Truant.  Adding the rest of the abilities:
 ```
 simpleBeamSubScript: // a001_330
-    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_TRUANT, moveFails // move fails if the defender has truant
-    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_MULTITYPE, moveFails // move fails if the defender has multitype
-    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_STANCE_CHANGE, moveFails // move fails if the defender has stance change
-    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SCHOOLING, moveFails // move fails if the defender has schooling
-    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_COMATOSE, moveFails // move fails if the defender has comatose
-    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SHIELDS_DOWN, moveFails // move fails if the defender has shields down
-    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_DISGUISE, moveFails // move fails if the defender has disguise
-    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_RKS_SYSTEM, moveFails // move fails if the defender has rks system
-    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_BATTLE_BOND, moveFails // move fails if the defender has battle bond
-    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_POWER_CONSTRUCT, moveFails // move fails if the defender has power construct
-    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_ICE_FACE, moveFails // move fails if the defender has ice face
-    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_GULP_MISSILE, moveFails // move fails if the defender has gulp missile
-    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_AS_ONE, moveFails // move fails if the defender has as one
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_TRUANT, moveFails           // move fails if the defender has truant
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_MULTITYPE, moveFails        // move fails if the defender has multitype
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_STANCE_CHANGE, moveFails    // move fails if the defender has stance change
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SCHOOLING, moveFails        // move fails if the defender has schooling
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_COMATOSE, moveFails         // move fails if the defender has comatose
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SHIELDS_DOWN, moveFails     // move fails if the defender has shields down
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_DISGUISE, moveFails         // move fails if the defender has disguise
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_RKS_SYSTEM, moveFails       // move fails if the defender has rks system
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_BATTLE_BOND, moveFails      // move fails if the defender has battle bond
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_POWER_CONSTRUCT, moveFails  // move fails if the defender has power construct
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_ICE_FACE, moveFails         // move fails if the defender has ice face
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_GULP_MISSILE, moveFails     // move fails if the defender has gulp missile
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_AS_ONE, moveFails           // move fails if the defender has as one
 
     changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SIMPLE // set the defender's ability to simple
     printmessage 1348, TAG_NICK_ABILITY, BATTLER_DEFENDER, BATTLER_DEFENDER, "NaN", "NaN", "NaN", "NaN"
@@ -864,6 +868,61 @@ moveFails:
 That should be all needed to do the effect for Simple Beam!  For future examples, I will be skipping the header creation for simplicity--just know that it will be there.
 
 To recap:  Add a new ``battle_eff_seq`` script that queues up a ``battle_sub_seq`` script, add a new entry to ``move_effect_to_subscripts`` in ``src/moves.c`` that corresponds to the one you queued up in the ``battle_eff_seq`` script, and then add a new ``battle_sub_seq`` that corresponds to the entry you just added to ``move_effect_to_subscripts`` that then performs all of the effects.
+<details>
+<summary>Simple Beam created scripts (click to dropdown!)</summary>
+
+Battle effect script:
+```
+.nds
+.thumb
+
+.include "armips/include/battlescriptcmd.s"
+.include "armips/include/abilities.s"
+.include "armips/include/itemnums.s"
+.include "armips/include/monnums.s"
+.include "armips/include/movenums.s"
+
+.create "build/move/battle_eff_seq/0_292", 0
+
+simpleBeamScript: // a030_292
+    changevar VAR_OP_SET, VAR_ADD_STATUS1, ADD_STATUS_DEFENDER | 155 // queue up simple beam subscript
+    endscript
+```
+Battle sub script:
+```
+.nds
+.thumb
+
+.include "armips/include/battlescriptcmd.s"
+.include "armips/include/abilities.s"
+.include "armips/include/itemnums.s"
+.include "armips/include/monnums.s"
+.include "armips/include/movenums.s"
+
+.create "build/move/battle_sub_seq/1_330", 0
+
+simpleBeamSubScript: // a001_330
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_TRUANT, moveFails           // move fails if the defender has truant
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_MULTITYPE, moveFails        // move fails if the defender has multitype
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_STANCE_CHANGE, moveFails    // move fails if the defender has stance change
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SCHOOLING, moveFails        // move fails if the defender has schooling
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_COMATOSE, moveFails         // move fails if the defender has comatose
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SHIELDS_DOWN, moveFails     // move fails if the defender has shields down
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_DISGUISE, moveFails         // move fails if the defender has disguise
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_RKS_SYSTEM, moveFails       // move fails if the defender has rks system
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_BATTLE_BOND, moveFails      // move fails if the defender has battle bond
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_POWER_CONSTRUCT, moveFails  // move fails if the defender has power construct
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_ICE_FACE, moveFails         // move fails if the defender has ice face
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_GULP_MISSILE, moveFails     // move fails if the defender has gulp missile
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_AS_ONE, moveFails           // move fails if the defender has as one
+    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SIMPLE // set the defender's ability to simple
+    printmessage 1348, TAG_NICK_ABILITY, BATTLER_DEFENDER, BATTLER_DEFENDER, "NaN", "NaN", "NaN", "NaN"
+    endscript
+moveFails:
+    changevar VAR_OP_SETMASK, VAR_10, 0x40
+    endscript
+```
+</details>
 
 ## Adding Fairy Type Handling to Judgment
 Old moves are also updatable in hg-engine--a few that have been are Rapid Spin and Judgment.  Let's look at what Judgment does to see how we can add Fairy type handling to it, quick look back at ``armips/data/moves.s``:
@@ -874,6 +933,9 @@ movedata MOVE_JUDGMENT
     basepower 100
 ```
 So we look at ``battle_eff_seq`` script 268 (``armips/move/battle_eff_seq/268.s``) (the old version [here](https://github.com/BluRosie/hg-engine/blob/7180691503c90a80ff184802d069f299584013d4/armips/move/battle_eff_seq/268.s)):
+<details>
+<summary>a030_268 - Judgment effect script unlabeled (click to dropdown!)</summary>
+
 ```
 a030_268:
     checkitemeffect 0x0, BATTLER_ATTACKER, 0x83, _0148
@@ -945,180 +1007,382 @@ _02C0:
     damagecalc
     endscript
 ```
+</details>
+While long, it should be clear what it is doing:  with the ``checker`` of ``checkitemeffect`` being ``0x0`` for each command, the commands are all checking to see if the ``BATTLER_ATTACKER`` has an item with that item effect.  A quick detour into the item data shows that each of these move effects belong directly to a plate--you can see another breakdown [here](https://github.com/BluRosie/hgss-filesys-example/blob/fairy-type/asm/fairy.s#L18-L41), where I modify one of the many ASM places that dictate how Arceus gets its type to include the Fairy type.
+
+We can label this a bit better to show what is happening:
+<details>
+<summary>a030_268 - Judgment effect script better labeled (click to dropdown!)</summary>
+
+```
+a030_268:
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x83, _setFighting   // TYPE_FIGHTING
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x86, _setFlying     // TYPE_FLYING
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x84, _setPoison     // TYPE_POISON
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x85, _setGround     // TYPE_GROUND
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x89, _setRock       // TYPE_ROCK
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x88, _setBug        // TYPE_BUG
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x8A, _setGhost      // TYPE_GHOST
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x8D, _setSteel      // TYPE_STEEL
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x7E, _setFire       // TYPE_FIRE
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x7F, _setWater      // TYPE_WATER
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x81, _setGrass      // TYPE_GRASS   
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x80, _setElectric   // TYPE_ELECTRIC
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x87, _setPsychic    // TYPE_PSYCHIC 
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x82, _setIce        // TYPE_ICE     
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x8B, _setDragon     // TYPE_DRAGON  
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x8C, _setDark       // TYPE_DARK    
+    goto _return
+_setFighting:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_FIGHTING
+    goto _return
+_setFlying:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_FLYING
+    goto _return
+_setPoison:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_POISON
+    goto _return
+_setGround:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_GROUND
+    goto _return
+_setRock:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_ROCK
+    goto _return
+_setBug:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_BUG
+    goto _return
+_setGhost:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_GHOST
+    goto _return
+_setSteel:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_STEEL
+    goto _return
+_setFire:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_FIRE
+    goto _return
+_setWater:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_WATER
+    goto _return
+_setGrass:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_GRASS
+    goto _return
+_setElectric:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_ELECTRIC
+    goto _return
+_setPsychic:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_PSYCHIC
+    goto _return
+_setIce:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_ICE
+    goto _return
+_setDragon:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_DRAGON
+    goto _return
+_setDark:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_DARK
+_return:
+    critcalc
+    damagecalc
+    endscript
+```
+</details>
+With all of the type values labeled and the labels themselves having the names, this script looks even clearer.  Adding a new held item effect that turns Judgment into a Fairy type move should just be following the pattern, adding something like this:
+
+```
+a030_268:
+...
+    checkitemeffect 0x0, BATTLER_ATTACKER, XXXX, _setFairy      // TYPE_FAIRY
+...
+_setFairy:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_FIRE
+    goto _return
+...
+```
+
+And if you're not replacing an old item for the Pixie Plate, then the ``XXXX`` becomes a brand new item effect slot.  The game ends at ``0x92``, so we use ``0x93``:
+```
+a030_268:
+...
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x93, _setFairy      // TYPE_FAIRY
+...
+_setFairy:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_FAIRY
+    goto _return
+...
+```
+This is actually the method used directly in hg-engine for updating Judgment:
+<details>
+<summary>Fully-Updated Fairy Judgment (click to drop down!)</summary>
+
+```
+.nds
+.thumb
+
+.include "armips/include/battlescriptcmd.s"
+.include "armips/include/abilities.s"
+.include "armips/include/config.s"
+.include "armips/include/constants.s"
+.include "armips/include/itemnums.s"
+.include "armips/include/monnums.s"
+.include "armips/include/movenums.s"
+
+.create "build/move/battle_eff_seq/0_268", 0
+
+a030_268:
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x83, _setFighting   // TYPE_FIGHTING
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x86, _setFlying     // TYPE_FLYING  
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x84, _setPoison     // TYPE_POISON  
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x85, _setGround     // TYPE_GROUND  
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x89, _setRock       // TYPE_ROCK    
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x88, _setBug        // TYPE_BUG     
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x8A, _setGhost      // TYPE_GHOST   
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x8D, _setSteel      // TYPE_STEEL  
+.if FAIRY_TYPE_IMPLEMENTED == 1
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x93, _setFairy      // TYPE_FAIRY
+.endif
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x7E, _setFire       // TYPE_FIRE    
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x7F, _setWater      // TYPE_WATER   
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x81, _setGrass      // TYPE_GRASS   
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x80, _setElectric   // TYPE_ELECTRIC
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x87, _setPsychic    // TYPE_PSYCHIC 
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x82, _setIce        // TYPE_ICE     
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x8B, _setDragon     // TYPE_DRAGON  
+    checkitemeffect 0x0, BATTLER_ATTACKER, 0x8C, _setDark       // TYPE_DARK    
+    goto _return
+_setFighting:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_FIGHTING
+    goto _return
+_setFlying:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_FLYING
+    goto _return
+_setPoison:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_POISON
+    goto _return
+_setGround:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_GROUND
+    goto _return
+_setRock:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_ROCK
+    goto _return
+_setBug:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_BUG
+    goto _return
+_setGhost:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_GHOST
+    goto _return
+_setSteel:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_STEEL
+    goto _return
+.if FAIRY_TYPE_IMPLEMENTED == 1
+_setFairy:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_FAIRY
+    goto _return
+.endif
+_setFire:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_FIRE
+    goto _return
+_setWater:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_WATER
+    goto _return
+_setGrass:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_GRASS
+    goto _return
+_setElectric:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_ELECTRIC
+    goto _return
+_setPsychic:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_PSYCHIC
+    goto _return
+_setIce:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_ICE
+    goto _return
+_setDragon:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_DRAGON
+    goto _return
+_setDark:
+    changevar VAR_OP_SET, VAR_MOVE_TYPE, TYPE_DARK
+_return:
+    critcalc
+    damagecalc
+    endscript
+
+.close
+```
+</details>
 
 # Battle Script Command Reference
 <details>
 <summary>Battle Script Command Reference Dropdown</summary>
-<br>
+
 <details>
 <summary>startencounter - 0x00</summary>
-<br>
-<pre>
+
+```
 startencounter
 initializes battle information.  not much is known on this command, and the name is speculative
-</pre>
+```
 </details>
 <details>
 <summary>pokemonencounter - 0x01</summary>
-<br>
-<pre>
+
+```
 pokemonencounter battler
 initalizes wild information.  not much is known on this command, and the name is speculative
 - battler is the pokémon that is being initialized, i.e. is called twice for doubles
-</pre>
+```
 </details>
 <details>
 <summary>pokemonslidein - 0x02</summary>
-<br>
-<pre>
+
+```
 pokemonslidein battler
 queues up the animation for the pokémon sliding in as in a wild battle.
 - battler is the pokémon sliding in
-</pre>
+```
 </details>
 <details>
 <summary>pokemonappear - 0x03</summary>
-<br>
-<pre>
+
+```
 pokemonappear battler
 sends out the pokémon from the poké ball it is in, solely initializing the sprite.  not much is known on this command, and the name is speculative
 - battler is the pokémon being sent out
-</pre>
+```
 </details>
 <details>
 <summary>returnpokemon - 0x04</summary>
-<br>
-<pre>
+
+```
 returnpokemon battler
 returns the pokémon to the trainer in its ball.  not much is known on this command, and the name is speculative
 - battler is the pokémon returning
-</pre>
+```
 </details>
 <details>
 <summary>deletepokemon - 0x05</summary>
-<br>
-<pre>
+
+```
 deletepokemon battler
 deletes the sprite of battler.  not much is known on this command, and the name is speculative
 - battler is the pokémon whose sprite is being deleted
-</pre>
+```
 </details>
 <details>
 <summary>starttrainerencounter - 0x06</summary>
-<br>
-<pre>
+
+```
 starttrainerencounter battler
 initalizes the trainer party.  not much is known on this command, and the name is speculative
 - battler is the trainer being initialized
-</pre>
+```
 </details>
 <details>
 <summary>throwpokeball - 0x07</summary>
-<br>
-<pre>
+
+```
 throwpokeball battler, type
 throws a poké ball at the enemy.
 - battler is always "BATTLER_PLAYER" or "BATTLER_OPPONENT" depending on where the ball is being thrown from
 - type is the animation to be played
-<br>
+
 type enumerations:
 #define THROWPOKEBALL_TYPE_SEND_OUT_MON 0
 #define THROWPOKEBALL_TYPE_THROW_BALL_AT_WILD 1
 #define THROWPOKEBALL_TYPE_THROW_MUD 2
 #define THROWPOKEBALL_TYPE_THROW_BAIT 3
 #define THROWPOKEBALL_TYPE_RETURN_MON_TO_BALL 4
-</pre>
+```
 </details>
 <details>
 <summary>preparetrainerslide - 0x08</summary>
-<br>
-<pre>
+
+```
 preparetrainerslide battler
 load in the gfx for the trainer.  not much is known on this command, and the name is speculative
 - battler is the trainer position about to slide in
-</pre>
+```
 </details>
 <details>
 <summary>trainerslidein - 0x09</summary>
-<br>
-<pre>
+
+```
 trainerslidein battler, pos
 not much is known on this command, and the name is speculative
 - battler is the trainer sliding in
 - pos is where the trainer is sliding to
-</pre>
+```
 </details>
 <details>
 <summary>backgroundslidein - 0x0A</summary>
-<br>
-<pre>
+
+```
 backgroundslidein
 not much is known on this command, and the name is speculative
-</pre>
+```
 </details>
 <details>
 <summary>hpgaugeslidein - 0x0B</summary>
-<br>
-<pre>
+
+```
 hpgaugeslidein battler
 not much is known on this command, and the name is speculative
 - battler is the hp gauge sliding in
-</pre>
+```
 </details>
 <details>
 <summary>hpgaugeslidewait - 0x0C</summary>
-<br>
-<pre>
+
+```
 hpgaugeslidewait battler
 not much is known on this command, and the name is speculative
 - battler is the hp gauge sliding in to wait for
-</pre>
+```
 </details>
 <details>
 <summary>preparehpgaugeslide - 0x0D</summary>
-<br>
-<pre>
+
+```
 preparehpgaugeslide
 not much is known on this command, and the name is speculative
 - battler is the hp gauge to initialize to slide in
-</pre>
+```
 </details>
 <details>
 <summary>waitmessage - 0x0E</summary>
-<br>
-<pre>
+
+```
 waitmessage
 pause script execution until current message is done printing.  not just done for messages, also used for various states that take up time that script execution needs to pause for (although not animations).
-</pre>
+```
 </details>
 <details>
 <summary>damagecalc - 0x0F</summary>
-<br>
-<pre>
+
+```
 damagecalc
 the basic damage calculator.  called for all damaging moves, but will disable itself if a separate damage calc is detected
-</pre>
+```
 </details>
 <details>
 <summary>damagecalc2 - 0x10</summary>
-<br>
-<pre>
+
+```
 damagecalc2
 not much is known on this command, and the name is speculative
-</pre>
+```
 </details>
 <details>
 <summary>printattackmessage - 0x11</summary>
-<br>
-<pre>
+
+```
 printattackmessage
 prints the current attack message from a027 file 003 (data/text/003.txt).
-</pre>
+```
 </details>
 <details>
 <summary>printmessage - 0x12</summary>
-<br>
-<pre>
+
+```
 printmessage id, tag, (varargs) battlers 1-6
 prints a message
 - id is the message index in the narc a027 file 197 (data/text/197.txt)
@@ -1126,7 +1390,7 @@ prints a message
 - the battlers determine which battlers on the field to grab information to buffer strings from
   - the tag detemines how many battlers are specified--"NaN" signifies that no battler will be built from that parameter
     - this is because of a limitation with armips where i can't overload a macro name to have different types
-<br>
+
 message tags:
 #define TAG_NONE                        (0)     //nothing
 
@@ -1195,28 +1459,28 @@ message tags:
 
 #define TAG_TRTYPE_TRNAME_NICK_TRTYPE_TRNAME_NICK (60)    //trainertitle  trainername     nickname        trainertitle  trainername     nickname
 
-</pre>
+```
 </details>
 <details>
 <summary>printmessage2 - 0x13</summary>
-<br>
-<pre>
+
+```
 printmessage2
 - 
-</pre>
+```
 </details>
 <details>
 <summary>printpreparedmessage - 0x14</summary>
-<br>
-<pre>
+
+```
 printpreparedmessage
 - 
-</pre>
+```
 </details>
 <details>
 <summary>preparemessage - 0x15</summary>
-<br>
-<pre>
+
+```
 preparemessage id, tag, (varargs) battlers 1-6
 prepares a message to be used by printpreparedmessage
 - id is the message index in the narc a027 file 197
@@ -1225,106 +1489,106 @@ prepares a message to be used by printpreparedmessage
   - the tag detemines how many battlers are specified--"NaN" signifies that no battler will be built from that parameter
 
 see printmessage for tag id documentation
-</pre>
+```
 </details>
 <details>
 <summary>printmessagepassbattler - 0x16</summary>
-<br>
-<pre>
+
+```
 printmessagepassbattler
 - 
-</pre>
+```
 </details>
 <details>
 <summary>seteffectprimary  - 0x17 (suggested name: playanimation)</summary>
-<br>
-<pre>
+
+```
 seteffectprimary battler
 a more accurate name would be "playanimation," will work on fixing this.
 plays the current attack's animation based on "battler"
 - battler is the primary battler to base the animation on
-</pre>
+```
 </details>
 <details>
 <summary>seteffectsecondary  - 0x18 (suggested name: playanimation2)</summary>
-<br>
-<pre>
+
+```
 seteffectsecondary
 - 
-</pre>
+```
 </details>
 <details>
 <summary>monflicker - 0x19</summary>
-<br>
-<pre>
+
+```
 monflicker battler
 makes "battler" flicker
 - battler is the Pokémon to flicker
-</pre>
+```
 </details>
 <details>
 <summary>datahpupdate - 0x1A</summary>
-<br>
-<pre>
+
+```
 datahpupdate battler
 updates the information on the "battler"'s hp bar
 - battler is the owner of the hp bar to update
-</pre>
+```
 </details>
 <details>
 <summary>healthbarupdate - 0x1B</summary>
-<br>
-<pre>
+
+```
 healthbarupdate battler
 updates "battler"'s hp bar
 - battler is the battler that has the hp bar to update
-</pre>
+```
 </details>
 <details>
 <summary>tryfaintmon - 0x1C</summary>
-<br>
-<pre>
+
+```
 tryfaintmon battler
 tries to faint "battler".  nothing happens if fails, the mon will slide down otherwise
 - battler is the mon to faint
-</pre>
+```
 </details>
 <details>
 <summary>dofaintanimation - 0x1D</summary>
-<br>
-<pre>
+
+```
 dofaintanimation
 - 
-</pre>
+```
 </details>
 <details>
 <summary>wait - 0x1E</summary>
-<br>
-<pre>
+
+```
 wait time
 pause script execution for "time" frames
 - time is the amount of frames to pause for
-</pre>
+```
 </details>
 <details>
 <summary>playse - 0x1F</summary>
-<br>
-<pre>
+
+```
 playse
 - 
-</pre>
+```
 </details>
 <details>
 <summary>if - 0x20</summary>
-<br>
-<pre>
+
+```
 if operator, var, value, address
 conditional flow command
 - operator is the math operation done on the variable, see Battle Script Command Reference
 - var is the variable with the value to test
 - value is the argument for the operator, always a constant for if
 - address is the destination that the script will jump to if the if operator returns true
-<br>
+
 if conditional operators:
 #define IF_EQUAL    0 // var == value
 #define IF_NOTEQUAL 1 // var != value
@@ -1333,12 +1597,12 @@ if conditional operators:
 #define IF_MASK     4 // var | value // i think
 #define IF_NOTMASK  5 // !(var | value) // i think
 #define IF_AND      6 // (var & value) // i think
-</pre>
+```
 </details>
 <details>
 <summary>ifmonstat - 0x21</summary>
-<br>
-<pre>
+
+```
 ifmonstat operator, battler, field, value, address
 jump to "address" if the "battler"'s stat designated by "field" is related to "value" as determined by "operator"
 - operator is the same as the "if" operators
@@ -1346,7 +1610,7 @@ jump to "address" if the "battler"'s stat designated by "field" is related to "v
 - field is the data to grab from.  enumerations below
 - value is the value to check against, used in the operator calculations as they appear in "if"
 - address is the location to jump to when the if is true
-<br>
+
 ifmonstat fields:
 #define MON_DATA_SPECIES (0)
 #define MON_DATA_ATTACK (1)
@@ -1448,146 +1712,146 @@ ifmonstat fields:
 #define MON_DATA_SLOW_START_INACTIVE (97)
 #define MON_DATA_FORM (98)
 #define MON_DATA_VARIABLE (100)
-</pre>
+```
 </details>
 <details>
 <summary>fadeout - 0x22</summary>
-<br>
-<pre>
+
+```
 fadeout
 - 
-</pre>
+```
 </details>
 <details>
 <summary>jumptosubseq - 0x23</summary>
-<br>
-<pre>
+
+```
 jumptosubseq
 - 
-</pre>
+```
 </details>
 <details>
 <summary>jumptocurmoveeffectscript - 0x24</summary>
-<br>
-<pre>
+
+```
 jumptocurmoveeffectscript
 - 
-</pre>
+```
 </details>
 <details>
 <summary>jumptoeffectscript - 0x25</summary>
-<br>
-<pre>
+
+```
 jumptoeffectscript
 - 
-</pre>
+```
 </details>
 <details>
 <summary>critcalc - 0x26</summary>
-<br>
-<pre>
+
+```
 critcalc
 calculates the critical multiplier (set to 1 in the case that there isn't one)
-</pre>
+```
 </details>
 <details>
 <summary>shouldgetexp - 0x27</summary>
-<br>
-<pre>
+
+```
 shouldgetexp
 - 
-</pre>
+```
 </details>
 <details>
 <summary>initexpget - 0x28</summary>
-<br>
-<pre>
+
+```
 initexpget
 - 
-</pre>
+```
 </details>
 <details>
 <summary>getexp - 0x29</summary>
-<br>
-<pre>
+
+```
 getexp
 - 
-</pre>
+```
 </details>
 <details>
 <summary>getexploop - 0x2A</summary>
-<br>
-<pre>
+
+```
 getexploop
 - 
-</pre>
+```
 </details>
 <details>
 <summary>showmonlist - 0x2B</summary>
-<br>
-<pre>
+
+```
 showmonlist
 - 
-</pre>
+```
 </details>
 <details>
 <summary>waitformonselection - 0x2C</summary>
-<br>
-<pre>
+
+```
 waitformonselection
 - 
-</pre>
+```
 </details>
 <details>
 <summary>switchindataupdate - 0x2D</summary>
-<br>
-<pre>
+
+```
 switchindataupdate
 - 
-</pre>
+```
 </details>
 <details>
 <summary>jumpifcantswitch - 0x2E</summary>
-<br>
-<pre>
+
+```
 jumpifcantswitch
 - 
-</pre>
+```
 </details>
 <details>
 <summary>initcapture - 0x2F</summary>
-<br>
-<pre>
+
+```
 initcapture
 - 
-</pre>
+```
 </details>
 <details>
 <summary>capturemon - 0x30</summary>
-<br>
-<pre>
+
+```
 capturemon
 - 
-</pre>
+```
 </details>
 <details>
 <summary>setmultihit - 0x31</summary>
-<br>
-<pre>
+
+```
 setmultihit
 - 
-</pre>
+```
 </details>
 <details>
 <summary>changevar - 0x32</summary>
-<br>
-<pre>
+
+```
 changevar operator, var, value
 perform math operations on "var" using a constant "value"
 - operator is the math operation done on the variable
 - var is the variable to change
 - value is the argument for the operator
-<br>
+
 changevar operators:
 #define VAR_OP_SET         ( 7) // var = value;
 #define VAR_OP_ADD         ( 8) // var += value;
@@ -1603,20 +1867,20 @@ changevar operators:
 #define VAR_OP_SUB_TO_ZERO (18) // while (var > value) { var -= value; }
 #define VAR_OP_XOR         (19) // var ^= value;
 #define VAR_OP_AND         (20) // var &= value;
-</pre>
+```
 </details>
 <details>
 <summary>statbuffchange - 0x33</summary>
-<br>
-<pre>
+
+```
 statbuffchange
 - 
-</pre>
+```
 </details>
 <details>
 <summary>changevartomonvalue - 0x34 (suggested name:  changemondatabyvalue)</summary>
-<br>
-<pre>
+
+```
 changevartomonvalue operator, battler, field, value
 a more accurate name would be "changemondatabyvalue," will work on fixing this.
 changes mon data "field" by "value" as specified by "operator"
@@ -1624,44 +1888,44 @@ changes mon data "field" by "value" as specified by "operator"
 - battler is the battler to grab the data from
 - field is the data to grab/set from the battler, same as "ifmonstat"
 - value is the argument for the operator
-</pre>
+```
 </details>
 <details>
 <summary>clearstatus2 - 0x35</summary>
-<br>
-<pre>
+
+```
 clearstatus2
 - 
-</pre>
+```
 </details>
 <details>
 <summary>togglevanish - 0x36</summary>
-<br>
-<pre>
+
+```
 togglevanish
 - 
-</pre>
+```
 </details>
 <details>
 <summary>abilitycheck - 0x37</summary>
-<br>
-<pre>
+
+```
 abilitycheck
 - 
-</pre>
+```
 </details>
 <details>
 <summary>random - 0x38</summary>
-<br>
-<pre>
+
+```
 random
 - 
-</pre>
+```
 </details>
 <details>
 <summary>changevar2 - 0x39</summary>
-<br>
-<pre>
+
+```
 changevar2 operator, destvar, srcvar
 changevar except the constant is now a battle variable
 - operator is the same as changevar
@@ -1669,12 +1933,12 @@ changevar except the constant is now a battle variable
 - srcvar is a variable that operator uses to complete its operation
 
 see changevar for operator enumerations
-</pre>
+```
 </details>
 <details>
 <summary>changevartomonvalue2 - 0x3A (suggested name:  changemondatabyvar)</summary>
-<br>
-<pre>
+
+```
 changevartomonvalue2 operator, battler, field, var
 a more accurate name would be "changemondatabyvar," will work on fixing this.
 changes mon data "field" by "var"'s value as specified by "operator"
@@ -1682,871 +1946,871 @@ changes mon data "field" by "var"'s value as specified by "operator"
 - battler is the battler to grab the data from
 - field is the data to grab/set from the battler
 - var is the variable the engine grabs from to manipulate the mon data field
-</pre>
+```
 </details>
 <details>
 <summary>goto - 0x3B</summary>
-<br>
-<pre>
+
+```
 goto
 - 
-</pre>
+```
 </details>
 <details>
 <summary>gotosubscript - 0x3C</summary>
-<br>
-<pre>
+
+```
 gotosubscript num
 calls battle_sub_seq script "num".  returns to the caller after an endscript is reached
 - num is the index of the battle_sub_seq script to jump to
-</pre>
+```
 </details>
 <details>
 <summary>gotosubscript2 - 0x3D</summary>
-<br>
-<pre>
+
+```
 gotosubscript2
 - 
-</pre>
+```
 </details>
 <details>
 <summary>checkifchatot - 0x3E</summary>
-<br>
-<pre>
+
+```
 checkifchatot
 - 
-</pre>
+```
 </details>
 <details>
 <summary>sethaze - 0x3F</summary>
-<br>
-<pre>
+
+```
 sethaze
 - 
-</pre>
+```
 </details>
 <details>
 <summary>setsomeflag - 0x40</summary>
-<br>
-<pre>
+
+```
 setsomeflag
 - 
-</pre>
+```
 </details>
 <details>
 <summary>clearsomeflag - 0x41</summary>
-<br>
-<pre>
+
+```
 clearsomeflag
 - 
-</pre>
+```
 </details>
 <details>
 <summary>setstatusicon - 0x42</summary>
-<br>
-<pre>
+
+```
 setstatusicon
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trainermessage - 0x43</summary>
-<br>
-<pre>
+
+```
 trainermessage
 - 
-</pre>
+```
 </details>
 <details>
 <summary>calcmoney - 0x44</summary>
-<br>
-<pre>
+
+```
 calcmoney
 - 
-</pre>
+```
 </details>
 <details>
 <summary>setstatus2effect - 0x45</summary>
-<br>
-<pre>
+
+```
 setstatus2effect
 - 
-</pre>
+```
 </details>
 <details>
 <summary>setstatus2effect2 - 0x46</summary>
-<br>
-<pre>
+
+```
 setstatus2effect2
 - 
-</pre>
+```
 </details>
 <details>
 <summary>setstatus2effect3 - 0x47</summary>
-<br>
-<pre>
+
+```
 setstatus2effect3
 - 
-</pre>
+```
 </details>
 <details>
 <summary>returnmessage - 0x48</summary>
-<br>
-<pre>
+
+```
 returnmessage
 - 
-</pre>
+```
 </details>
 <details>
 <summary>sentoutmessage - 0x49</summary>
-<br>
-<pre>
+
+```
 sentoutmessage
 - 
-</pre>
+```
 </details>
 <details>
 <summary>encountermessage - 0x4A</summary>
-<br>
-<pre>
+
+```
 encountermessage
 - 
-</pre>
+```
 </details>
 <details>
 <summary>encountermessage2 - 0x4B</summary>
-<br>
-<pre>
+
+```
 encountermessage2
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trainermessage2 - 0x4C</summary>
-<br>
-<pre>
+
+```
 trainermessage2
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryconversion - 0x4D</summary>
-<br>
-<pre>
+
+```
 tryconversion
 - 
-</pre>
+```
 </details>
 <details>
 <summary>if2 - 0x4E</summary>
-<br>
-<pre>
+
+```
 if2
 - 
-</pre>
+```
 </details>
 <details>
 <summary>ifmonstat2 - 0x4F</summary>
-<br>
-<pre>
+
+```
 ifmonstat2
 - 
-</pre>
+```
 </details>
 <details>
 <summary>dopayday - 0x50</summary>
-<br>
-<pre>
+
+```
 dopayday
 - 
-</pre>
+```
 </details>
 <details>
 <summary>setlightscreen - 0x51</summary>
-<br>
-<pre>
+
+```
 setlightscreen
 - 
-</pre>
+```
 </details>
 <details>
 <summary>setreflect - 0x52</summary>
-<br>
-<pre>
+
+```
 setreflect
 - 
-</pre>
+```
 </details>
 <details>
 <summary>setmist - 0x53</summary>
-<br>
-<pre>
+
+```
 setmist
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryonehitko - 0x54</summary>
-<br>
-<pre>
+
+```
 tryonehitko
 - 
-</pre>
+```
 </details>
 <details>
 <summary>damagediv - 0x55</summary>
-<br>
-<pre>
+
+```
 damagediv var, value
 sets damage to be "var" / "value"
 - var is the numerator in the division
 - value is the denominator in the division
-</pre>
+```
 </details>
 <details>
 <summary>damagediv2 - 0x56</summary>
-<br>
-<pre>
+
+```
 damagediv2
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trymimic - 0x57</summary>
-<br>
-<pre>
+
+```
 trymimic
 - 
-</pre>
+```
 </details>
 <details>
 <summary>metronome - 0x58</summary>
-<br>
-<pre>
+
+```
 metronome
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trydisable - 0x59</summary>
-<br>
-<pre>
+
+```
 trydisable
 - 
-</pre>
+```
 </details>
 <details>
 <summary>counter - 0x5A</summary>
-<br>
-<pre>
+
+```
 counter
 - 
-</pre>
+```
 </details>
 <details>
 <summary>mirrorcoat - 0x5B</summary>
-<br>
-<pre>
+
+```
 mirrorcoat
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryencore - 0x5C</summary>
-<br>
-<pre>
+
+```
 tryencore
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryconversion2 - 0x5D</summary>
-<br>
-<pre>
+
+```
 tryconversion2
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trysketch - 0x5E</summary>
-<br>
-<pre>
+
+```
 trysketch
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trysleeptalk - 0x5F</summary>
-<br>
-<pre>
+
+```
 trysleeptalk
 - 
-</pre>
+```
 </details>
 <details>
 <summary>flaildamagecalc - 0x60</summary>
-<br>
-<pre>
+
+```
 flaildamagecalc
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryspite - 0x61</summary>
-<br>
-<pre>
+
+```
 tryspite
 - 
-</pre>
+```
 </details>
 <details>
 <summary>healbell - 0x62</summary>
-<br>
-<pre>
+
+```
 healbell
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trythief - 0x63</summary>
-<br>
-<pre>
+
+```
 trythief
 - 
-</pre>
+```
 </details>
 <details>
 <summary>willprotectwork - 0x64</summary>
-<br>
-<pre>
+
+```
 willprotectwork
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trysubstitute - 0x65</summary>
-<br>
-<pre>
+
+```
 trysubstitute
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trywhirlwind - 0x66</summary>
-<br>
-<pre>
+
+```
 trywhirlwind
 - 
-</pre>
+```
 </details>
 <details>
 <summary>transform - 0x67</summary>
-<br>
-<pre>
+
+```
 transform
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryspikes - 0x68</summary>
-<br>
-<pre>
+
+```
 tryspikes
 - 
-</pre>
+```
 </details>
 <details>
 <summary>checkspikes - 0x69</summary>
-<br>
-<pre>
+
+```
 checkspikes
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryperishsong - 0x6A</summary>
-<br>
-<pre>
+
+```
 tryperishsong
 - 
-</pre>
+```
 </details>
 <details>
 <summary>orderbattlersbyspeed - 0x6B</summary>
-<br>
-<pre>
+
+```
 orderbattlersbyspeed
 - 
-</pre>
+```
 </details>
 <details>
 <summary>exitloopatvalue - 0x6C</summary>
-<br>
-<pre>
+
+```
 exitloopatvalue
 - 
-</pre>
+```
 </details>
 <details>
 <summary>weatherdamagecalc - 0x6D</summary>
-<br>
-<pre>
+
+```
 weatherdamagecalc
 - 
-</pre>
+```
 </details>
 <details>
 <summary>rolloutdamagecalc - 0x6E</summary>
-<br>
-<pre>
+
+```
 rolloutdamagecalc
 - 
-</pre>
+```
 </details>
 <details>
 <summary>furycutterdamagecalc - 0x6F</summary>
-<br>
-<pre>
+
+```
 furycutterdamagecalc
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryattract - 0x70</summary>
-<br>
-<pre>
+
+```
 tryattract
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trysafeguard - 0x71</summary>
-<br>
-<pre>
+
+```
 trysafeguard
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trypresent - 0x72</summary>
-<br>
-<pre>
+
+```
 trypresent
 - 
-</pre>
+```
 </details>
 <details>
 <summary>magnitudedamagecalc - 0x73</summary>
-<br>
-<pre>
+
+```
 magnitudedamagecalc
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryswitchinmon - 0x74</summary>
-<br>
-<pre>
+
+```
 tryswitchinmon
 - 
-</pre>
+```
 </details>
 <details>
 <summary>dorapidspineffect - 0x75</summary>
-<br>
-<pre>
+
+```
 dorapidspineffect
 - 
-</pre>
+```
 </details>
 <details>
 <summary>changehprecoverybasedonweather - 0x76</summary>
-<br>
-<pre>
+
+```
 changehprecoverybasedonweather
 - 
-</pre>
+```
 </details>
 <details>
 <summary>hiddenpowerdamagecalc - 0x77</summary>
-<br>
-<pre>
+
+```
 hiddenpowerdamagecalc
 - 
-</pre>
+```
 </details>
 <details>
 <summary>dopsychup - 0x78</summary>
-<br>
-<pre>
+
+```
 dopsychup
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryfuturesight - 0x79</summary>
-<br>
-<pre>
+
+```
 tryfuturesight
 - 
-</pre>
+```
 </details>
 <details>
 <summary>checkhitrate - 0x7A</summary>
-<br>
-<pre>
+
+```
 checkhitrate
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryteleport - 0x7B</summary>
-<br>
-<pre>
+
+```
 tryteleport
 - 
-</pre>
+```
 </details>
 <details>
 <summary>beatupdamagecalc - 0x7C</summary>
-<br>
-<pre>
+
+```
 beatupdamagecalc
 - 
-</pre>
+```
 </details>
 <details>
 <summary>dofollowme - 0x7D</summary>
-<br>
-<pre>
+
+```
 dofollowme
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryhelpinghand - 0x7E</summary>
-<br>
-<pre>
+
+```
 tryhelpinghand
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trytrick - 0x7F</summary>
-<br>
-<pre>
+
+```
 trytrick
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trywish - 0x80</summary>
-<br>
-<pre>
+
+```
 trywish
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryassist - 0x81</summary>
-<br>
-<pre>
+
+```
 tryassist
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trymagiccoat - 0x82</summary>
-<br>
-<pre>
+
+```
 trymagiccoat
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trymagiccoat2 - 0x83</summary>
-<br>
-<pre>
+
+```
 trymagiccoat2
 - 
-</pre>
+```
 </details>
 <details>
 <summary>dorevenge - 0x84</summary>
-<br>
-<pre>
+
+```
 dorevenge
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trybreakscreens - 0x85</summary>
-<br>
-<pre>
+
+```
 trybreakscreens
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryyawn - 0x86</summary>
-<br>
-<pre>
+
+```
 tryyawn
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryknockitemoff - 0x87</summary>
-<br>
-<pre>
+
+```
 tryknockitemoff
 - 
-</pre>
+```
 </details>
 <details>
 <summary>eruptiondamagecalc - 0x88</summary>
-<br>
-<pre>
+
+```
 eruptiondamagecalc
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryimprison - 0x89</summary>
-<br>
-<pre>
+
+```
 tryimprison
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trygrudge - 0x8A</summary>
-<br>
-<pre>
+
+```
 trygrudge
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trysnatch - 0x8B</summary>
-<br>
-<pre>
+
+```
 trysnatch
 - 
-</pre>
+```
 </details>
 <details>
 <summary>lowkickdamagecalc - 0x8C</summary>
-<br>
-<pre>
+
+```
 lowkickdamagecalc
 - 
-</pre>
+```
 </details>
 <details>
 <summary>weatherballdamagecalc - 0x8D</summary>
-<br>
-<pre>
+
+```
 weatherballdamagecalc
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trypursuit - 0x8E</summary>
-<br>
-<pre>
+
+```
 trypursuit
 - 
-</pre>
+```
 </details>
 <details>
 <summary>typecheck - 0x8F</summary>
-<br>
-<pre>
+
+```
 typecheck
 - 
-</pre>
+```
 </details>
 <details>
 <summary>checkoneturnflag - 0x90</summary>
-<br>
-<pre>
+
+```
 checkoneturnflag
 - 
-</pre>
+```
 </details>
 <details>
 <summary>setoneturnflag - 0x91</summary>
-<br>
-<pre>
+
+```
 setoneturnflag
 - 
-</pre>
+```
 </details>
 <details>
 <summary>gyroballdamagecalc - 0x92</summary>
-<br>
-<pre>
+
+```
 gyroballdamagecalc
 - 
-</pre>
+```
 </details>
 <details>
 <summary>metalburstdamagecalc - 0x93</summary>
-<br>
-<pre>
+
+```
 metalburstdamagecalc
 - 
-</pre>
+```
 </details>
 <details>
 <summary>paybackdamagecalc - 0x94</summary>
-<br>
-<pre>
+
+```
 paybackdamagecalc
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trumpcarddamagecalc - 0x95</summary>
-<br>
-<pre>
+
+```
 trumpcarddamagecalc
 - 
-</pre>
+```
 </details>
 <details>
 <summary>wringoutdamagecalc - 0x96</summary>
-<br>
-<pre>
+
+```
 wringoutdamagecalc
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trymefirst - 0x97</summary>
-<br>
-<pre>
+
+```
 trymefirst
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trycopycat - 0x98</summary>
-<br>
-<pre>
+
+```
 trycopycat
 - 
-</pre>
+```
 </details>
 <details>
 <summary>punishmentdamagecalc - 0x99</summary>
-<br>
-<pre>
+
+```
 punishmentdamagecalc
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trysuckerpunch - 0x9A</summary>
-<br>
-<pre>
+
+```
 trysuckerpunch
 - 
-</pre>
+```
 </details>
 <details>
 <summary>checkbattlercondition - 0x9B</summary>
-<br>
-<pre>
+
+```
 checkbattlercondition
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryfeint - 0x9C</summary>
-<br>
-<pre>
+
+```
 tryfeint
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trypsychoshift - 0x9D</summary>
-<br>
-<pre>
+
+```
 trypsychoshift
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trylastresort - 0x9E</summary>
-<br>
-<pre>
+
+```
 trylastresort
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trytoxicspikes - 0x9F</summary>
-<br>
-<pre>
+
+```
 trytoxicspikes
 - 
-</pre>
+```
 </details>
 <details>
 <summary>checktoxicspikes - 0xA0</summary>
-<br>
-<pre>
+
+```
 checktoxicspikes
 - 
-</pre>
+```
 </details>
 <details>
 <summary>moldbreakerabilitycheck - 0xA1</summary>
-<br>
-<pre>
+
+```
 moldbreakerabilitycheck
 - 
-</pre>
+```
 </details>
 <details>
 <summary>checkbattlersequal - 0xA2</summary>
-<br>
-<pre>
+
+```
 checkbattlersequal
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trypickup - 0xA3</summary>
-<br>
-<pre>
+
+```
 trypickup
 - 
-</pre>
+```
 </details>
 <details>
 <summary>dotrickroom - 0xA4</summary>
-<br>
-<pre>
+
+```
 dotrickroom
 - 
-</pre>
+```
 </details>
 <details>
 <summary>checkmovefinished - 0xA5</summary>
-<br>
-<pre>
+
+```
 checkmovefinished
 - 
-</pre>
+```
 </details>
 <details>
 <summary>checkitemeffect - 0xA6</summary>
-<br>
-<pre>
+
+```
 checkitemeffect checker, battler, effect, address
 conditional flow command that is based on item effect
 - when "checker" is true, checkitemeffect jumps to "address" if battler doesn't have the item with effect "effect"
@@ -2554,474 +2818,474 @@ conditional flow command that is based on item effect
 - battler is the battler to check against
 - effect is the held item effect to compare to
 - address is the address to jump to
-</pre>
+```
 </details>
 <details>
 <summary>getitemeffect - 0xA7</summary>
-<br>
-<pre>
+
+```
 getitemeffect
 - 
-</pre>
+```
 </details>
 <details>
 <summary>getitempower - 0xA8</summary>
-<br>
-<pre>
+
+```
 getitempower battler, variable
 grabs the item power field from the item data narc and puts it in variable
 - battler is the battler that has the item to grab the item power from
 - variable is the variable to store the item power in
-</pre>
+```
 </details>
 <details>
 <summary>trycamouflage - 0xA9</summary>
-<br>
-<pre>
+
+```
 trycamouflage
 - 
-</pre>
+```
 </details>
 <details>
 <summary>donaturepower - 0xAA</summary>
-<br>
-<pre>
+
+```
 donaturepower
 - 
-</pre>
+```
 </details>
 <details>
 <summary>dosecretpower - 0xAB</summary>
-<br>
-<pre>
+
+```
 dosecretpower
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trynaturalgift - 0xAC</summary>
-<br>
-<pre>
+
+```
 trynaturalgift
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trypluck - 0xAD</summary>
-<br>
-<pre>
+
+```
 trypluck
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryfling - 0xAE</summary>
-<br>
-<pre>
+
+```
 tryfling
 - 
-</pre>
+```
 </details>
 <details>
 <summary>yesnobox - 0xAF</summary>
-<br>
-<pre>
+
+```
 yesnobox
 - 
-</pre>
+```
 </details>
 <details>
 <summary>yesnowait - 0xB0</summary>
-<br>
-<pre>
+
+```
 yesnowait
 - 
-</pre>
+```
 </details>
 <details>
 <summary>monlist - 0xB1</summary>
-<br>
-<pre>
+
+```
 monlist
 - 
-</pre>
+```
 </details>
 <details>
 <summary>monlistwait - 0xB2</summary>
-<br>
-<pre>
+
+```
 monlistwait
 - 
-</pre>
+```
 </details>
 <details>
 <summary>setbattleresult - 0xB3</summary>
-<br>
-<pre>
+
+```
 setbattleresult
 - 
-</pre>
+```
 </details>
 <details>
 <summary>checkstealthrock - 0xB4</summary>
-<br>
-<pre>
+
+```
 checkstealthrock
 - 
-</pre>
+```
 </details>
 <details>
 <summary>checkeffectactivation - 0xB5</summary>
-<br>
-<pre>
+
+```
 checkeffectactivation
 - 
-</pre>
+```
 </details>
 <details>
 <summary>checkchatteractivation - 0xB6</summary>
-<br>
-<pre>
+
+```
 checkchatteractivation
 - 
-</pre>
+```
 </details>
 <details>
 <summary>getmoveparameter - 0xB7</summary>
-<br>
-<pre>
+
+```
 getmoveparameter
 - 
-</pre>
+```
 </details>
 <details>
 <summary>mosaic - 0xB8</summary>
-<br>
-<pre>
+
+```
 mosaic
 - 
-</pre>
+```
 </details>
 <details>
 <summary>changeform - 0xB9</summary>
-<br>
-<pre>
+
+```
 changeform
 - 
-</pre>
+```
 </details>
 <details>
 <summary>changebackground - 0xBA</summary>
-<br>
-<pre>
+
+```
 changebackground
 - 
-</pre>
+```
 </details>
 <details>
 <summary>recoverstatus - 0xBB</summary>
-<br>
-<pre>
+
+```
 recoverstatus
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryescape - 0xBC</summary>
-<br>
-<pre>
+
+```
 tryescape
 - 
-</pre>
+```
 </details>
 <details>
 <summary>initstartballguage - 0xBD</summary>
-<br>
-<pre>
+
+```
 initstartballguage
 - 
-</pre>
+```
 </details>
 <details>
 <summary>deletestartballguage - 0xBE</summary>
-<br>
-<pre>
+
+```
 deletestartballguage
 - 
-</pre>
+```
 </details>
 <details>
 <summary>initballguage - 0xBF</summary>
-<br>
-<pre>
+
+```
 initballguage
 - 
-</pre>
+```
 </details>
 <details>
 <summary>deleteballguage - 0xC0</summary>
-<br>
-<pre>
+
+```
 deleteballguage
 - 
-</pre>
+```
 </details>
 <details>
 <summary>loadballgfx - 0xC1</summary>
-<br>
-<pre>
+
+```
 loadballgfx
 - 
-</pre>
+```
 </details>
 <details>
 <summary>deleteballgfx - 0xC2</summary>
-<br>
-<pre>
+
+```
 deleteballgfx
 - 
-</pre>
+```
 </details>
 <details>
 <summary>incrementgamestat - 0xC3</summary>
-<br>
-<pre>
+
+```
 incrementgamestat
 - 
-</pre>
+```
 </details>
 <details>
 <summary>cmd_C4 - 0xC4</summary>
-<br>
-<pre>
+
+```
 cmd_C4
 - 
-</pre>
+```
 </details>
 <details>
 <summary>checkifcurrentmovehits - 0xC5</summary>
-<br>
-<pre>
+
+```
 checkifcurrentmovehits
 - 
-</pre>
+```
 </details>
 <details>
 <summary>cmd_C6 - 0xC6</summary>
-<br>
-<pre>
+
+```
 cmd_C6
 - 
-</pre>
+```
 </details>
 <details>
 <summary>cmd_C7 - 0xC7</summary>
-<br>
-<pre>
+
+```
 cmd_C7
 - 
-</pre>
+```
 </details>
 <details>
 <summary>checkwipeout - 0xC8</summary>
-<br>
-<pre>
+
+```
 checkwipeout
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryacupressure - 0xC9</summary>
-<br>
-<pre>
+
+```
 tryacupressure
 - 
-</pre>
+```
 </details>
 <details>
 <summary>removeitem - 0xCA</summary>
-<br>
-<pre>
+
+```
 removeitem
 - 
-</pre>
+```
 </details>
 <details>
 <summary>tryrecycle - 0xCB</summary>
-<br>
-<pre>
+
+```
 tryrecycle
 - 
-</pre>
+```
 </details>
 <details>
 <summary>itemeffectcheckonhit - 0xCC</summary>
-<br>
-<pre>
+
+```
 itemeffectcheckonhit
 - 
-</pre>
+```
 </details>
 <details>
 <summary>battleresultmessage - 0xCD</summary>
-<br>
-<pre>
+
+```
 battleresultmessage
 - 
-</pre>
+```
 </details>
 <details>
 <summary>runawaymessage - 0xCE</summary>
-<br>
-<pre>
+
+```
 runawaymessage
 - 
-</pre>
+```
 </details>
 <details>
 <summary>giveupmessage - 0xCF</summary>
-<br>
-<pre>
+
+```
 giveupmessage
 - 
-</pre>
+```
 </details>
 <details>
 <summary>cmd_D0_checkhpsomething - 0xD0</summary>
-<br>
-<pre>
+
+```
 cmd_D0_checkhpsomething
 - 
-</pre>
+```
 </details>
 <details>
 <summary>trynaturalcure - 0xD1</summary>
-<br>
-<pre>
+
+```
 trynaturalcure
 - 
-</pre>
+```
 </details>
 <details>
 <summary>checknostatus - 0xD2</summary>
-<br>
-<pre>
+
+```
 checknostatus
 - 
-</pre>
+```
 </details>
 <details>
 <summary>checkcloudnine - 0xD3</summary>
-<br>
-<pre>
+
+```
 checkcloudnine
 - 
-</pre>
+```
 </details>
 <details>
 <summary>cmd_D4 - 0xD4</summary>
-<br>
-<pre>
+
+```
 cmd_D4
 - 
-</pre>
+```
 </details>
 <details>
 <summary>checkwhenitemmakesmovehit - 0xD5</summary>
-<br>
-<pre>
+
+```
 checkwhenitemmakesmovehit
 - 
-</pre>
+```
 </details>
 <details>
 <summary>cmd_D6 - 0xD6</summary>
-<br>
-<pre>
+
+```
 cmd_D6
 - 
-</pre>
+```
 </details>
 <details>
 <summary>playmovesoundeffect - 0xD7</summary>
-<br>
-<pre>
+
+```
 playmovesoundeffect battler
 plays the move's damaging sound effect
 - battler is the basis of the sound pan
-</pre>
+```
 </details>
 <details>
 <summary>playsong - 0xD8</summary>
-<br>
-<pre>
+
+```
 playsong
 - 
-</pre>
+```
 </details>
 <details>
 <summary>checkifsafariencounterdone - 0xD9</summary>
-<br>
-<pre>
+
+```
 checkifsafariencounterdone
 - 
-</pre>
+```
 </details>
 <details>
 <summary>waitwithoutbuttonpress - 0xDA</summary>
-<br>
-<pre>
+
+```
 waitwithoutbuttonpress
 - 
-</pre>
+```
 </details>
 <details>
 <summary>checkmovetypematches - 0xDB</summary>
-<br>
-<pre>
+
+```
 checkmovetypematches
 - 
-</pre>
+```
 </details>
 <details>
 <summary>getdatafrompersonalnarc - 0xDC</summary>
-<br>
-<pre>
+
+```
 getdatafrompersonalnarc
 - 
-</pre>
+```
 </details>
 <details>
 <summary>refreshmondata - 0xDD</summary>
-<br>
-<pre>
+
+```
 refreshmondata
 - 
-</pre>
+```
 </details>
 <details>
 <summary>cmd_DE - 0xDE</summary>
-<br>
-<pre>
+
+```
 cmd_DE
 - 
-</pre>
+```
 </details>
 <details>
 <summary>cmd_DF - 0xDF</summary>
-<br>
-<pre>
+
+```
 cmd_DF
 - 
-</pre>
+```
 </details>
 <details>
 <summary>endscript - 0xE0</summary>
-<br>
-<pre>
+
+```
 endscript
 ends the script and hands exection back to the overall battle engine if nothing else is queued
-</pre>
+```
 </details>
 </details>
 
