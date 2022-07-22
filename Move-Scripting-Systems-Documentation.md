@@ -481,7 +481,7 @@ a030_109:
     changevar VAR_OP_SET, VAR_ADD_STATUS1, 0x40000058 // ADD_STATUS_ATTACKER | 88
     endscript
 _0044:
-    if2 IF_NOTEQUAL, VAR_ATTACKER, 0x10, _0060
+    if2 IF_NOTEQUAL, VAR_ATTACKER, VAR_DEFENDER, _0060
     cmd_D4 BATTLER_ATTACKER
 _0060:
     changevar VAR_OP_SET, VAR_ADD_STATUS1, 0x20000059 // ADD_STATUS_WORK | 89
@@ -1315,6 +1315,33 @@ _041C:
 ```
 </details>
 
+A few new commands from this:
+```
+abilitycheck checker, battler, ability, destination
+jump to "destination" if "battler" has or doesn't have "ability" based on "checker"--if "checker" is 0, jumps if the "battler" has the "ability", otherwise jump if doesn't have "ability"
+- checker determines to check if "battler" has or doesn't have "ability"--if "checker" is 0, jumps if the "battler" has the "ability", otherwise jump if doesn't have "ability"
+- battler is the battler whose ability to check
+- ability is the ability to check for
+- destination is where to jump if the check succeeds
+
+setstatus2effect battler, value
+sets status2 "value" bits for "battler" (condition2 in the BattlePokemon structure)
+- battler is the battler to grab status2 from
+- value comprises the bits to set in status2
+
+getmoveparameter field
+grabs parameter "field" from the move data structure and stores in VAR_09
+- "field" is the data to grab from the move, enumerations in the documentation
+
+getitemeffect battler, var
+grabs the item held effect from "battler" and puts it in "var"
+- battler is the battler to grab the item held effect from
+- var is the var to store the item held effect in
+
+removeitem battler
+removes the item from battler
+- battler is the battler whose item to remove
+```
 Making it easier to read with various defines and label names:
 <details>
 <summary>a001_264 - Type Reduction Berries (Nicer)</summary>
@@ -1331,7 +1358,7 @@ _skipNormalize:
     changevar2 VAR_OP_GET_RESULT, VAR_MOVE_TYPE, VAR_09
     goto _checkBerries
 _grabDefaultType:
-    getmoveparameter 0x3 // stores the move type from the move data table in VAR_09
+    getmoveparameter MOVE_DATA_TYPE // stores the move type from the move data table in VAR_09
 
 _checkBerries:
     getitemeffect BATTLER_xFF, VAR_43
@@ -1418,6 +1445,255 @@ _endScript:
     endscript
 ```
 </details>
+
+So a few things that we can gather from this is the difference between how this is programmed and how the Judgment plates are programmed.  Instead of using many different ``checkitemeffect`` commands for each individual berry, this script stores the item effect in a variable and performs many comparisons on that variable.  This demonstrates a sort of flexibility present in the scripting system: you can do any of multiple things to accomplish the same goal.  You can even rewrite this to be the same as the other one (or vice versa!).  The important part is testing everything out before leaving it be and tracking issues as they pop up.
+
+Looking at the script again, the pattern for each type becomes clear again, and thus a way to expand it to include Fairy type with the snippet:
+```
+a001_264:
+...
+_checkBerries:
+...
+    if IF_EQUAL, VAR_43, XXXX, _checkFairy
+...
+_checkFairy:
+    if IF_EQUAL, VAR_09, TYPE_FAIRY, _halveDamage
+    goto _endScript
+...
+```
+Once again, we need to replace ``XXXX`` with a held item effect.  The Pixie Plate (as added last section) had held effect ``0x93``, so if we aren't replacing another item to implement the Roseli Berry's effect, then we just add onto that by using ``0x94``.  Otherwise can just use the held item effect of the item that you are replacing.
+```
+a001_264:
+...
+_checkBerries:
+...
+    if IF_EQUAL, VAR_43, 0x94, _checkFairy
+...
+_checkFairy:
+    if IF_EQUAL, VAR_09, TYPE_FAIRY, _halveDamage
+    goto _endScript
+...
+```
+And finally, the script in which Fairy is spaced out to make clear that it was added there:
+
+<details>
+<summary>a001_264 - Fairy Type Reduction Berry Added</summary>
+
+```
+a001_264:
+    if IF_MASK, VAR_06, 0x8800, _endScript
+    if IF_MASK, VAR_10, 0x20, _endScript
+    abilitycheck 0x1, BATTLER_ATTACKER, ABILITY_NORMALIZE, _skipNormalize
+    changevar VAR_OP_SET, VAR_09, TYPE_NORMAL
+    goto _checkBerries
+_skipNormalize:
+    if IF_EQUAL, VAR_MOVE_TYPE, 0x0, _grabDefaultType
+    changevar2 VAR_OP_GET_RESULT, VAR_MOVE_TYPE, VAR_09
+    goto _checkBerries
+_grabDefaultType:
+    getmoveparameter MOVE_DATA_TYPE // stores the move type from the move data table in VAR_09
+
+_checkBerries:
+    getitemeffect BATTLER_xFF, VAR_43
+    if IF_EQUAL, VAR_43, 0x23, _checkNormal
+    if IF_NOTMASK, VAR_10, 0x2, _endScript // if the move used was not supereffective, end the script
+    if IF_EQUAL, VAR_43, 0x13, _checkFire
+    if IF_EQUAL, VAR_43, 0x14, _checkWater
+    if IF_EQUAL, VAR_43, 0x15, _checkElectric
+    if IF_EQUAL, VAR_43, 0x16, _checkGrass
+    if IF_EQUAL, VAR_43, 0x17, _checkIce
+    if IF_EQUAL, VAR_43, 0x18, _checkFighting
+    if IF_EQUAL, VAR_43, 0x19, _checkPoison
+    if IF_EQUAL, VAR_43, 0x1A, _checkGround
+    if IF_EQUAL, VAR_43, 0x1B, _checkFlying
+    if IF_EQUAL, VAR_43, 0x1C, _checkPsychic
+    if IF_EQUAL, VAR_43, 0x1D, _checkBug
+    if IF_EQUAL, VAR_43, 0x1E, _checkRock
+    if IF_EQUAL, VAR_43, 0x1F, _checkGhost
+    if IF_EQUAL, VAR_43, 0x20, _checkDragon
+    if IF_EQUAL, VAR_43, 0x21, _checkDark
+
+    if IF_EQUAL, VAR_43, 0x94, _checkFairy
+
+    if IF_EQUAL, VAR_43, 0x22, _checkSteel
+    goto _endScript
+_checkNormal:
+    if IF_EQUAL, VAR_09, TYPE_NORMAL, _halveDamage
+    goto _endScript
+_checkFire:
+    if IF_EQUAL, VAR_09, TYPE_FIRE, _halveDamage
+    goto _endScript
+_checkWater:
+    if IF_EQUAL, VAR_09, TYPE_WATER, _halveDamage
+    goto _endScript
+_checkElectric:
+    if IF_EQUAL, VAR_09, TYPE_ELECTRIC, _halveDamage
+    goto _endScript
+_checkGrass:
+    if IF_EQUAL, VAR_09, TYPE_GRASS, _halveDamage
+    goto _endScript
+_checkIce:
+    if IF_EQUAL, VAR_09, TYPE_ICE, _halveDamage
+    goto _endScript
+_checkFighting:
+    if IF_EQUAL, VAR_09, TYPE_FIGHTING, _halveDamage
+    goto _endScript
+_checkPoison:
+    if IF_EQUAL, VAR_09, TYPE_POISON, _halveDamage
+    goto _endScript
+_checkGround:
+    if IF_EQUAL, VAR_09, TYPE_GROUND, _halveDamage
+    goto _endScript
+_checkFlying:
+    if IF_EQUAL, VAR_09, TYPE_FLYING, _halveDamage
+    goto _endScript
+_checkPsychic:
+    if IF_EQUAL, VAR_09, TYPE_PSYCHIC, _halveDamage
+    goto _endScript
+_checkBug:
+    if IF_EQUAL, VAR_09, TYPE_BUG, _halveDamage
+    goto _endScript
+_checkRock:
+    if IF_EQUAL, VAR_09, TYPE_ROCK, _halveDamage
+    goto _endScript
+_checkGhost:
+    if IF_EQUAL, VAR_09, TYPE_GHOST, _halveDamage
+    goto _endScript
+_checkDragon:
+    if IF_EQUAL, VAR_09, TYPE_DRAGON, _halveDamage
+    goto _endScript
+_checkDark:
+    if IF_EQUAL, VAR_09, TYPE_DARK, _halveDamage
+    goto _endScript
+
+_checkFairy:
+    if IF_EQUAL, VAR_09, TYPE_FAIRY, _halveDamage
+    goto _endScript
+
+_checkSteel:
+    if IF_NOTEQUAL, VAR_09, TYPE_STEEL, _endScript
+
+_halveDamage:
+    setstatus2effect BATTLER_xFF, 0xA
+    waitmessage
+    damagediv VAR_HP_TEMP, 2
+    printmessage 1131, TAG_ITEM_MOVE, BATTLER_x15, BATTLER_ATTACKER, "NaN", "NaN", "NaN", "NaN"
+    waitmessage
+    wait 0x1E
+    removeitem BATTLER_xFF
+
+_endScript:
+    endscript
+```
+</details>
+
+## Making a New Stat-Raising Move
+Various new moves have stat-raising capabilities that have yet to exist in Gen 4.  Quiver Dance and Hone Claws both come to mind as moves that have unimplemented combos of stats to change, with Hone Claws raising Attack and Accuracy and Quiver Dance raising all of Special Attack, Special Defense, and Speed.
+
+This section will go about implementing those moves using new ``battle_eff_seq`` and ``battle_sub_seq`` scripts while adding a few new entries to ``move_effect_to_subscripts``.  Everything that is needed to do this has been covered above--now it is a matter of implementing it.  Specifically, hg-engine has already done Quiver Dance, but rehashing how it was done will be important.
+
+We start with a new ``battle_eff_seq`` that queues up a ``battle_sub_seq`` once again.  In hg-engine, Quiver Dance's effect is 283, so we add it as that:
+```
+a030_283:
+    changevar VAR_OP_SET, VAR_ADD_STATUS1, ADD_STATUS_ATTACKER | ADD_STATUS_QUIVER_DANCE
+    endscript
+```
+Here, we see that a ``battle_sub_seq`` script queued up through ``VAR_ADD_STATUS1`` that supposedly is ``ADD_STATUS_QUIVER_DANCE``--we define new ``ADD_STATUS`` constants as they appear at the top of ``armips/include/battlescriptcmd.s``.  This even further clarifies the purpose of the script, so that when we're looking back at what we did and see an ``ADD_STATUS_QUIVER_DANCE`` instead of ``148`` we know better what to do.  Ideally, new scripts don't have to use any sort of numbers at all!  We can define whatever constants whenever we need them.
+
+Adding the new entry to ``move_effect_to_subscripts``:
+```c
+u32 move_effect_to_subscripts[] =
+{
+...
+    [146] = 312, // guard split
+    [147] = 313, // power split
+    [148] = 314, // quiver dance - new entry
+};
+```
+Seeing that the last ``battle_sub_seq`` used was 313, we can move to map ``ADD_STATUS_QUIVER_DANCE`` to ``battle_sub_seq`` script 314, a new one.
+
+Finally, we can move to make the ``battle_sub_seq`` script, looking at Curse as a non-ghost type as reference:
+```
+a001_096: // script for Curse as a non-ghost type
+    changevar VAR_OP_SET, VAR_34, 0x18 // 24
+    gotosubscript 12
+    changevar VAR_OP_SETMASK, VAR_06, 0x4001
+    changevar VAR_OP_SETMASK, VAR_60, 0x80
+    changevar VAR_OP_SET, VAR_34, 0xF // 15
+    gotosubscript 12
+    changevar VAR_OP_SET, VAR_34, 0x10 // 16
+    gotosubscript 12
+    changevar VAR_OP_CLEARMASK, VAR_60, 0x2
+    changevar VAR_OP_CLEARMASK, VAR_60, 0x80
+    endscript
+```
+As we did before, we can look at ``move_effect_to_subscripts`` and remember what is going on here:
+```c
+u32 move_effect_to_subscripts[] =
+{
+...
+    [ 15] =  12, // attack +1 // curse queues this up
+    [ 16] =  12, // defense +1 // curse queues this up
+    [ 17] =  12, // speed +1
+    [ 18] =  12, // spatk +1
+    [ 19] =  12, // spdef +1
+    [ 20] =  12, // accuracy +1
+    [ 21] =  12, // evasion +1
+    [ 22] =  12, // attack -1
+    [ 23] =  12, // defense -1
+    [ 24] =  12, // speed -1 // curse queues this up
+    [ 25] =  12, // spatk -1
+    [ 26] =  12, // spdef -1
+    [ 27] =  12, // accuracy -1
+    [ 28] =  12, // evasion -1
+...
+};
+```
+We can see that Curse queues up speed -1, attack +1 and defense +1 between the bitmasks that it does the ``VAR_60`` with ``gotosubscript 12`` commands, showing that the Pokémon is having its Speed lowered and Attack and Defense increased when Curse occurs.
+
+So we look to make one that raises Special Attack, Special Defense, and Speed:
+```
+a001_314:
+    changevar VAR_OP_SETMASK, VAR_60, 0x80
+    changevar VAR_OP_SET, VAR_34, 18 // spatk +1 (see move_effect_to_subscripts)
+    gotosubscript 12
+    changevar VAR_OP_SET, VAR_34, 19 // spdef +1
+    gotosubscript 12
+    changevar VAR_OP_SET, VAR_34, 17 // speed +1
+    gotosubscript 12
+    changevar VAR_OP_CLEARMASK, VAR_60, 0x2
+    changevar VAR_OP_CLEARMASK, VAR_60, 0x80
+    endscript
+```
+And thus the Quiver Dance script is done.  The ``statbuffchange`` command from ``battle_sub_seq`` script 12 handles ensuring that all the stats raised don't overflow or anything, failing if they do.
+
+## Making a Move that Sets Attacker to Random Typing
+Here we are looking to add some randomness to our battle script to determine the effect that happens.  For this, we can use the ``random`` battle script command:
+```
+random range, start
+chooses a random number between "start" and "start"+"range" inclusive, storing it in VAR_09
+- range is the range of numbers above "start" to choose from
+- start is the beginning of the random numbers to choose from
+```
+The goal is to set the attacker's typing to a random type that isn't the one it already has.  We make a new ``battle_eff_seq`` that queues up a new ``battle_sub_seq`` script applying to the attacker (with ``ADD_STATUS_ATTACKER``) to set the player's type to something in and of itself.  We skip the ``battle_eff_seq`` script and move to the ``battle_sub_seq``, as this ``battle_eff_seq`` is similar to the rest of them.
+```
+setType:
+    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_1, TYPE_WATER
+    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_2, TYPE_WATER
+    endscript
+```
+This script sets the Pokémon's type to be monotype water.  There is no indication that it happens--it just happens, and the animation of the move plays.  We add a message to print as well as a jump to subscript 76 so that the animation and all plays in order:
+```
+setType:
+    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_1, TYPE_WATER
+    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_2, TYPE_WATER
+    gotosubscript 76
+    printmessage 178, TAG_NICK_TYPE, BATTLER_ATTACKER, BATTLER_WORK, "NaN", "NaN", "NaN", "NaN" // {STRVAR_1 1, 0, 0} transformed\ninto the {STRVAR_1 15, 1, 0} type!
+    waitmessage
+    wait 0x1E
+    endscript
+```
+We can directly change the type to Water this way and even use the Conversion battle message for it (from ``armips/move/battle_sub_seq/045.s``).  When the type changes in-game, however, the new type fails to buffer correctly.  For this, we turn to a new variable:  ``VAR_22``.  ``VAR_22`` is the temporary message buffer variable, and it determines many indices that the script system uses to buffer words into string variables.  When using ``TAG_NICK_TYPE``, the ``printmessage`` command first buffers the nickname of the Pokémon that is specified by the first ``battler`` parameter.  Then the type name is buffered using the value in ``VAR_22`` directly.
 
 # Battle Script Command Reference
 <details>
@@ -2119,16 +2395,22 @@ togglevanish
 <summary>abilitycheck - 0x37</summary>
 
 ```
-abilitycheck
-- 
+abilitycheck checker, battler, ability, destination
+jump to "destination" if "battler" has or doesn't have "ability" based on "checker"--if "checker" is 0, jumps if the "battler" has the "ability", otherwise jump if doesn't have "ability"
+- checker determines to check if "battler" has or doesn't have "ability"--if "checker" is 0, jumps if the "battler" has the "ability", otherwise jump if doesn't have "ability"
+- battler is the battler whose ability to check
+- ability is the ability to check for
+- destination is where to jump if the check succeeds
 ```
 </details>
 <details>
 <summary>random - 0x38</summary>
 
 ```
-random
-- 
+random range, start
+chooses a random number between "start" and "start"+"range" inclusive, storing it in VAR_09
+- range is the range of numbers above "start" to choose from
+- start is the beginning of the random numbers to choose from
 ```
 </details>
 <details>
@@ -2242,8 +2524,10 @@ calcmoney
 <summary>setstatus2effect - 0x45</summary>
 
 ```
-setstatus2effect
-- 
+setstatus2effect battler, value
+sets status2 "value" bits for "battler" (condition2 in the BattlePokemon structure)
+- battler is the battler to grab status2 from
+- value comprises the bits to set in status2
 ```
 </details>
 <details>
@@ -2314,8 +2598,12 @@ tryconversion
 <summary>if2 - 0x4E</summary>
 
 ```
-if2
-- 
+if2 operator, var1, var2, address
+jump to "address" if "var1" is related to "var2" as determined by "operator"
+- operator is the same as the "if" operators
+- var1 is a var to compare
+- var2 is another var to compare against
+- address is the location to jump to when the if is true
 ```
 </details>
 <details>
@@ -3033,8 +3321,10 @@ conditional flow command that is based on item effect
 <summary>getitemeffect - 0xA7</summary>
 
 ```
-getitemeffect
-- 
+getitemeffect battler, var
+grabs the item held effect from "battler" and puts it in "var"
+- battler is the battler to grab the item held effect from
+- var is the var to store the item held effect in
 ```
 </details>
 <details>
@@ -3163,8 +3453,25 @@ checkchatteractivation
 <summary>getmoveparameter - 0xB7</summary>
 
 ```
-getmoveparameter
-- 
+getmoveparameter field
+grabs parameter "field" from the move data structure and stores in VAR_09
+- "field" is the data to grab from the move, enumerations below
+```
+```c
+getmoveparameter fields:
+
+#define MOVE_DATA_BATTLE_EFFECT 0
+#define MOVE_DATA_SPLIT 1
+#define MOVE_DATA_BASE_POWER 2
+#define MOVE_DATA_TYPE 3
+#define MOVE_DATA_ACCURACY 4
+#define MOVE_DATA_PP 5
+#define MOVE_DATA_EFFECT_CHANCE 6
+#define MOVE_DATA_TARGET 7
+#define MOVE_DATA_PRIORITY 8
+#define MOVE_DATA_FLAGS 9
+#define MOVE_DATA_APPEAL 10
+#define MOVE_DATA_CONTEST_TYPE 11
 ```
 </details>
 <details>
@@ -3395,8 +3702,9 @@ checkcloudnine
 <summary>cmd_D4 - 0xD4</summary>
 
 ```
-cmd_D4
-- 
+cmd_D4 battler
+not sure what this command does.
+- battler is the battler to affect
 ```
 </details>
 <details>
