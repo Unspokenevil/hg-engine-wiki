@@ -301,12 +301,12 @@ trainerdata TRAINER_JUAN_1
         abilityslot 0
         level 46
         monwithform SPECIES_ROTOM, 3 // rotom wash
-        item ITEM_BRIGHT_POWDER
+        item ITEM_NONE
         move MOVE_WATER_PULSE
         move MOVE_DOUBLE_TEAM
-        move MOVE_ICE_BEAM
-        move MOVE_REST
-        ability ABILITY_SWIFT_SWIM
+        move MOVE_HYDRO_PUMP
+        move MOVE_THUNDERBOLT
+        ability ABILITY_LEVITATE
         ball ITEM_GREAT_BALL
         setivs 31, 31, 31, 31, 31, 31 // hp, atk, def, spd, spatk, spdef
         setevs 6, 0, 0, 252, 252, 0
