@@ -214,7 +214,7 @@ trainerdata TRAINER_JUAN_1
     trainermontype TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_MOVES | TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_ABILITY | TRAINER_DATA_TYPE_BALL | TRAINER_DATA_TYPE_IV_EV_SET | TRAINER_DATA_TYPE_NATURE_SET | TRAINER_DATA_TYPE_SHINY_LOCK | TRAINER_DATA_TYPE_ADDITIONAL_FLAGS
     trainerclass TRAINER_CLASS_LEADER_6
     battletype SINGLE_BATTLE
-    nummons 5
+    nummons 6
     item ITEM_HYPER_POTION 
     item ITEM_HYPER_POTION 
     item ITEM_NONE 
@@ -295,6 +295,24 @@ trainerdata TRAINER_JUAN_1
         nature NATURE_NAIVE
         shinylock 0
         additionalflags 0 // no further entries data will be read, but needs to be here as the trainer data structure specifies additionalflags
+        ballseal 0
+
+        ivs 250
+        abilityslot 0
+        level 46
+        monwithform SPECIES_ROTOM, 3 // rotom wash
+        item ITEM_BRIGHT_POWDER
+        move MOVE_WATER_PULSE
+        move MOVE_DOUBLE_TEAM
+        move MOVE_ICE_BEAM
+        move MOVE_REST
+        ability ABILITY_SWIFT_SWIM
+        ball ITEM_GREAT_BALL
+        setivs 31, 31, 31, 31, 31, 31 // hp, atk, def, spd, spatk, spdef
+        setevs 6, 0, 0, 252, 252, 0
+        nature NATURE_TIMID
+        shinylock 1 // mon will be forced shiny
+        additionalflags 0
         ballseal 0
     
         ivs 250
