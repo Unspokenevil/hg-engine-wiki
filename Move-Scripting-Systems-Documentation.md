@@ -383,7 +383,7 @@ u32 move_effect_to_subscripts[] =
 ...
 };
 ```
-``armips/battle_eff_seq/119.s``:
+``armips/battle_sub_seq/119.s``:
 ```
 a001_119:
     changevar VAR_OP_SETMASK, VAR_60, 0x80
