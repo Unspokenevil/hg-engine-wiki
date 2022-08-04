@@ -191,6 +191,9 @@ prepares a message to be used by printpreparedmessage
 - the battlers determine which battlers on the field to grab information to buffer strings from
   - the tag detemines how many battlers are specified--"NaN" signifies that no battler will be built from that parameter
 
+printpreparedmessage
+prints the message prepared by "preparemessage"
+
 checkitemeffect checker, battler, effect, address
 conditional flow command that is based on item effect
 - when "checker" is true, checkitemeffect jumps to "address" if battler doesn't have the item with effect "effect"
@@ -355,7 +358,7 @@ First off, new script commands from the Curse battle script:
 ```
 ifmonstat operator, battler, field, value, address
 jump to "address" if the "battler"'s stat designated by "field" is related to "value" as determined by "operator"
-- operator is the same as the "if" operators
+- operator is the math operation done on the variable, enumerated in "if"
 - battler is the pokémon to get data from
 - field is the data to grab from.  see field enumerations in the ifmonstat documentation
 - value is the value to check against, used in the operator calculations as they appear in "if"
@@ -656,7 +659,7 @@ plays the move's damaging sound effect
 - battler is the basis of the sound pan
 
 monflicker battler
-makes "battler" flicker
+makes "battler" flicker as if hit
 - battler is the Pokémon to flicker
 
 healthbarupdate battler
@@ -664,8 +667,8 @@ updates "battler"'s hp bar
 - battler is the battler that has the hp bar to update
 
 datahpupdate battler
-updates the information on the "battler"'s hp bar
-- battler is the owner of the hp bar to update
+updates the information on the "battler"'s hp bar, specifically the hp data
+- battler is the owner of the hp data to update
 
 tryfaintmon battler
 tries to faint "battler".  nothing happens if fails, the mon will slide down otherwise
@@ -1695,6 +1698,75 @@ setType:
 ```
 We can directly change the type to Water this way and even use the Conversion battle message for it (from ``armips/move/battle_sub_seq/045.s``).  When the type changes in-game, however, the new type fails to buffer correctly.  For this, we turn to a new variable:  ``VAR_22``.  ``VAR_22`` is the temporary message buffer variable, and it determines many indices that the script system uses to buffer words into string variables.  When using ``TAG_NICK_TYPE``, the ``printmessage`` command first buffers the nickname of the Pokémon that is specified by the first ``battler`` parameter.  Then the type name is buffered using the value in ``VAR_22`` directly.
 
+Changing the script to buffer the Water type properly:
+```
+setType:
+    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_1, TYPE_WATER
+    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_2, TYPE_WATER
+    changevar VAR_OP_SET, VAR_22, TYPE_WATER
+    gotosubscript 76
+    printmessage 178, TAG_NICK_TYPE, BATTLER_ATTACKER, BATTLER_WORK, "NaN", "NaN", "NaN", "NaN" // {STRVAR_1 1, 0, 0} transformed\ninto the {STRVAR_1 15, 1, 0} type!
+    waitmessage
+    wait 0x1E
+    endscript
+```
+Now we need to make sure that the move just fails if the user is already Water-type (but only if both types are water--the move will work on Water/Poison mons, for example):
+```
+setType:
+    ifmonstat IF_NOT_EQUAL, BATTLER_DEFENDER, MON_DATA_TYPE_1, TYPE_WATER, moveWorks
+    ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_TYPE_2, TYPE_WATER, moveFails
+
+moveWorks:
+    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_1, TYPE_WATER
+    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_2, TYPE_WATER
+    changevar VAR_OP_SET, VAR_22, TYPE_WATER
+    gotosubscript 76
+    printmessage 178, TAG_NICK_TYPE, BATTLER_ATTACKER, BATTLER_WORK, "NaN", "NaN", "NaN", "NaN" // {STRVAR_1 1, 0, 0} transformed\ninto the {STRVAR_1 15, 1, 0} type!
+    waitmessage
+    wait 0x1E
+    endscript
+
+moveFails:
+    changevar VAR_OP_SETMASK, VAR_10, 0x40
+    endscript
+```
+Here, we add 2 ``ifmonstat`` checks to see if the types are both Water or not.  Note that the second one only ever runs if the first one is successful--i.e. if the script execution falls through to ``moveWorks`` (without the jump from the first ``ifmonstat``) then the first Pokémon's type is Water, but the second is different--which still qualifies for what we want to do with it.
+
+Now we need to generate a random type and adjust all of these checks to be against another variable instead of against a constant.  ``ifmonstat`` becomes ``ifmonstat2``, ``changevartomonvalue`` becomes ``changevartomonvalue2``, ``changevar`` becomes ``changevar2``.  A quick documentation addition:
+```
+ifmonstat2 operator, battler, field, variable, address
+ifmonstat except variable-based
+jump to "address" if the "battler"'s stat designated by "field" is related to "variable" as determined by "operator"
+- operator is the same as the "if" operators
+- battler is the pokémon to get data from
+- field is the data to grab from.  enumerations below
+- variable is the variable to check against, used in the operator calculations as they appear in "if"
+- address is the location to jump to when the if is true
+```
+```
+setRandomType:
+    random NUM_OF_TYPES-1, 0 // generate random number from 0 - (NUM_OF_TYPES - 1) inclusive, store it in VAR_09
+    if IF_EQUAL, VAR_09, TYPE_MYSTERY, setRandomType // if fairy type hasn't been introduced as type 9, need to check for it here and regenerate a type if necessary
+
+    ifmonstat2 IF_NOT_EQUAL, BATTLER_DEFENDER, MON_DATA_TYPE_1, VAR_09, moveWorks
+    ifmonstat2 IF_EQUAL, BATTLER_DEFENDER, MON_DATA_TYPE_2, VAR_09, moveFails
+
+moveWorks:
+    changevartomonvalue2 VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_1, VAR_09
+    changevartomonvalue2 VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_2, VAR_09
+    changevar2 VAR_OP_SET, VAR_22, VAR_09
+    gotosubscript 76
+    printmessage 178, TAG_NICK_TYPE, BATTLER_ATTACKER, BATTLER_WORK, "NaN", "NaN", "NaN", "NaN" // {STRVAR_1 1, 0, 0} transformed\ninto the {STRVAR_1 15, 1, 0} type!
+    waitmessage
+    wait 0x1E
+    endscript
+
+moveFails:
+    changevar VAR_OP_SETMASK, VAR_10, 0x40
+    endscript
+```
+
+
 # Battle Script Command Reference
 <details>
 <summary>Battle Script Command Reference Dropdown</summary>
@@ -1950,8 +2022,13 @@ message tags:
 <summary>printmessage2 - 0x13</summary>
 
 ```
-printmessage2
-- 
+printmessage2 id, tag, (varargs) battlers 1-6
+prints a message, can't seem to tell the difference between this and printmessage
+- id is the message index in the narc a027 file 197 (data/text/197.txt)
+- tag determines the strings that are buffered in which order from the Pokémon on the field.  tags are enumerated in "printmessage"
+- the battlers determine which battlers on the field to grab information to buffer strings from
+  - the tag detemines how many battlers are specified--"NaN" signifies that no battler will be built from that parameter
+    - this is because of a limitation with armips where i can't overload a macro name to have different types
 ```
 </details>
 <details>
@@ -1959,7 +2036,7 @@ printmessage2
 
 ```
 printpreparedmessage
-- 
+prints the message prepared by "preparemessage"
 ```
 </details>
 <details>
@@ -1969,7 +2046,7 @@ printpreparedmessage
 preparemessage id, tag, (varargs) battlers 1-6
 prepares a message to be used by printpreparedmessage
 - id is the message index in the narc a027 file 197
-- tag determines the strings that are buffered in which order from the Pokémon on the field
+- tag determines the strings that are buffered in which order from the Pokémon on the field.  tags are enumerated in "printmessage"
 - the battlers determine which battlers on the field to grab information to buffer strings from
   - the tag detemines how many battlers are specified--"NaN" signifies that no battler will be built from that parameter
 
@@ -1980,8 +2057,14 @@ see printmessage for tag id documentation
 <summary>printmessagepassbattler - 0x16</summary>
 
 ```
-printmessagepassbattler
-- 
+printmessagepassbattler battler, id, tag, (varargs) battlers 1-6
+this is currently used just once (armips/move/battle_sub_seq/050.s).  name is speculative, is used to swap between side statuses?
+prints "Your team’s {STRVAR_1 6, 0, 0}\nwore off!" or "The foe’s {STRVAR_1 6, 0, 0}\nwore off!" under "TAG_MOVE"
+- battler appears to be the battler that belongs to the side that switches the message id.  if on the opponent's side, will add one to the message id.
+- id is the message index in the narc a027 file 197
+- tag determines the strings that are buffered in which order from the Pokémon on the field.  tags are enumerated in "printmessage"
+- the battlers determine which battlers on the field to grab information to buffer strings from
+  - the tag detemines how many battlers are specified--"NaN" signifies that no battler will be built from that parameter
 ```
 </details>
 <details>
@@ -1998,8 +2081,12 @@ plays the current attack's animation based on "battler"
 <summary>seteffectsecondary  - 0x18 (suggested name: playanimation2)</summary>
 
 ```
-seteffectsecondary
-- 
+seteffectsecondary battler, attacker, defender
+a more accurate name would be "playanimation2," will work on fixing this.
+plays the current attack's animation based on "battler".  notably, transform only works under this for some reason.
+- battler is the primary battler to base the animation on
+- attacker is the battler used as the attacker
+- defender is the battler used as the defender
 ```
 </details>
 <details>
@@ -2007,7 +2094,7 @@ seteffectsecondary
 
 ```
 monflicker battler
-makes "battler" flicker
+makes "battler" flicker as if hit
 - battler is the Pokémon to flicker
 ```
 </details>
@@ -2016,8 +2103,8 @@ makes "battler" flicker
 
 ```
 datahpupdate battler
-updates the information on the "battler"'s hp bar
-- battler is the owner of the hp bar to update
+updates the information on the "battler"'s hp bar, specifically the hp data
+- battler is the owner of the hp data to update
 ```
 </details>
 <details>
@@ -2043,7 +2130,7 @@ tries to faint "battler".  nothing happens if fails, the mon will slide down oth
 
 ```
 dofaintanimation
-- 
+i believe it plays the animation that drags down BATTLER_FAINTED as written to by "tryfaintmon"
 ```
 </details>
 <details>
@@ -2059,8 +2146,10 @@ pause script execution for "time" frames
 <summary>playse - 0x1F</summary>
 
 ```
-playse
-- 
+playse battler, id
+play sound effect "id" with pan based on "battler"
+- battler is the battler that the sound effect will be biased towards depending on which side of the field it is on
+- id is the sound effect id to play
 ```
 </details>
 <details>
@@ -2069,7 +2158,7 @@ playse
 ```
 if operator, var, value, address
 conditional flow command
-- operator is the math operation done on the variable, see Battle Script Command Reference
+- operator is the math operation done on the variable, enumerated below
 - var is the variable with the value to test
 - value is the argument for the operator, always a constant for if
 - address is the destination that the script will jump to if the if operator returns true
@@ -2090,7 +2179,7 @@ if conditional operators:
 ```
 ifmonstat operator, battler, field, value, address
 jump to "address" if the "battler"'s stat designated by "field" is related to "value" as determined by "operator"
-- operator is the same as the "if" operators
+- operator is the math operation done on the variable, enumerated in "if"
 - battler is the pokémon to get data from
 - field is the data to grab from.  enumerations below
 - value is the value to check against, used in the operator calculations as they appear in "if"
@@ -2204,15 +2293,16 @@ ifmonstat fields:
 
 ```
 fadeout
-- 
+fades the battle in preparation for the battle ending and whatever else to take over
 ```
 </details>
 <details>
 <summary>jumptosubseq - 0x23</summary>
 
 ```
-jumptosubseq
-- 
+jumptosubseq id
+jumps to the battle_sub_seq script "id" without return (whereas gotosubscript and gotosubscript2 will return upon completion)
+- id is the battle_sub_seq script to jump to
 ```
 </details>
 <details>
@@ -2220,15 +2310,16 @@ jumptosubseq
 
 ```
 jumptocurmoveeffectscript
-- 
+jumps to the current move's battle_eff_seq script.  most of the battle_move_seq scripts are just this command.
 ```
 </details>
 <details>
 <summary>jumptoeffectscript - 0x25</summary>
 
 ```
-jumptoeffectscript
-- 
+jumptoeffectscript id
+jumps to battle_eff_seq "id"
+- id is the battle_eff_seq script to jump to
 ```
 </details>
 <details>
@@ -2243,8 +2334,9 @@ calculates the critical multiplier (set to 1 in the case that there isn't one)
 <summary>shouldgetexp - 0x27</summary>
 
 ```
-shouldgetexp
-- 
+shouldgetexp address
+used in battle_sub_seq script 276 to determine if any pokemon should get experience, jumps to "address" otherwise
+- address is the address to jump to if nobody gets experience
 ```
 </details>
 <details>
@@ -2602,7 +2694,7 @@ if2 operator, var1, var2, address
 jump to "address" if "var1" is related to "var2" as determined by "operator"
 - operator is the same as the "if" operators
 - var1 is a var to compare
-- var2 is another var to compare against
+- var2 is another var to compare against (i.e. IF_LESSTHAN is true if var1 < var2)
 - address is the location to jump to when the if is true
 ```
 </details>
@@ -2610,8 +2702,14 @@ jump to "address" if "var1" is related to "var2" as determined by "operator"
 <summary>ifmonstat2 - 0x4F</summary>
 
 ```
-ifmonstat2
-- 
+ifmonstat2 operator, battler, field, variable, address
+ifmonstat except variable-based
+jump to "address" if the "battler"'s stat designated by "field" is related to "variable" as determined by "operator"
+- operator is the same as the "if" operators
+- battler is the pokémon to get data from
+- field is the data to grab from.  enumerations below
+- variable is the variable to check against, used in the operator calculations as they appear in "if"
+- address is the location to jump to when the if is true
 ```
 </details>
 <details>
