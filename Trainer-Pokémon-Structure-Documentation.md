@@ -62,7 +62,7 @@ typedef	struct
 
 To maintain compatibility with the original structure, much of the original fields are yet present despite being overwritten by later fields if the trainer data ``data_type`` calls for it:
 - ``ivs`` is a value 0-255 that is scaled from 0-31 that is then used for the IV's for all of the stats of that specific entry.
-- ``abilityslot`` seems to be somewhat used to influence the PID of the mon when looking to force the gender of the mon one way or the other, but otherwise the lsb is the only one that matters, toggling the ability.
+- ``abilityslot`` seems to be somewhat used to influence the PID of the mon when looking to force the gender of the mon one way or the other, but otherwise the lsb is the only one that matters, toggling the ability.  Under hg-engine, setting ``abilityslot`` to ``2`` will have the hidden ability activate.  ``abilityslot`` influencing the nature can then be reimplemented under the ``nature`` field.
 - ``level`` is the level of the mon.
 - ``monsno`` is the species of the mon.  This is technically ``(form << 10) | species``**.
 - ``itemno`` is conditionally read depending on the trainer data ``data_type`` having the flag ``TRAINER_DATA_TYPE_ITEMS`` set.  This is the held item of the mon.
