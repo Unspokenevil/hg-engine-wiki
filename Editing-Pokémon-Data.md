@@ -504,7 +504,7 @@ The ``TOP_LEFT``, ``TOP_RIGHT``, and ``BOTTOM_RIGHT`` designations are based on 
 
 ### ``data/graphics/icongfx``
 
-The name format for this is a 4-letter number containing the species.  The image must be indexed to one of the 3 already-existing icon palettes and must be 4bpp in that each pixel is 4 bytes, and building this is handled by ``nitrogfx``, the tool from the decomps.  Ideally, all of the sprites are built using this tool eventually, as it is very flexible.
+The name format for this is a 4-letter number containing the species.  The image must be indexed to one of the 3 already-existing icon palettes and must be 4bpp in that each pixel is 4 bits, and building this is handled by ``nitrogfx``, the tool from the decomps.  Ideally, all of the sprites are built using this tool eventually, as it is very flexible.
 
 ### ``data/graphics/overworlds``
 
