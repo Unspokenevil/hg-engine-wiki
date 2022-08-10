@@ -138,7 +138,7 @@ ivs num
 specifies the iv of the pokemon from 0-255, which is scaled linearly to 0-31 and set as all the ivs
 
 abilityslot num
-num & 1 determines ability slot loaded in for the mon
+num & 1 determines ability slot loaded in for the mon.  if abilityslot is 2, the trainer's mon gets its hidden ability with the HA bit set
 
 level num
 determines the level (0-100) that the mon is
