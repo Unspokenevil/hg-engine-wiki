@@ -1766,6 +1766,140 @@ moveFails:
     endscript
 ```
 
+# Adding Completely New Script Commands
+*Warning!*  C code ahead.  If you are not comfortable with reading/generating code, this will be inaccessible for you.
+
+Once in a while you need access to some functionality that absolutely can not be done via battle scripts.  Main examples of this will be new battle effects like Wide Guard blocking only certain moves, the Pledge moves interacting, and Autotomize reducing the weight of the Pokémon.
+
+This section will cover specifically adding new script commands with a few examples.  hg-engine has made this relatively easy compared to the base game, with the only need being expanding a table with a new entry & new code that details that entry.
+
+Old script commands end at ``0xE0`` with ``endscript``.  To maintain compatibility with vanilla scripts, we just add on to those, starting with ``0xE1`` and counting up from there.  Instead of repointing the whole table, there is an expanded table and the vanilla table.  The vanilla table is still in overlay 12 and left untouched, but when new command is parsed the handler hands it off to the new table instead.  Examining the code in ``src/battle_script_commands.c``, we can see:
+```c
+BOOL BattleScriptCommandHandler(void *bw, struct BattleStruct *sp)
+{
+    BOOL ret;
+    u32 command;
+
+    do {
+        command = sp->SkillSeqWork[sp->skill_seq_no];
+
+        if (command < START_OF_NEW_BTL_SCR_CMDS) // command is < E1
+        {
+            ret = BattleScriptCmdTable[command](bw, sp);
+        }
+        else
+        {
+            ret = NewBattleScriptCmdTable[command - START_OF_NEW_BTL_SCR_CMDS](bw, sp);
+        }
+
+    } while ((sp->battle_progress_flag == 0) && ((BattleTypeGet(bw) & BATTLE_TYPE_WIRELESS) == 0));
+
+    sp->battle_progress_flag = 0;
+
+    return ret;
+}
+```
+This then leaves a brand new ``NewBattleScriptCmdTable[]`` for us to populate:
+```c
+const btl_scr_cmd_func NewBattleScriptCmdTable[] =
+{
+    
+};
+```
+First, we need to write our new code.  New script commands as C functions must have the declaration:
+```c
+BOOL function (void *, struct BattleStruct *);
+```
+While the first ``void *`` parameter is actually a structure that we rarely have to enumerate in the code that we edit (hence its ``void`` typing), the ``BattleStruct`` structure gives just about all the information that we want in the battle at any given time.
+
+Our battle script command will be called ``reduceweight`` and will take one parameter--the amount by which to reduce the weight.  We add the function elsewhere in the ``battle_script_commands.c`` file:
+```c
+BOOL btl_scr_cmd_E1_reduceweight(void *bw, struct BattleStruct *sp)
+{
+    IncrementBattleScriptPtr(sp, 1);
+
+    return FALSE;
+}
+```
+All battle script commands call ``IncrementBattleScriptPtr``, passing the ``BattleStruct`` and ``1`` to increment the inustruction and return ``FALSE``.  This would be the equivalent of a ``nop`` or ``dummy`` battle script command--one that does nothing and just advances the script.
+
+As previously mentioned, the ``BattleStruct`` keeps track of just about everything to do with battles.  Much of it is still labeled as it appears in the leaked source in ``include/battle.h`` with many modifications as the fields are documented and used in this repo.
+
+In looking to reduce the weight, we can see that weight is tracked per-Pokémon directly in the ``BattlePokemon`` structure nested in the overall ``BattleStruct`` structure.
+
+So we add something to read the weight delta to the function and subtract it from the Pokémon:
+```c
+BOOL btl_scr_cmd_E1_reduceweight(void *bw, struct BattleStruct *sp)
+{
+    s32 delta;
+    
+    IncrementBattleScriptPtr(sp, 1);
+    delta = read_battle_script_param(sp); // read the parameter in from the battle script, incrementing the battle script ptr again
+
+    sp->battlemon[sp->attack_client].weight -= delta; // reduce the attacker's weight by the read parameter
+
+    return FALSE;
+}
+```
+Finally, we need to add error checking to make sure the weight doesn't decrease below 1:
+```c
+BOOL btl_scr_cmd_E1_reduceweight(void *bw, struct BattleStruct *sp)
+{
+    s32 delta;
+    
+    IncrementBattleScriptPtr(sp, 1);
+    delta = read_battle_script_param(sp);
+
+    if (delta >= sp->battlemon[sp->attack_client].weight) // if the weight would decrease below 1
+        sp->battlemon[sp->attack_client].weight = 1; // minimum weight is 0.1 kg
+    else
+        sp->battlemon[sp->attack_client].weight -= delta;
+
+    return FALSE;
+}
+```
+Finally, to make the new script usable, add it to the ``NewBattleScriptCmdTable``:
+```c
+const btl_scr_cmd_func NewBattleScriptCmdTable[] =
+{
+    [0xE1 - START_OF_NEW_BTL_SCR_CMDS] = btl_scr_cmd_E1_reduceweight,
+};
+```
+Finally, we need to add a script macro to ``armips/include/battlescriptcmd.s`` at the end of the file with a blurb as to what it does:
+```arm
+// reduce attacker weight in hectograms (increments of 0.1 kg) (num can be positive or negative, negative actually increases the weight)
+.macro reduceweight,num
+    .word 0xE1
+    .word num
+.endmacro
+```
+We can finally make a ``battle_sub_seq`` for Autotomize, having already gone through the whole process of making a ``battle_eff_seq`` as well and such:
+```
+// autotomize move effect
+
+a001_320:
+    ifmonstat IF_EQUAL, BATTLER_ADDL_EFFECT, MON_DATA_STAT_STAGE_SPEED, 12, NoStatusEffect
+
+    gotosubscript 76
+    changevar VAR_OP_SETMASK, VAR_06, 0x200000
+    changevar VAR_OP_SETMASK, VAR_06, 0x4001
+    changevar VAR_OP_SETMASK, VAR_60, 0x80
+    changevar VAR_OP_SET, VAR_34, 41 // speed +2
+    gotosubscript 12
+    changevar VAR_OP_CLEARMASK, VAR_60, 0x2
+    changevar VAR_OP_CLEARMASK, VAR_60, 0x80
+    reduceweight 1000 // weight reduced by 100.0 kg
+    endscript
+NoStatusEffect:
+    printattackmessage
+    waitmessage
+    wait 0x1E
+    printmessage 0x300, 0x2, 0x7, "NaN", "NaN", "NaN", "NaN", "NaN" // {STRVAR_1 1, 0, 0}’s stats won’t\ngo any higher!
+    waitmessage
+    wait 0x1E
+    changevar VAR_OP_SETMASK, VAR_10, 0x80000000
+    endscript
+```
 
 # Battle Script Command Reference
 <details>
@@ -1882,7 +2016,7 @@ not much is known on this command, and the name is speculative
 
 ```
 hpgaugeslidein battler
-not much is known on this command, and the name is speculative
+slides in the hp gauge, printing all of the new information for the mon on the gauge as well
 - battler is the hp gauge sliding in
 ```
 </details>
