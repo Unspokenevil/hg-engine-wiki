@@ -32,7 +32,7 @@ SetMonData(partyPokemon, ID_PARA_dummy_p2_2, &dummy_p2_2);
 There are macros for this for both ``partyPokemon`` and ``boxPokemon``:
 ```c
 SET_MON_HIDDEN_ABILTY_BIT(mon)
-and
+//and
 SET_BOX_MON_HIDDEN_ABILTY_BIT(boxmon)
 ```
 Hidden abilities are not currently passed through breeding subject to further research.
