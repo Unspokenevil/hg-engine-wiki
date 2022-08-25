@@ -477,6 +477,8 @@ Finally, we can look at the rest of Curse (battle script repasted here for conve
 <details>
 <summary>a030_109 - Curse effect script (click to dropdown!)</summary>
 
+<br>
+
 ```
 a030_109:
     ifmonstat IF_EQUAL, BATTLER_ATTACKER, MON_DATA_TYPE_1, TYPE_GHOST, _0044 // if the pokémon is of type ghost, go to _0044
@@ -874,6 +876,8 @@ To recap:  Add a new ``battle_eff_seq`` script that queues up a ``battle_sub_seq
 <details>
 <summary>Simple Beam created scripts (click to dropdown!)</summary>
 
+<br>
+
 Battle effect script:
 ```
 .nds
@@ -938,6 +942,8 @@ movedata MOVE_JUDGMENT
 So we look at ``battle_eff_seq`` script 268 (``armips/move/battle_eff_seq/268.s``) (the old version [here](https://github.com/BluRosie/hg-engine/blob/7180691503c90a80ff184802d069f299584013d4/armips/move/battle_eff_seq/268.s)):
 <details>
 <summary>a030_268 - Judgment effect script unlabeled (click to dropdown!)</summary>
+
+<br>
 
 ```
 a030_268:
@@ -1016,6 +1022,8 @@ While long, it should be clear what it is doing:  with the ``checker`` of ``chec
 We can label this a bit better to show what is happening:
 <details>
 <summary>a030_268 - Judgment effect script better labeled (click to dropdown!)</summary>
+
+<br>
 
 ```
 a030_268:
@@ -1116,6 +1124,8 @@ _setFairy:
 This is actually the method used directly in hg-engine for updating Judgment:
 <details>
 <summary>Fully-Updated Fairy Judgment (click to drop down!)</summary>
+
+<br>
 
 Fairy handling has spaces around it for emphasis:
 ```
@@ -1220,6 +1230,8 @@ Gen 4 introduced all of the berries that activate when a super-effective move is
 The script dump as it originally appears is as follows, taken from [here](https://github.com/BluRosie/hg-engine/blob/7180691503c90a80ff184802d069f299584013d4/armips/move/battle_sub_seq/264.s):
 <details>
 <summary>a001_264 - Type Reduction Berries</summary>
+
+<br>
 
 ```
 a001_264:
@@ -1348,6 +1360,8 @@ removes the item from battler
 Making it easier to read with various defines and label names:
 <details>
 <summary>a001_264 - Type Reduction Berries (Nicer)</summary>
+
+<br>
 
 ```
 a001_264:
@@ -1481,6 +1495,8 @@ And finally, the script in which Fairy is spaced out to make clear that it was a
 
 <details>
 <summary>a001_264 - Fairy Type Reduction Berry Added</summary>
+
+<br>
 
 ```
 a001_264:
@@ -1905,12 +1921,33 @@ NoStatusEffect:
 <details>
 <summary>Battle Script Command Reference Dropdown</summary>
 
+<br>
+
+<details open>
+<summary>templateCmd - 0x[command index] (suggested name: suggestedName (if applicable))</summary>
+
+[suggestedName is present if the currently labeled name disagrees with what the command does or does not adequately describe the command, but the scripts haven't been updated to reflect it]
+```
+commandName param1, ..., paramN
+description of what commandName does with "param1", "param2"", etc. in quotations when referring directly to a parameter
+- description of what param1 does/is
+- description of what param2 does/is
+- ...
+- description of what paramN does/is
+
+address: 0x[command's code's address]
+
+relevant defines, if applicable, primarily C style
+```
+</details>
 <details>
 <summary>startencounter - 0x00</summary>
 
 ```
 startencounter
 initializes battle information.  not much is known on this command, and the name is speculative
+
+address: 0x0223CFB8
 ```
 </details>
 <details>
@@ -1920,6 +1957,8 @@ initializes battle information.  not much is known on this command, and the name
 pokemonencounter battler
 initalizes wild information.  not much is known on this command, and the name is speculative
 - battler is the pokémon that is being initialized, i.e. is called twice for doubles
+
+address: 0x0223CFD0
 ```
 </details>
 <details>
@@ -1929,6 +1968,8 @@ initalizes wild information.  not much is known on this command, and the name is
 pokemonslidein battler
 queues up the animation for the pokémon sliding in as in a wild battle.
 - battler is the pokémon sliding in
+
+address: 0x0223D04C
 ```
 </details>
 <details>
@@ -1938,6 +1979,8 @@ queues up the animation for the pokémon sliding in as in a wild battle.
 pokemonappear battler
 sends out the pokémon from the poké ball it is in, solely initializing the sprite.  not much is known on this command, and the name is speculative
 - battler is the pokémon being sent out
+
+address: 0x0223D20C
 ```
 </details>
 <details>
@@ -1947,6 +1990,8 @@ sends out the pokémon from the poké ball it is in, solely initializing the spr
 returnpokemon battler
 returns the pokémon to the trainer in its ball.  not much is known on this command, and the name is speculative
 - battler is the pokémon returning
+
+address: 0x0223D3E8
 ```
 </details>
 <details>
@@ -1956,6 +2001,8 @@ returns the pokémon to the trainer in its ball.  not much is known on this comm
 deletepokemon battler
 deletes the sprite of battler.  not much is known on this command, and the name is speculative
 - battler is the pokémon whose sprite is being deleted
+
+address: 0x0223D4A8
 ```
 </details>
 <details>
@@ -1965,6 +2012,8 @@ deletes the sprite of battler.  not much is known on this command, and the name 
 starttrainerencounter battler
 initalizes the trainer party.  not much is known on this command, and the name is speculative
 - battler is the trainer being initialized
+
+address: 0x0223D4D4
 ```
 </details>
 <details>
@@ -1975,6 +2024,8 @@ throwpokeball battler, type
 throws a poké ball at the enemy.
 - battler is always "BATTLER_PLAYER" or "BATTLER_OPPONENT" depending on where the ball is being thrown from
 - type is the animation to be played
+
+address: 0x0223D5F0
 
 type enumerations:
 #define THROWPOKEBALL_TYPE_SEND_OUT_MON 0
@@ -1991,6 +2042,8 @@ type enumerations:
 preparetrainerslide battler
 load in the gfx for the trainer.  not much is known on this command, and the name is speculative
 - battler is the trainer position about to slide in
+
+address: 0x0223D700
 ```
 </details>
 <details>
@@ -2001,6 +2054,8 @@ trainerslidein battler, pos
 not much is known on this command, and the name is speculative
 - battler is the trainer sliding in
 - pos is where the trainer is sliding to
+
+address: 0x0223D8B0
 ```
 </details>
 <details>
@@ -2009,6 +2064,8 @@ not much is known on this command, and the name is speculative
 ```
 backgroundslidein
 not much is known on this command, and the name is speculative
+
+address: 0x0223DA48
 ```
 </details>
 <details>
@@ -2018,6 +2075,8 @@ not much is known on this command, and the name is speculative
 hpgaugeslidein battler
 slides in the hp gauge, printing all of the new information for the mon on the gauge as well
 - battler is the hp gauge sliding in
+
+address: 0x0223DA74
 ```
 </details>
 <details>
@@ -2027,6 +2086,8 @@ slides in the hp gauge, printing all of the new information for the mon on the g
 hpgaugeslidewait battler
 not much is known on this command, and the name is speculative
 - battler is the hp gauge sliding in to wait for
+
+address: 0x0223DB2C
 ```
 </details>
 <details>
@@ -2036,6 +2097,8 @@ not much is known on this command, and the name is speculative
 preparehpgaugeslide
 not much is known on this command, and the name is speculative
 - battler is the hp gauge to initialize to slide in
+
+address: 0x0223DBF4
 ```
 </details>
 <details>
@@ -2044,6 +2107,8 @@ not much is known on this command, and the name is speculative
 ```
 waitmessage
 pause script execution until current message is done printing.  not just done for messages, also used for various states that take up time that script execution needs to pause for (although not animations).
+
+address: 0x0223DCAC
 ```
 </details>
 <details>
@@ -2052,6 +2117,8 @@ pause script execution until current message is done printing.  not just done fo
 ```
 damagecalc
 the basic damage calculator.  called for all damaging moves, but will disable itself if a separate damage calc is detected
+
+address: 0x0223DE4C
 ```
 </details>
 <details>
@@ -2060,6 +2127,8 @@ the basic damage calculator.  called for all damaging moves, but will disable it
 ```
 damagecalc2
 not much is known on this command, and the name is speculative
+
+address: 0x0223DE84
 ```
 </details>
 <details>
@@ -2068,6 +2137,8 @@ not much is known on this command, and the name is speculative
 ```
 printattackmessage
 prints the current attack message from a027 file 003 (data/text/003.txt).
+
+address: 0x0223DEB0
 ```
 </details>
 <details>
@@ -2081,6 +2152,8 @@ prints a message
 - the battlers determine which battlers on the field to grab information to buffer strings from
   - the tag detemines how many battlers are specified--"NaN" signifies that no battler will be built from that parameter
     - this is because of a limitation with armips where i can't overload a macro name to have different types
+
+address: 0x0223DEF0
 
 message tags:
 #define TAG_NONE                        (0)     //nothing
@@ -2163,6 +2236,8 @@ prints a message, can't seem to tell the difference between this and printmessag
 - the battlers determine which battlers on the field to grab information to buffer strings from
   - the tag detemines how many battlers are specified--"NaN" signifies that no battler will be built from that parameter
     - this is because of a limitation with armips where i can't overload a macro name to have different types
+
+address: 0x0223DF24
 ```
 </details>
 <details>
@@ -2171,6 +2246,8 @@ prints a message, can't seem to tell the difference between this and printmessag
 ```
 printpreparedmessage
 prints the message prepared by "preparemessage"
+
+address: 0x0223DF64
 ```
 </details>
 <details>
@@ -2183,6 +2260,8 @@ prepares a message to be used by printpreparedmessage
 - tag determines the strings that are buffered in which order from the Pokémon on the field.  tags are enumerated in "printmessage"
 - the battlers determine which battlers on the field to grab information to buffer strings from
   - the tag detemines how many battlers are specified--"NaN" signifies that no battler will be built from that parameter
+
+address: 0x0223DF84
 
 see printmessage for tag id documentation
 ```
@@ -2199,6 +2278,8 @@ prints "Your team’s {STRVAR_1 6, 0, 0}\nwore off!" or "The foe’s {STRVAR_1 6
 - tag determines the strings that are buffered in which order from the Pokémon on the field.  tags are enumerated in "printmessage"
 - the battlers determine which battlers on the field to grab information to buffer strings from
   - the tag detemines how many battlers are specified--"NaN" signifies that no battler will be built from that parameter
+
+address: 0x0223DFB0
 ```
 </details>
 <details>
@@ -2209,6 +2290,8 @@ seteffectprimary battler
 a more accurate name would be "playanimation," will work on fixing this.
 plays the current attack's animation based on "battler"
 - battler is the primary battler to base the animation on
+
+address: 0x0223E004
 ```
 </details>
 <details>
@@ -2221,6 +2304,8 @@ plays the current attack's animation based on "battler".  notably, transform onl
 - battler is the primary battler to base the animation on
 - attacker is the battler used as the attacker
 - defender is the battler used as the defender
+
+address: 0x0223E080
 ```
 </details>
 <details>
@@ -2230,6 +2315,8 @@ plays the current attack's animation based on "battler".  notably, transform onl
 monflicker battler
 makes "battler" flicker as if hit
 - battler is the Pokémon to flicker
+
+address: 0x0223E12C
 ```
 </details>
 <details>
@@ -2239,6 +2326,8 @@ makes "battler" flicker as if hit
 datahpupdate battler
 updates the information on the "battler"'s hp bar, specifically the hp data
 - battler is the owner of the hp data to update
+
+address: 0x0223E160
 ```
 </details>
 <details>
@@ -2248,6 +2337,8 @@ updates the information on the "battler"'s hp bar, specifically the hp data
 healthbarupdate battler
 updates "battler"'s hp bar
 - battler is the battler that has the hp bar to update
+
+address: 0x0223E200
 ```
 </details>
 <details>
@@ -2257,6 +2348,8 @@ updates "battler"'s hp bar
 tryfaintmon battler
 tries to faint "battler".  nothing happens if fails, the mon will slide down otherwise
 - battler is the mon to faint
+
+address: 0x0223E22C
 ```
 </details>
 <details>
@@ -2265,6 +2358,8 @@ tries to faint "battler".  nothing happens if fails, the mon will slide down oth
 ```
 dofaintanimation
 i believe it plays the animation that drags down BATTLER_FAINTED as written to by "tryfaintmon"
+
+address: 0x0223E290
 ```
 </details>
 <details>
@@ -2274,6 +2369,8 @@ i believe it plays the animation that drags down BATTLER_FAINTED as written to b
 wait time
 pause script execution for "time" frames
 - time is the amount of frames to pause for
+
+address: 0x0223E2F0
 ```
 </details>
 <details>
@@ -2284,6 +2381,8 @@ playse battler, id
 play sound effect "id" with pan based on "battler"
 - battler is the battler that the sound effect will be biased towards depending on which side of the field it is on
 - id is the sound effect id to play
+
+address: 0x0223E38C
 ```
 </details>
 <details>
@@ -2296,6 +2395,8 @@ conditional flow command
 - var is the variable with the value to test
 - value is the argument for the operator, always a constant for if
 - address is the destination that the script will jump to if the if operator returns true
+
+address: 0x0223E3C4
 
 if conditional operators:
 #define IF_EQUAL    0 // var == value
@@ -2318,6 +2419,8 @@ jump to "address" if the "battler"'s stat designated by "field" is related to "v
 - field is the data to grab from.  enumerations below
 - value is the value to check against, used in the operator calculations as they appear in "if"
 - address is the location to jump to when the if is true
+
+address: 0x0223E474
 
 ifmonstat fields:
 #define MON_DATA_SPECIES (0)
@@ -2428,6 +2531,8 @@ ifmonstat fields:
 ```
 fadeout
 fades the battle in preparation for the battle ending and whatever else to take over
+
+address: 0x0223E52C
 ```
 </details>
 <details>
@@ -2437,6 +2542,8 @@ fades the battle in preparation for the battle ending and whatever else to take 
 jumptosubseq id
 jumps to the battle_sub_seq script "id" without return (whereas gotosubscript and gotosubscript2 will return upon completion)
 - id is the battle_sub_seq script to jump to
+
+address: 0x0223E548
 ```
 </details>
 <details>
@@ -2445,6 +2552,8 @@ jumps to the battle_sub_seq script "id" without return (whereas gotosubscript an
 ```
 jumptocurmoveeffectscript
 jumps to the current move's battle_eff_seq script.  most of the battle_move_seq scripts are just this command.
+
+address: 0x0223E568
 ```
 </details>
 <details>
@@ -2454,6 +2563,8 @@ jumps to the current move's battle_eff_seq script.  most of the battle_move_seq 
 jumptoeffectscript id
 jumps to battle_eff_seq "id"
 - id is the battle_eff_seq script to jump to
+
+address: 0x0223E594
 ```
 </details>
 <details>
@@ -2462,6 +2573,8 @@ jumps to battle_eff_seq "id"
 ```
 critcalc
 calculates the critical multiplier (set to 1 in the case that there isn't one)
+
+address: 0x0223E63C
 ```
 </details>
 <details>
@@ -2469,8 +2582,10 @@ calculates the critical multiplier (set to 1 in the case that there isn't one)
 
 ```
 shouldgetexp address
-used in battle_sub_seq script 276 to determine if any pokemon should get experience, jumps to "address" otherwise
+used in battle_sub_seq script 276 to determine if any pokemon should get experience, jumps to "address" otherwise.  this is also the command that calculates experience for some reason.
 - address is the address to jump to if nobody gets experience
+
+address: 0x0223E6A0
 ```
 </details>
 <details>
@@ -2478,7 +2593,9 @@ used in battle_sub_seq script 276 to determine if any pokemon should get experie
 
 ```
 initexpget
-- 
+initializes the experience distribution loop
+
+address: 0x0223E81C
 ```
 </details>
 <details>
@@ -2486,15 +2603,20 @@ initexpget
 
 ```
 getexp
-- 
+grabs the experience value and places it in a string variable
+
+address: 0x0223E85C
 ```
 </details>
 <details>
 <summary>getexploop - 0x2A</summary>
 
 ```
-getexploop
-- 
+getexploop address
+loops back to "address" if there is still exp to distribute
+- address is the address to jump to if there is still exp. to distribute
+
+address: 0x0223E888
 ```
 </details>
 <details>
@@ -2502,7 +2624,9 @@ getexploop
 
 ```
 showmonlist
-- 
+shows the player's party, typically for switching
+
+address: 0x0223E8A0
 ```
 </details>
 <details>
@@ -2510,31 +2634,42 @@ showmonlist
 
 ```
 waitformonselection
-- 
+pauses the script execution for the player's selection in their party
+
+address: 0x0223E978
 ```
 </details>
 <details>
 <summary>switchindataupdate - 0x2D</summary>
 
 ```
-switchindataupdate
-- 
+switchindataupdate battler
+updates the battlemon data for pokemon that switch in in the "battler" position
+- battler is the battler that is switching in
+
+address: 0x0223EAA0
 ```
 </details>
 <details>
 <summary>jumpifcantswitch - 0x2E</summary>
 
 ```
-jumpifcantswitch
-- 
+jumpifcantswitch addres
+jumps to "address" if the pokemon can't switch for whatever reason
+- "address" is the destination to jump to if the pokemon can't switch
+
+address: 0x0223EB40
 ```
 </details>
 <details>
 <summary>initcapture - 0x2F</summary>
 
 ```
-initcapture
-- 
+initcapture num
+not much is known on this command, and the name is speculative
+- "num" is unknown
+
+address: 0x0223EB88
 ```
 </details>
 <details>
@@ -2542,15 +2677,23 @@ initcapture
 
 ```
 capturemon
-- 
+not much is known on this command, and the name is speculative
+
+address: 0x0223EBE4
 ```
 </details>
 <details>
 <summary>setmultihit - 0x31</summary>
 
 ```
-setmultihit
-- 
+setmultihit mode, num
+sets the amount of times that a multi-hit move hits based on "mode".  "num" is either 0xFD or 0xDD--the command isn't used all that much to figure out what it is.
+- "mode" determines the amount of hits.  possible values:
+  - 0 is anywhere from 2 to 5
+  - nonzero amount guarantees that amount of hits.  i.e. double hit, with battle_eff_seq 44, has "setmultihit 0x2, 0xFD" which guarantees 2 hits.
+- num is either 0xFD normally or 0xDD in triple kick's case
+
+address: 0x0223EC10
 ```
 </details>
 <details>
@@ -2562,6 +2705,8 @@ perform math operations on "var" using a constant "value"
 - operator is the math operation done on the variable
 - var is the variable to change
 - value is the argument for the operator
+
+address: 0x0223EC84
 
 changevar operators:
 #define VAR_OP_SET         ( 7) // var = value;
@@ -2586,6 +2731,8 @@ changevar operators:
 ```
 statbuffchange
 - 
+
+address: 0x0223ED78
 ```
 </details>
 <details>
@@ -2599,6 +2746,8 @@ changes mon data "field" by "value" as specified by "operator"
 - battler is the battler to grab the data from
 - field is the data to grab/set from the battler, same as "ifmonstat"
 - value is the argument for the operator
+
+address: 0x0223F38C
 ```
 </details>
 <details>
@@ -2607,6 +2756,8 @@ changes mon data "field" by "value" as specified by "operator"
 ```
 clearstatus2
 - 
+
+address: 0x0223F4B0
 ```
 </details>
 <details>
@@ -2615,6 +2766,8 @@ clearstatus2
 ```
 togglevanish
 - 
+
+address: 0x0223F4EC
 ```
 </details>
 <details>
@@ -2627,6 +2780,8 @@ jump to "destination" if "battler" has or doesn't have "ability" based on "check
 - battler is the battler whose ability to check
 - ability is the ability to check for
 - destination is where to jump if the check succeeds
+
+address: 0x0223F524
 ```
 </details>
 <details>
@@ -2637,6 +2792,8 @@ random range, start
 chooses a random number between "start" and "start"+"range" inclusive, storing it in VAR_09
 - range is the range of numbers above "start" to choose from
 - start is the beginning of the random numbers to choose from
+
+address: 0x0223F5E4
 ```
 </details>
 <details>
@@ -2648,6 +2805,8 @@ changevar except the constant is now a battle variable
 - operator is the same as changevar
 - destvar is a variable that may or may not hold a value already that will be changed
 - srcvar is a variable that operator uses to complete its operation
+
+address: 0x0223F61C
 
 see changevar for operator enumerations
 ```
@@ -2663,6 +2822,8 @@ changes mon data "field" by "var"'s value as specified by "operator"
 - battler is the battler to grab the data from
 - field is the data to grab/set from the battler
 - var is the variable the engine grabs from to manipulate the mon data field
+
+address: 0x0223F734
 ```
 </details>
 <details>
@@ -2671,6 +2832,8 @@ changes mon data "field" by "var"'s value as specified by "operator"
 ```
 goto
 - 
+
+address: 0x0223F894
 ```
 </details>
 <details>
@@ -2680,6 +2843,8 @@ goto
 gotosubscript num
 calls battle_sub_seq script "num".  returns to the caller after an endscript is reached
 - num is the index of the battle_sub_seq script to jump to
+
+address: 0x0223F8B4
 ```
 </details>
 <details>
@@ -2688,6 +2853,8 @@ calls battle_sub_seq script "num".  returns to the caller after an endscript is 
 ```
 gotosubscript2
 - 
+
+address: 0x0223F8D4
 ```
 </details>
 <details>
@@ -2696,6 +2863,8 @@ gotosubscript2
 ```
 checkifchatot
 - 
+
+address: 0x0223F904
 ```
 </details>
 <details>
@@ -2704,6 +2873,8 @@ checkifchatot
 ```
 sethaze
 - 
+
+address: 0x0223FA1C
 ```
 </details>
 <details>
@@ -2712,6 +2883,8 @@ sethaze
 ```
 setsomeflag
 - 
+
+address: 0x0223FA6C
 ```
 </details>
 <details>
@@ -2720,6 +2893,8 @@ setsomeflag
 ```
 clearsomeflag
 - 
+
+address: 0x0223FA98
 ```
 </details>
 <details>
@@ -2728,6 +2903,8 @@ clearsomeflag
 ```
 setstatusicon
 - 
+
+address: 0x0223FAC4
 ```
 </details>
 <details>
@@ -2736,6 +2913,8 @@ setstatusicon
 ```
 trainermessage
 - 
+
+address: 0x0223FAFC
 ```
 </details>
 <details>
@@ -2744,6 +2923,8 @@ trainermessage
 ```
 calcmoney
 - 
+
+address: 0x0223FC4C
 ```
 </details>
 <details>
@@ -2754,6 +2935,8 @@ setstatus2effect battler, value
 sets status2 "value" bits for "battler" (condition2 in the BattlePokemon structure)
 - battler is the battler to grab status2 from
 - value comprises the bits to set in status2
+
+address: 0x0223FCDC
 ```
 </details>
 <details>
@@ -2762,6 +2945,8 @@ sets status2 "value" bits for "battler" (condition2 in the BattlePokemon structu
 ```
 setstatus2effect2
 - 
+
+address: 0x0223FD40
 ```
 </details>
 <details>
@@ -2770,6 +2955,8 @@ setstatus2effect2
 ```
 setstatus2effect3
 - 
+
+address: 0x0223FDCC
 ```
 </details>
 <details>
@@ -2778,6 +2965,8 @@ setstatus2effect3
 ```
 returnmessage
 - 
+
+address: 0x0223FE3C
 ```
 </details>
 <details>
@@ -2786,6 +2975,8 @@ returnmessage
 ```
 sentoutmessage
 - 
+
+address: 0x0223FE74
 ```
 </details>
 <details>
@@ -2794,6 +2985,8 @@ sentoutmessage
 ```
 encountermessage
 - 
+
+address: 0x0223FEAC
 ```
 </details>
 <details>
@@ -2802,6 +2995,8 @@ encountermessage
 ```
 encountermessage2
 - 
+
+address: 0x0223FED8
 ```
 </details>
 <details>
@@ -2810,6 +3005,8 @@ encountermessage2
 ```
 trainermessage2
 - 
+
+address: 0x0223FF04
 ```
 </details>
 <details>
@@ -2818,6 +3015,8 @@ trainermessage2
 ```
 tryconversion
 - 
+
+address: 0x0223FF34
 ```
 </details>
 <details>
@@ -2830,6 +3029,8 @@ jump to "address" if "var1" is related to "var2" as determined by "operator"
 - var1 is a var to compare
 - var2 is another var to compare against (i.e. IF_LESSTHAN is true if var1 < var2)
 - address is the location to jump to when the if is true
+
+address: 0x022400B0
 ```
 </details>
 <details>
@@ -2844,6 +3045,8 @@ jump to "address" if the "battler"'s stat designated by "field" is related to "v
 - field is the data to grab from.  enumerations below
 - variable is the variable to check against, used in the operator calculations as they appear in "if"
 - address is the location to jump to when the if is true
+
+address: 0x0224017C
 ```
 </details>
 <details>
@@ -2852,6 +3055,8 @@ jump to "address" if the "battler"'s stat designated by "field" is related to "v
 ```
 dopayday
 - 
+
+address: 0x02240250
 ```
 </details>
 <details>
@@ -2860,6 +3065,8 @@ dopayday
 ```
 setlightscreen
 - 
+
+address: 0x022402A0
 ```
 </details>
 <details>
@@ -2868,6 +3075,8 @@ setlightscreen
 ```
 setreflect
 - 
+
+address: 0x02240380
 ```
 </details>
 <details>
@@ -2876,6 +3085,8 @@ setreflect
 ```
 setmist
 - 
+
+address: 0x02240460
 ```
 </details>
 <details>
@@ -2884,6 +3095,8 @@ setmist
 ```
 tryonehitko
 - 
+
+address: 0x022404E0
 ```
 </details>
 <details>
@@ -2894,6 +3107,8 @@ damagediv var, value
 sets damage to be "var" / "value"
 - var is the numerator in the division
 - value is the denominator in the division
+
+address: 0x022406D4
 ```
 </details>
 <details>
@@ -2902,6 +3117,8 @@ sets damage to be "var" / "value"
 ```
 damagediv2
 - 
+
+address: 0x0224070C
 ```
 </details>
 <details>
@@ -2910,6 +3127,8 @@ damagediv2
 ```
 trymimic
 - 
+
+address: 0x02240764
 ```
 </details>
 <details>
@@ -2918,6 +3137,8 @@ trymimic
 ```
 metronome
 - 
+
+address: 0x0224089C
 ```
 </details>
 <details>
@@ -2926,6 +3147,8 @@ metronome
 ```
 trydisable
 - 
+
+address: 0x022408FC
 ```
 </details>
 <details>
@@ -2934,6 +3157,8 @@ trydisable
 ```
 counter
 - 
+
+address: 0x022409B8
 ```
 </details>
 <details>
@@ -2942,6 +3167,8 @@ counter
 ```
 mirrorcoat
 - 
+
+address: 0x02240AB4
 ```
 </details>
 <details>
@@ -2950,6 +3177,8 @@ mirrorcoat
 ```
 tryencore
 - 
+
+address: 0x02240BB0
 ```
 </details>
 <details>
@@ -2958,6 +3187,8 @@ tryencore
 ```
 tryconversion2
 - 
+
+address: 0x02240C98
 ```
 </details>
 <details>
@@ -2966,6 +3197,8 @@ tryconversion2
 ```
 trysketch
 - 
+
+address: 0x02240E58
 ```
 </details>
 <details>
@@ -2974,6 +3207,8 @@ trysketch
 ```
 trysleeptalk
 - 
+
+address: 0x02240F7C
 ```
 </details>
 <details>
@@ -2982,6 +3217,8 @@ trysleeptalk
 ```
 flaildamagecalc
 - 
+
+address: 0x02241048
 ```
 </details>
 <details>
@@ -2990,6 +3227,8 @@ flaildamagecalc
 ```
 tryspite
 - 
+
+address: 0x0224109C
 ```
 </details>
 <details>
@@ -2998,6 +3237,8 @@ tryspite
 ```
 healbell
 - 
+
+address: 0x02241140
 ```
 </details>
 <details>
@@ -3006,6 +3247,8 @@ healbell
 ```
 trythief
 - 
+
+address: 0x02241290
 ```
 </details>
 <details>
@@ -3014,6 +3257,8 @@ trythief
 ```
 willprotectwork
 - 
+
+address: 0x022413B4
 ```
 </details>
 <details>
@@ -3022,6 +3267,8 @@ willprotectwork
 ```
 trysubstitute
 - 
+
+address: 0x022414F0
 ```
 </details>
 <details>
@@ -3030,6 +3277,8 @@ trysubstitute
 ```
 trywhirlwind
 - 
+
+address: 0x0224156C
 ```
 </details>
 <details>
@@ -3038,6 +3287,8 @@ trywhirlwind
 ```
 transform
 - 
+
+address: 0x02241708
 ```
 </details>
 <details>
@@ -3046,6 +3297,8 @@ transform
 ```
 tryspikes
 - 
+
+address: 0x022418FC
 ```
 </details>
 <details>
@@ -3054,6 +3307,8 @@ tryspikes
 ```
 checkspikes
 - 
+
+address: 0x02241980
 ```
 </details>
 <details>
@@ -3062,6 +3317,8 @@ checkspikes
 ```
 tryperishsong
 - 
+
+address: 0x02241A04
 ```
 </details>
 <details>
@@ -3070,6 +3327,8 @@ tryperishsong
 ```
 orderbattlersbyspeed
 - 
+
+address: 0x02241AB4
 ```
 </details>
 <details>
@@ -3078,6 +3337,8 @@ orderbattlersbyspeed
 ```
 exitloopatvalue
 - 
+
+address: 0x02241AEC
 ```
 </details>
 <details>
@@ -3086,6 +3347,8 @@ exitloopatvalue
 ```
 weatherdamagecalc
 - 
+
+address: 0x02241B30
 ```
 </details>
 <details>
@@ -3094,6 +3357,8 @@ weatherdamagecalc
 ```
 rolloutdamagecalc
 - 
+
+address: 0x02241DF4
 ```
 </details>
 <details>
@@ -3102,6 +3367,8 @@ rolloutdamagecalc
 ```
 furycutterdamagecalc
 - 
+
+address: 0x02241F10
 ```
 </details>
 <details>
@@ -3110,6 +3377,8 @@ furycutterdamagecalc
 ```
 tryattract
 - 
+
+address: 0x02241FA0
 ```
 </details>
 <details>
@@ -3118,6 +3387,8 @@ tryattract
 ```
 trysafeguard
 - 
+
+address: 0x02242024
 ```
 </details>
 <details>
@@ -3126,6 +3397,8 @@ trysafeguard
 ```
 trypresent
 - 
+
+address: 0x022420B8
 ```
 </details>
 <details>
@@ -3134,6 +3407,8 @@ trypresent
 ```
 magnitudedamagecalc
 - 
+
+address: 0x0224212C
 ```
 </details>
 <details>
@@ -3142,6 +3417,8 @@ magnitudedamagecalc
 ```
 tryswitchinmon
 - 
+
+address: 0x022421D4
 ```
 </details>
 <details>
@@ -3150,6 +3427,8 @@ tryswitchinmon
 ```
 dorapidspineffect
 - 
+
+address: 0x02242238
 ```
 </details>
 <details>
@@ -3158,6 +3437,8 @@ dorapidspineffect
 ```
 changehprecoverybasedonweather
 - 
+
+address: 0x02242380
 ```
 </details>
 <details>
@@ -3166,6 +3447,8 @@ changehprecoverybasedonweather
 ```
 hiddenpowerdamagecalc
 - 
+
+address: 0x02242424
 ```
 </details>
 <details>
@@ -3174,6 +3457,8 @@ hiddenpowerdamagecalc
 ```
 dopsychup
 - 
+
+address: 0x02242510
 ```
 </details>
 <details>
@@ -3182,6 +3467,8 @@ dopsychup
 ```
 tryfuturesight
 - 
+
+address: 0x02242570
 ```
 </details>
 <details>
@@ -3190,6 +3477,8 @@ tryfuturesight
 ```
 checkhitrate
 - 
+
+address: 0x0224265C
 ```
 </details>
 <details>
@@ -3198,6 +3487,8 @@ checkhitrate
 ```
 tryteleport
 - 
+
+address: 0x022426DC
 ```
 </details>
 <details>
@@ -3206,6 +3497,8 @@ tryteleport
 ```
 beatupdamagecalc
 - 
+
+address: 0x02242710
 ```
 </details>
 <details>
@@ -3214,6 +3507,8 @@ beatupdamagecalc
 ```
 dofollowme
 - 
+
+address: 0x0224296C
 ```
 </details>
 <details>
@@ -3222,6 +3517,8 @@ dofollowme
 ```
 tryhelpinghand
 - 
+
+address: 0x022429AC
 ```
 </details>
 <details>
@@ -3230,6 +3527,8 @@ tryhelpinghand
 ```
 trytrick
 - 
+
+address: 0x02242A50
 ```
 </details>
 <details>
@@ -3238,6 +3537,8 @@ trytrick
 ```
 trywish
 - 
+
+address: 0x02242B58
 ```
 </details>
 <details>
@@ -3246,6 +3547,8 @@ trywish
 ```
 tryassist
 - 
+
+address: 0x02242B9C
 ```
 </details>
 <details>
@@ -3254,6 +3557,8 @@ tryassist
 ```
 trymagiccoat
 - 
+
+address: 0x02242C80
 ```
 </details>
 <details>
@@ -3262,6 +3567,8 @@ trymagiccoat
 ```
 trymagiccoat2
 - 
+
+address: 0x02242CDC
 ```
 </details>
 <details>
@@ -3270,6 +3577,8 @@ trymagiccoat2
 ```
 dorevenge
 - 
+
+address: 0x02242D90
 ```
 </details>
 <details>
@@ -3278,6 +3587,8 @@ dorevenge
 ```
 trybreakscreens
 - 
+
+address: 0x02242E00
 ```
 </details>
 <details>
@@ -3286,6 +3597,8 @@ trybreakscreens
 ```
 tryyawn
 - 
+
+address: 0x02242E74
 ```
 </details>
 <details>
@@ -3294,6 +3607,8 @@ tryyawn
 ```
 tryknockitemoff
 - 
+
+address: 0x02242EB4
 ```
 </details>
 <details>
@@ -3302,6 +3617,8 @@ tryknockitemoff
 ```
 eruptiondamagecalc
 - 
+
+address: 0x02242FD8
 ```
 </details>
 <details>
@@ -3310,6 +3627,8 @@ eruptiondamagecalc
 ```
 tryimprison
 - 
+
+address: 0x02243030
 ```
 </details>
 <details>
@@ -3318,6 +3637,8 @@ tryimprison
 ```
 trygrudge
 - 
+
+address: 0x02243148
 ```
 </details>
 <details>
@@ -3326,6 +3647,8 @@ trygrudge
 ```
 trysnatch
 - 
+
+address: 0x022431F0
 ```
 </details>
 <details>
@@ -3334,6 +3657,8 @@ trysnatch
 ```
 lowkickdamagecalc
 - 
+
+address: 0x0224324C
 ```
 </details>
 <details>
@@ -3342,6 +3667,8 @@ lowkickdamagecalc
 ```
 weatherballdamagecalc
 - 
+
+address: 0x022432AC
 ```
 </details>
 <details>
@@ -3350,6 +3677,8 @@ weatherballdamagecalc
 ```
 trypursuit
 - 
+
+address: 0x0224336C
 ```
 </details>
 <details>
@@ -3358,6 +3687,8 @@ trypursuit
 ```
 typecheck
 - 
+
+address: 0x02243510
 ```
 </details>
 <details>
@@ -3366,6 +3697,8 @@ typecheck
 ```
 checkoneturnflag
 - 
+
+address: 0x02243558
 ```
 </details>
 <details>
@@ -3374,6 +3707,8 @@ checkoneturnflag
 ```
 setoneturnflag
 - 
+
+address: 0x0224365C
 ```
 </details>
 <details>
@@ -3382,6 +3717,8 @@ setoneturnflag
 ```
 gyroballdamagecalc
 - 
+
+address: 0x02243754
 ```
 </details>
 <details>
@@ -3390,6 +3727,8 @@ gyroballdamagecalc
 ```
 metalburstdamagecalc
 - 
+
+address: 0x02243798
 ```
 </details>
 <details>
@@ -3398,6 +3737,8 @@ metalburstdamagecalc
 ```
 paybackdamagecalc
 - 
+
+address: 0x0224388C
 ```
 </details>
 <details>
@@ -3406,6 +3747,8 @@ paybackdamagecalc
 ```
 trumpcarddamagecalc
 - 
+
+address: 0x022438D4
 ```
 </details>
 <details>
@@ -3414,6 +3757,8 @@ trumpcarddamagecalc
 ```
 wringoutdamagecalc
 - 
+
+address: 0x02243918
 ```
 </details>
 <details>
@@ -3422,6 +3767,8 @@ wringoutdamagecalc
 ```
 trymefirst
 - 
+
+address: 0x02243950
 ```
 </details>
 <details>
@@ -3430,6 +3777,8 @@ trymefirst
 ```
 trycopycat
 - 
+
+address: 0x02243A0C
 ```
 </details>
 <details>
@@ -3438,6 +3787,8 @@ trycopycat
 ```
 punishmentdamagecalc
 - 
+
+address: 0x02243A68
 ```
 </details>
 <details>
@@ -3446,6 +3797,8 @@ punishmentdamagecalc
 ```
 trysuckerpunch
 - 
+
+address: 0x02243AC0
 ```
 </details>
 <details>
@@ -3454,6 +3807,8 @@ trysuckerpunch
 ```
 checkbattlercondition
 - 
+
+address: 0x02243B3C
 ```
 </details>
 <details>
@@ -3462,6 +3817,8 @@ checkbattlercondition
 ```
 tryfeint
 - 
+
+address: 0x02243D20
 ```
 </details>
 <details>
@@ -3470,6 +3827,8 @@ tryfeint
 ```
 trypsychoshift
 - 
+
+address: 0x02243D50
 ```
 </details>
 <details>
@@ -3478,6 +3837,8 @@ trypsychoshift
 ```
 trylastresort
 - 
+
+address: 0x02243D9C
 ```
 </details>
 <details>
@@ -3486,6 +3847,8 @@ trylastresort
 ```
 trytoxicspikes
 - 
+
+address: 0x02243DE8
 ```
 </details>
 <details>
@@ -3494,6 +3857,8 @@ trytoxicspikes
 ```
 checktoxicspikes
 - 
+
+address: 0x02243E6C
 ```
 </details>
 <details>
@@ -3502,6 +3867,8 @@ checktoxicspikes
 ```
 moldbreakerabilitycheck
 - 
+
+address: 0x02243F18
 ```
 </details>
 <details>
@@ -3510,6 +3877,8 @@ moldbreakerabilitycheck
 ```
 checkbattlersequal
 - 
+
+address: 0x02244040
 ```
 </details>
 <details>
@@ -3518,6 +3887,8 @@ checkbattlersequal
 ```
 trypickup
 - 
+
+address: 0x022440A0
 ```
 </details>
 <details>
@@ -3526,6 +3897,8 @@ trypickup
 ```
 dotrickroom
 - 
+
+address: 0x02244224
 ```
 </details>
 <details>
@@ -3534,6 +3907,8 @@ dotrickroom
 ```
 checkmovefinished
 - 
+
+address: 0x0224424C
 ```
 </details>
 <details>
@@ -3547,6 +3922,8 @@ conditional flow command that is based on item effect
 - battler is the battler to check against
 - effect is the held item effect to compare to
 - address is the address to jump to
+
+address: 0x0224428C
 ```
 </details>
 <details>
@@ -3557,6 +3934,8 @@ getitemeffect battler, var
 grabs the item held effect from "battler" and puts it in "var"
 - battler is the battler to grab the item held effect from
 - var is the var to store the item held effect in
+
+address: 0x022442F8
 ```
 </details>
 <details>
@@ -3567,6 +3946,8 @@ getitempower battler, variable
 grabs the item power field from the item data narc and puts it in variable
 - battler is the battler that has the item to grab the item power from
 - variable is the variable to store the item power in
+
+address: 0x02244344
 ```
 </details>
 <details>
@@ -3575,6 +3956,8 @@ grabs the item power field from the item data narc and puts it in variable
 ```
 trycamouflage
 - 
+
+address: 0x02244390
 ```
 </details>
 <details>
@@ -3583,6 +3966,8 @@ trycamouflage
 ```
 donaturepower
 - 
+
+address: 0x02244428
 ```
 </details>
 <details>
@@ -3591,6 +3976,8 @@ donaturepower
 ```
 dosecretpower
 - 
+
+address: 0x02244458
 ```
 </details>
 <details>
@@ -3599,6 +3986,8 @@ dosecretpower
 ```
 trynaturalgift
 - 
+
+address: 0x02244488
 ```
 </details>
 <details>
@@ -3607,6 +3996,8 @@ trynaturalgift
 ```
 trypluck
 - 
+
+address: 0x022444D0
 ```
 </details>
 <details>
@@ -3615,6 +4006,8 @@ trypluck
 ```
 tryfling
 - 
+
+address: 0x0224454C
 ```
 </details>
 <details>
@@ -3623,6 +4016,8 @@ tryfling
 ```
 yesnobox
 - 
+
+address: 0x0224457C
 ```
 </details>
 <details>
@@ -3631,6 +4026,8 @@ yesnobox
 ```
 yesnowait
 - 
+
+address: 0x022445AC
 ```
 </details>
 <details>
@@ -3639,6 +4036,8 @@ yesnowait
 ```
 monlist
 - 
+
+address: 0x0224460C
 ```
 </details>
 <details>
@@ -3647,6 +4046,8 @@ monlist
 ```
 monlistwait
 - 
+
+address: 0x0224463C
 ```
 </details>
 <details>
@@ -3655,6 +4056,8 @@ monlistwait
 ```
 setbattleresult
 - 
+
+address: 0x02244688
 ```
 </details>
 <details>
@@ -3663,6 +4066,8 @@ setbattleresult
 ```
 checkstealthrock
 - 
+
+address: 0x022446AC
 ```
 </details>
 <details>
@@ -3671,6 +4076,8 @@ checkstealthrock
 ```
 checkeffectactivation
 - 
+
+address: 0x022447B8
 ```
 </details>
 <details>
@@ -3679,6 +4086,8 @@ checkeffectactivation
 ```
 checkchatteractivation
 - 
+
+address: 0x02244840
 ```
 </details>
 <details>
@@ -3688,8 +4097,9 @@ checkchatteractivation
 getmoveparameter field
 grabs parameter "field" from the move data structure and stores in VAR_09
 - "field" is the data to grab from the move, enumerations below
-```
-```c
+
+address: 0x022448EC
+
 getmoveparameter fields:
 
 #define MOVE_DATA_BATTLE_EFFECT 0
@@ -3712,6 +4122,8 @@ getmoveparameter fields:
 ```
 mosaic
 - 
+
+address: 0x02244924
 ```
 </details>
 <details>
@@ -3720,6 +4132,8 @@ mosaic
 ```
 changeform
 - 
+
+address: 0x02244964
 ```
 </details>
 <details>
@@ -3728,6 +4142,8 @@ changeform
 ```
 changebackground
 - 
+
+address: 0x02244990
 ```
 </details>
 <details>
@@ -3736,6 +4152,8 @@ changebackground
 ```
 recoverstatus
 - 
+
+address: 0x022449A8
 ```
 </details>
 <details>
@@ -3744,6 +4162,8 @@ recoverstatus
 ```
 tryescape
 - 
+
+address: 0x022449E8
 ```
 </details>
 <details>
@@ -3752,6 +4172,8 @@ tryescape
 ```
 initstartballguage
 - 
+
+address: 0x02244A2C
 ```
 </details>
 <details>
@@ -3760,6 +4182,8 @@ initstartballguage
 ```
 deletestartballguage
 - 
+
+address: 0x02244A58
 ```
 </details>
 <details>
@@ -3768,6 +4192,8 @@ deletestartballguage
 ```
 initballguage
 - 
+
+address: 0x02244A84
 ```
 </details>
 <details>
@@ -3776,6 +4202,8 @@ initballguage
 ```
 deleteballguage
 - 
+
+address: 0x02244AB0
 ```
 </details>
 <details>
@@ -3784,6 +4212,8 @@ deleteballguage
 ```
 loadballgfx
 - 
+
+address: 0x02244ADC
 ```
 </details>
 <details>
@@ -3792,6 +4222,8 @@ loadballgfx
 ```
 deleteballgfx
 - 
+
+address: 0x02244AF4
 ```
 </details>
 <details>
@@ -3800,6 +4232,8 @@ deleteballgfx
 ```
 incrementgamestat
 - 
+
+address: 0x02244B0C
 ```
 </details>
 <details>
@@ -3808,6 +4242,8 @@ incrementgamestat
 ```
 cmd_C4
 - 
+
+address: 0x02244B4C
 ```
 </details>
 <details>
@@ -3816,6 +4252,8 @@ cmd_C4
 ```
 checkifcurrentmovehits
 - 
+
+address: 0x02244B78
 ```
 </details>
 <details>
@@ -3824,6 +4262,8 @@ checkifcurrentmovehits
 ```
 cmd_C6
 - 
+
+address: 0x02244BAC
 ```
 </details>
 <details>
@@ -3832,6 +4272,8 @@ cmd_C6
 ```
 cmd_C7
 - 
+
+address: 0x02244C3C
 ```
 </details>
 <details>
@@ -3840,6 +4282,8 @@ cmd_C7
 ```
 checkwipeout
 - 
+
+address: 0x02244CCC
 ```
 </details>
 <details>
@@ -3848,6 +4292,7 @@ checkwipeout
 ```
 tryacupressure
 - 
+address: 0x02244E78
 ```
 </details>
 <details>
@@ -3856,6 +4301,8 @@ tryacupressure
 ```
 removeitem
 - 
+
+address: 0x02244EF8
 ```
 </details>
 <details>
@@ -3864,6 +4311,8 @@ removeitem
 ```
 tryrecycle
 - 
+
+address: 0x02244F44
 ```
 </details>
 <details>
@@ -3872,6 +4321,8 @@ tryrecycle
 ```
 itemeffectcheckonhit
 - 
+
+address: 0x02244F88
 ```
 </details>
 <details>
@@ -3880,6 +4331,8 @@ itemeffectcheckonhit
 ```
 battleresultmessage
 - 
+
+address: 0x02244FBC
 ```
 </details>
 <details>
@@ -3888,6 +4341,8 @@ battleresultmessage
 ```
 runawaymessage
 - 
+
+address: 0x02244FD4
 ```
 </details>
 <details>
@@ -3896,14 +4351,18 @@ runawaymessage
 ```
 giveupmessage
 - 
+
+address: 0x02244FF0
 ```
 </details>
 <details>
-<summary>cmd_D0_checkhpsomething - 0xD0</summary>
+<summary>cmd_D0_checkhpsomething - 0xD0 (suggested name: check1hp)</summary>
 
 ```
 cmd_D0_checkhpsomething
 - 
+
+address: 0x02245008
 ```
 </details>
 <details>
@@ -3912,6 +4371,8 @@ cmd_D0_checkhpsomething
 ```
 trynaturalcure
 - 
+
+address: 0x022450B0
 ```
 </details>
 <details>
@@ -3920,6 +4381,8 @@ trynaturalcure
 ```
 checknostatus
 - 
+
+address: 0x0224514C
 ```
 </details>
 <details>
@@ -3928,6 +4391,8 @@ checknostatus
 ```
 checkcloudnine
 - 
+
+address: 0x022451A8
 ```
 </details>
 <details>
@@ -3937,6 +4402,8 @@ checkcloudnine
 cmd_D4 battler
 not sure what this command does.
 - battler is the battler to affect
+
+address: 0x022451F8
 ```
 </details>
 <details>
@@ -3945,6 +4412,8 @@ not sure what this command does.
 ```
 checkwhenitemmakesmovehit
 - 
+
+address: 0x02245228
 ```
 </details>
 <details>
@@ -3953,6 +4422,8 @@ checkwhenitemmakesmovehit
 ```
 cmd_D6
 - 
+
+address: 0x0224525C
 ```
 </details>
 <details>
@@ -3962,6 +4433,8 @@ cmd_D6
 playmovesoundeffect battler
 plays the move's damaging sound effect
 - battler is the basis of the sound pan
+
+address: 0x02245288
 ```
 </details>
 <details>
@@ -3970,6 +4443,8 @@ plays the move's damaging sound effect
 ```
 playsong
 - 
+
+address: 0x022452B4
 ```
 </details>
 <details>
@@ -3978,6 +4453,8 @@ playsong
 ```
 checkifsafariencounterdone
 - 
+
+address: 0x022452EC
 ```
 </details>
 <details>
@@ -3986,6 +4463,8 @@ checkifsafariencounterdone
 ```
 waitwithoutbuttonpress
 - 
+
+address: 0x02245324
 ```
 </details>
 <details>
@@ -3994,6 +4473,8 @@ waitwithoutbuttonpress
 ```
 checkmovetypematches
 - 
+
+address: 0x02245390
 ```
 </details>
 <details>
@@ -4002,6 +4483,8 @@ checkmovetypematches
 ```
 getdatafrompersonalnarc
 - 
+
+address: 0x022453D0
 ```
 </details>
 <details>
@@ -4010,6 +4493,8 @@ getdatafrompersonalnarc
 ```
 refreshmondata
 - 
+
+address: 0x02245418
 ```
 </details>
 <details>
@@ -4018,6 +4503,8 @@ refreshmondata
 ```
 cmd_DE
 - 
+
+address: 0x02245450
 ```
 </details>
 <details>
@@ -4026,6 +4513,8 @@ cmd_DE
 ```
 cmd_DF
 - 
+
+address: 0x022454A0
 ```
 </details>
 <details>
@@ -4034,6 +4523,8 @@ cmd_DF
 ```
 endscript
 ends the script and hands exection back to the overall battle engine if nothing else is queued
+
+address: 0x022454CC
 ```
 </details>
 </details>
