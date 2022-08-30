@@ -2729,8 +2729,11 @@ changevar operators:
 <summary>statbuffchange - 0x33</summary>
 
 ```
-statbuffchange
-- 
+statbuffchange address1, address2, address3
+buffers the messages for a stat being changed, either lowered or increased
+- address1 is the failure address for if the stat won't change and a message needs to be printed
+- address2 is the failure address for if the stat won't change and a message doesn't need to be printed (like an ability canceling out)
+- address3 is the failure address for a specific circumstance that i am not sure of as of yet
 
 address: 0x0223ED78
 ```
@@ -2754,8 +2757,8 @@ address: 0x0223F38C
 <summary>clearstatus2 - 0x35</summary>
 
 ```
-clearstatus2
-- 
+clearstatus2 battler, value
+unused command
 
 address: 0x0223F4B0
 ```
@@ -2764,8 +2767,10 @@ address: 0x0223F4B0
 <summary>togglevanish - 0x36</summary>
 
 ```
-togglevanish
-- 
+togglevanish battler, bool
+toggles the visibility of the sprite belonging to "battler" based on "bool", invisible if "bool" is 1, visible if "bool" is 0
+- battler is the battler whose sprite to manipulate
+- bool determines whether or not the sprite is made invisible (1) or visible (0)
 
 address: 0x0223F4EC
 ```
@@ -2830,8 +2835,9 @@ address: 0x0223F734
 <summary>goto - 0x3B</summary>
 
 ```
-goto
-- 
+goto address
+moves script execution to "address" without return
+- address is the location to jump to
 
 address: 0x0223F894
 ```
@@ -2851,18 +2857,19 @@ address: 0x0223F8B4
 <summary>gotosubscript2 - 0x3D</summary>
 
 ```
-gotosubscript2
-- 
+gotosubscript2 var
+calls battle_sub_seq script that is the value of "var".  returns to the caller after an endscript is reached
+- var is the variable holding the index of the battle_sub_seq script to jump to
 
 address: 0x0223F8D4
 ```
 </details>
 <details>
-<summary>checkifchatot - 0x3E</summary>
+<summary>checkifchatot - 0x3E (suggested name: setmovetomirrormove)</summary>
 
 ```
 checkifchatot
-- 
+sets current move to one that mirror move has copied and immediately jumps to its effect script.  if the command fails, the script continues, otherwise the new move is run
 
 address: 0x0223F904
 ```
@@ -2872,7 +2879,7 @@ address: 0x0223F904
 
 ```
 sethaze
-- 
+sets all stat changes of all pokemon to neutral 6 (+0)
 
 address: 0x0223FA1C
 ```
@@ -2881,8 +2888,9 @@ address: 0x0223FA1C
 <summary>setsomeflag - 0x40</summary>
 
 ```
-setsomeflag
-- 
+setsomeflag battler
+not sure what this command does
+- battler is the battler whose flag to set (?)
 
 address: 0x0223FA6C
 ```
@@ -2891,8 +2899,9 @@ address: 0x0223FA6C
 <summary>clearsomeflag - 0x41</summary>
 
 ```
-clearsomeflag
-- 
+clearsomeflag battler
+undoes the effects of "setsomeflag".  not sure what this command does
+- battler is the battler whose flag to clear (?)
 
 address: 0x0223FA98
 ```
@@ -2901,8 +2910,10 @@ address: 0x0223FA98
 <summary>setstatusicon - 0x42</summary>
 
 ```
-setstatusicon
-- 
+setstatusicon battler, icon
+appears to set the icon in the hp gauge
+- battler is the battler whose gauge to manipulate
+- icon is the status to set
 
 address: 0x0223FAC4
 ```
@@ -2911,8 +2922,10 @@ address: 0x0223FAC4
 <summary>trainermessage - 0x43</summary>
 
 ```
-trainermessage
-- 
+trainermessage battler, type
+i believe this command prints the trainer message after it slides in and such
+- battler is the trainer to print a message from
+- type determines if the message is a slide-in message, a battle ending message, etc.
 
 address: 0x0223FAFC
 ```
@@ -2922,7 +2935,7 @@ address: 0x0223FAFC
 
 ```
 calcmoney
-- 
+calculates the amount of money that the player gets for winning the battle
 
 address: 0x0223FC4C
 ```
@@ -2943,8 +2956,11 @@ address: 0x0223FCDC
 <summary>setstatus2effect2 - 0x46</summary>
 
 ```
-setstatus2effect2
-- 
+setstatus2effect2 battler1, battler2, value
+sets status2 "value" bits for "battler2" (condition2 in the BattlePokemon structure) based on "battler1"
+- battler1 is the attacker
+- battler2 is the battler to grab status2 from
+- value comprises the bits to set in status2
 
 address: 0x0223FD40
 ```
@@ -2953,8 +2969,10 @@ address: 0x0223FD40
 <summary>setstatus2effect3 - 0x47</summary>
 
 ```
-setstatus2effect3
-- 
+setstatus2effect3 battler, var
+sets status2 "var" bits for "battler" (condition2 in the BattlePokemon structure)
+- battler is the battler to grab status2 from
+- var has a value of the bits to set in status2
 
 address: 0x0223FDCC
 ```
@@ -2963,8 +2981,9 @@ address: 0x0223FDCC
 <summary>returnmessage - 0x48</summary>
 
 ```
-returnmessage
-- 
+returnmessage battler
+plays the message that returns "battler" to its poke ball
+- battler is the battler returning to its poke ball
 
 address: 0x0223FE3C
 ```
@@ -2973,8 +2992,9 @@ address: 0x0223FE3C
 <summary>sentoutmessage - 0x49</summary>
 
 ```
-sentoutmessage
-- 
+sentoutmessage battler
+plays the message that sends out "battler" from its poke ball
+- battler is the battler being sent out of its poke ball
 
 address: 0x0223FE74
 ```
@@ -2983,8 +3003,9 @@ address: 0x0223FE74
 <summary>encountermessage - 0x4A</summary>
 
 ```
-encountermessage
-- 
+encountermessage battler
+plays the message that prints when the trainers have slid in
+- battler is the battler being sent out of its poke ball
 
 address: 0x0223FEAC
 ```
@@ -2993,8 +3014,9 @@ address: 0x0223FEAC
 <summary>encountermessage2 - 0x4B</summary>
 
 ```
-encountermessage2
-- 
+encountermessage2 battler
+not sure what this command does.  seems to be similar to "encountermessage"
+- battler is the battler being sent out of its poke ball
 
 address: 0x0223FED8
 ```
@@ -3003,8 +3025,9 @@ address: 0x0223FED8
 <summary>trainermessage2 - 0x4C</summary>
 
 ```
-trainermessage2
-- 
+trainermessage2 var
+i believe this command prints the trainer message after it slides in and such.  like "trainermessage", but var-based
+- var contains the value of the trainer to print a message from
 
 address: 0x0223FF04
 ```
@@ -3013,8 +3036,9 @@ address: 0x0223FF04
 <summary>tryconversion - 0x4D</summary>
 
 ```
-tryconversion
-- 
+tryconversion address
+attempts to do conversion's effect, jumping to "address" if it fails
+- address is where the script jumps to if the command fails
 
 address: 0x0223FF34
 ```
@@ -3054,7 +3078,7 @@ address: 0x0224017C
 
 ```
 dopayday
-- 
+stores payday money dropped in VAR_22
 
 address: 0x02240250
 ```
@@ -3063,8 +3087,9 @@ address: 0x02240250
 <summary>setlightscreen - 0x51</summary>
 
 ```
-setlightscreen
-- 
+setlightscreen address
+try and set light screen, jump to "address" if the command fails
+- address is where the script jumps to if the command fails
 
 address: 0x022402A0
 ```
@@ -3073,8 +3098,9 @@ address: 0x022402A0
 <summary>setreflect - 0x52</summary>
 
 ```
-setreflect
-- 
+setreflect address
+try and set reflect, jump to "address" if the command fails
+- address is where the script jumps to if the command fails
 
 address: 0x02240380
 ```
@@ -3084,7 +3110,8 @@ address: 0x02240380
 
 ```
 setmist
-- 
+try and set mist, jump to "address" if the command fails
+- address is where the script jumps to if the command fails
 
 address: 0x02240460
 ```
@@ -3094,7 +3121,7 @@ address: 0x02240460
 
 ```
 tryonehitko
-- 
+the accuracy calculator for one-hit KO moves
 
 address: 0x022404E0
 ```
