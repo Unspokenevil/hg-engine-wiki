@@ -3132,6 +3132,7 @@ address: 0x022404E0
 ```
 damagediv var, value
 sets damage to be "var" / "value"
+often used for setting the damage to 1/8 the max hp or similar
 - var is the numerator in the division
 - value is the denominator in the division
 
@@ -3142,8 +3143,10 @@ address: 0x022406D4
 <summary>damagediv2 - 0x56</summary>
 
 ```
-damagediv2
-- 
+damagediv2 var1, var2
+sets damage to be "var1" / "var2"
+- var1 is the denominator in the division
+- var2 is the numerator in the division
 
 address: 0x0224070C
 ```
@@ -3152,8 +3155,9 @@ address: 0x0224070C
 <summary>trymimic - 0x57</summary>
 
 ```
-trymimic
-- 
+trymimic address
+tries to execute mimic's effect
+- address is where the script jumps to if the command fails
 
 address: 0x02240764
 ```
@@ -3163,7 +3167,7 @@ address: 0x02240764
 
 ```
 metronome
-- 
+sets work move to random move, checks to see if it's valid, then jumps to its effect script
 
 address: 0x0224089C
 ```
@@ -3172,8 +3176,9 @@ address: 0x0224089C
 <summary>trydisable - 0x59</summary>
 
 ```
-trydisable
-- 
+trydisable address
+tries to execute disable's effect
+- address is where the script jumps to if the command fails
 
 address: 0x022408FC
 ```
@@ -3183,7 +3188,7 @@ address: 0x022408FC
 
 ```
 counter
-- 
+executes counter's effect, including the failure mode
 
 address: 0x022409B8
 ```
@@ -3193,7 +3198,7 @@ address: 0x022409B8
 
 ```
 mirrorcoat
-- 
+executes mirror coat's effect, including the failure mode
 
 address: 0x02240AB4
 ```
@@ -3202,8 +3207,9 @@ address: 0x02240AB4
 <summary>tryencore - 0x5C</summary>
 
 ```
-tryencore
-- 
+tryencore address
+tries to execute encore's effect
+- address is where the script jumps to if the command fails
 
 address: 0x02240BB0
 ```
@@ -3212,8 +3218,9 @@ address: 0x02240BB0
 <summary>tryconversion2 - 0x5D</summary>
 
 ```
-tryconversion2
-- 
+tryconversion2 address
+tries to execute conversion2's effect
+- address is where the script jumps to if the command fails
 
 address: 0x02240C98
 ```
@@ -3222,8 +3229,9 @@ address: 0x02240C98
 <summary>trysketch - 0x5E</summary>
 
 ```
-trysketch
-- 
+trysketch address
+tries to execute sketch's effect
+- address is where the script jumps to if the command fails
 
 address: 0x02240E58
 ```
@@ -3232,8 +3240,9 @@ address: 0x02240E58
 <summary>trysleeptalk - 0x5F</summary>
 
 ```
-trysleeptalk
-- 
+trysleeptalk address
+tries to execute sleep talk's effect
+- address is where the script jumps to if the command fails
 
 address: 0x02240F7C
 ```
@@ -3243,7 +3252,7 @@ address: 0x02240F7C
 
 ```
 flaildamagecalc
-- 
+alternate damage calculator for flail
 
 address: 0x02241048
 ```
@@ -3252,8 +3261,9 @@ address: 0x02241048
 <summary>tryspite - 0x61</summary>
 
 ```
-tryspite
-- 
+tryspite address
+tries to execute spite's effect
+- address is where the script jumps to if the command fails
 
 address: 0x0224109C
 ```
@@ -3263,7 +3273,7 @@ address: 0x0224109C
 
 ```
 healbell
-- 
+executes heal bell's effect.  turns VAR_09 into a bitfield depending on if the attacker and attacker's partner need to be healed
 
 address: 0x02241140
 ```
@@ -3272,18 +3282,20 @@ address: 0x02241140
 <summary>trythief - 0x63</summary>
 
 ```
-trythief
-- 
+trythief address
+tries to execute thief's effect
+- address is where the script jumps to if the command fails
 
 address: 0x02241290
 ```
 </details>
 <details>
-<summary>willprotectwork - 0x64</summary>
+<summary>willprotectwork - 0x64 (suggested name: tryprotect)</summary>
 
 ```
-willprotectwork
-- 
+willprotectwork address
+tries to execute protect's effect
+- address is where the script jumps to if the command fails
 
 address: 0x022413B4
 ```
@@ -3292,8 +3304,9 @@ address: 0x022413B4
 <summary>trysubstitute - 0x65</summary>
 
 ```
-trysubstitute
-- 
+trysubstitute address
+tries to execute substitute's effect
+- address is where the script jumps to if the command fails
 
 address: 0x022414F0
 ```
@@ -3302,8 +3315,9 @@ address: 0x022414F0
 <summary>trywhirlwind - 0x66</summary>
 
 ```
-trywhirlwind
-- 
+trywhirlwind address
+tries to execute whirlwind's effect
+- address is where the script jumps to if the command fails
 
 address: 0x0224156C
 ```
@@ -3313,7 +3327,7 @@ address: 0x0224156C
 
 ```
 transform
-- 
+executes transform's effect
 
 address: 0x02241708
 ```
@@ -3322,8 +3336,9 @@ address: 0x02241708
 <summary>tryspikes - 0x68</summary>
 
 ```
-tryspikes
-- 
+tryspikes address
+tries to execute spikes' effect
+- address is where the script jumps to if the command fails
 
 address: 0x022418FC
 ```
@@ -3332,8 +3347,10 @@ address: 0x022418FC
 <summary>checkspikes - 0x69</summary>
 
 ```
-checkspikes
-- 
+checkspikes battler, address
+checks if spikes is present on the battlefield for "battler".  jumps to "address" if there is not spikes present
+- battler is the battler to check for spikes
+- address is the address to jump to if spikes is not present
 
 address: 0x02241980
 ```
@@ -3342,8 +3359,9 @@ address: 0x02241980
 <summary>tryperishsong - 0x6A</summary>
 
 ```
-tryperishsong
-- 
+tryperishsong address
+tries to execute perish song's effect
+- address is where the script jumps to if the command fails
 
 address: 0x02241A04
 ```
@@ -3352,18 +3370,21 @@ address: 0x02241A04
 <summary>orderbattlersbyspeed - 0x6B</summary>
 
 ```
-orderbattlersbyspeed
-- 
+orderbattlersbyspeed value
+recalculate the turn order of the pokemon?  "value" always seems to be 0x14 except for one case where it is 0x11
+- value i am not sure what it is
 
 address: 0x02241AB4
 ```
 </details>
 <details>
-<summary>exitloopatvalue - 0x6C</summary>
+<summary>exitloopatvalue - 0x6C (suggested name: jumpifvarisvalidbattler)</summary>
 
 ```
-exitloopatvalue
-- 
+exitloopatvalue var, address
+jumps to "address" if "var" contains a valid battler index.  used to jump through all the battlers
+- var is the variable that is the loop index with the battler index
+- address is the location to jump to if "var" has a valid battler index
 
 address: 0x02241AEC
 ```
@@ -3372,8 +3393,9 @@ address: 0x02241AEC
 <summary>weatherdamagecalc - 0x6D</summary>
 
 ```
-weatherdamagecalc
-- 
+weatherdamagecalc battler
+calculates the damage that the weather does to "battler"
+- battler is the battler damaged by the weather
 
 address: 0x02241B30
 ```
@@ -3383,7 +3405,7 @@ address: 0x02241B30
 
 ```
 rolloutdamagecalc
-- 
+calculates the damage done by rollout
 
 address: 0x02241DF4
 ```
@@ -3393,7 +3415,7 @@ address: 0x02241DF4
 
 ```
 furycutterdamagecalc
-- 
+calculates the damage done by fury cutter
 
 address: 0x02241F10
 ```
@@ -3402,8 +3424,9 @@ address: 0x02241F10
 <summary>tryattract - 0x70</summary>
 
 ```
-tryattract
-- 
+tryattract address
+tries to execute attract's effect
+- address is where the script jumps to if the command fails
 
 address: 0x02241FA0
 ```
@@ -3412,8 +3435,9 @@ address: 0x02241FA0
 <summary>trysafeguard - 0x71</summary>
 
 ```
-trysafeguard
-- 
+trysafeguard address
+tries to execute safeguard's effect
+- address is where the script jumps to if the command fails
 
 address: 0x02242024
 ```
@@ -3422,8 +3446,9 @@ address: 0x02242024
 <summary>trypresent - 0x72</summary>
 
 ```
-trypresent
-- 
+trypresent address
+tries to execute present's effect
+- address is where the script jumps to if the command fails
 
 address: 0x022420B8
 ```
@@ -3433,7 +3458,7 @@ address: 0x022420B8
 
 ```
 magnitudedamagecalc
-- 
+calculates the damage done by magnitude
 
 address: 0x0224212C
 ```
@@ -3442,18 +3467,21 @@ address: 0x0224212C
 <summary>tryswitchinmon - 0x74</summary>
 
 ```
-tryswitchinmon
-- 
+tryswitchinmon battler, num, address
+tries to switch "battler" out, jumps to "address" if "battler" can't switch.  "num" is always 1
+- battler is the battler to switch
+- num is always 1
+- address is the place to jump if the battler can't switch
 
 address: 0x022421D4
 ```
 </details>
 <details>
-<summary>dorapidspineffect - 0x75</summary>
+<summary>dorapidspineffect - 0x75 (suggested name:  rapidspin)</summary>
 
 ```
 dorapidspineffect
-- 
+do all of rapid spin's effects, like getting all of the hazards out of the way
 
 address: 0x02242238
 ```
@@ -3463,7 +3491,7 @@ address: 0x02242238
 
 ```
 changehprecoverybasedonweather
-- 
+changes the amount of hp recovered based on the weather for morning sun and moonlight
 
 address: 0x02242380
 ```
@@ -3473,17 +3501,17 @@ address: 0x02242380
 
 ```
 hiddenpowerdamagecalc
-- 
+calculates the damage done by hidden power.  also assigns the move type properly
 
 address: 0x02242424
 ```
 </details>
 <details>
-<summary>dopsychup - 0x78</summary>
+<summary>dopsychup - 0x78 (suggested name: psychup)</summary>
 
 ```
 dopsychup
-- 
+copies the stat changes of BATTLER_DEFENDER
 
 address: 0x02242510
 ```
@@ -3492,8 +3520,9 @@ address: 0x02242510
 <summary>tryfuturesight - 0x79</summary>
 
 ```
-tryfuturesight
-- 
+tryfuturesight address
+tries to execute future sight's effect
+- address is where the script jumps to if the command fails
 
 address: 0x02242570
 ```
@@ -3502,8 +3531,12 @@ address: 0x02242570
 <summary>checkhitrate - 0x7A</summary>
 
 ```
-checkhitrate
-- 
+checkhitrate attacker, defender, move, address
+checks if "attacker" using "move" on "defender" will hit.  jumps to "address" if not.  only used for spit up
+- attacker is the hypothetical attacker
+- defender is the hypothetical defender
+- move is the move to check
+- address is the location to jump if the move misses
 
 address: 0x0224265C
 ```
@@ -3512,8 +3545,9 @@ address: 0x0224265C
 <summary>tryteleport - 0x7B</summary>
 
 ```
-tryteleport
-- 
+tryteleport address
+tries to execute teleport's effect
+- address is where the script jumps to if the command fails
 
 address: 0x022426DC
 ```
@@ -3523,17 +3557,17 @@ address: 0x022426DC
 
 ```
 beatupdamagecalc
-- 
+calculates the damage done by beat up for each hit
 
 address: 0x02242710
 ```
 </details>
 <details>
-<summary>dofollowme - 0x7D</summary>
+<summary>dofollowme - 0x7D (suggested name:  followme)</summary>
 
 ```
 dofollowme
-- 
+executes follow me's effect
 
 address: 0x0224296C
 ```
@@ -3542,8 +3576,9 @@ address: 0x0224296C
 <summary>tryhelpinghand - 0x7E</summary>
 
 ```
-tryhelpinghand
-- 
+tryhelpinghand address
+tries to execute helping hand's effect
+- address is where the script jumps to if the command fails
 
 address: 0x022429AC
 ```
@@ -3552,8 +3587,10 @@ address: 0x022429AC
 <summary>trytrick - 0x7F</summary>
 
 ```
-trytrick
-- 
+trytrick address1, address2
+tries to execute trick's effect
+- address1 is where the script jumps to if the command fails
+- address2 is where the script jumps to if "BATTLER_DEFENDER" has the ability sticky hold
 
 address: 0x02242A50
 ```
@@ -3562,8 +3599,9 @@ address: 0x02242A50
 <summary>trywish - 0x80</summary>
 
 ```
-trywish
-- 
+trywish address
+tries to execute wish's effect
+- address is where the script jumps to if the command fails
 
 address: 0x02242B58
 ```
@@ -3572,38 +3610,40 @@ address: 0x02242B58
 <summary>tryassist - 0x81</summary>
 
 ```
-tryassist
-- 
+tryassist address
+tries to execute assist's effect
+- address is where the script jumps to if the command fails
 
 address: 0x02242B9C
 ```
 </details>
 <details>
-<summary>trymagiccoat - 0x82</summary>
+<summary>trymagiccoat - 0x82 (suggested name:  trysetmagiccoat)</summary>
 
 ```
-trymagiccoat
-- 
+trymagiccoat address
+tries to activate magic coat's flag on the user
+- address is where the script jumps to if the command fails
 
 address: 0x02242C80
 ```
 </details>
 <details>
-<summary>trymagiccoat2 - 0x83</summary>
+<summary>trymagiccoat2 - 0x83 (suggested name: magiccoat)</summary>
 
 ```
 trymagiccoat2
-- 
+executes magic coat's effect when it activates
 
 address: 0x02242CDC
 ```
 </details>
 <details>
-<summary>dorevenge - 0x84</summary>
+<summary>dorevenge - 0x84 (suggested name: revengedamagecalc)</summary>
 
 ```
 dorevenge
-- 
+calculates the damage done by revenge
 
 address: 0x02242D90
 ```
@@ -3612,8 +3652,9 @@ address: 0x02242D90
 <summary>trybreakscreens - 0x85</summary>
 
 ```
-trybreakscreens
-- 
+trybreakscreens address
+tries to break any screens present on the defender's field
+- address is where the script jumps to if the command fails
 
 address: 0x02242E00
 ```
@@ -3622,18 +3663,20 @@ address: 0x02242E00
 <summary>tryyawn - 0x86</summary>
 
 ```
-tryyawn
-- 
+tryyawn address
+tries to set the yawn counter on the defender
+- address is where the script jumps to if the command fails
 
 address: 0x02242E74
 ```
 </details>
 <details>
-<summary>tryknockitemoff - 0x87</summary>
+<summary>tryknockitemoff - 0x87 (suggested name:  tryknockoff)</summary>
 
 ```
-tryknockitemoff
-- 
+tryknockitemoff address
+tries to remove the item from the defender
+- address is where the script jumps to if the command fails
 
 address: 0x02242EB4
 ```
@@ -3643,7 +3686,7 @@ address: 0x02242EB4
 
 ```
 eruptiondamagecalc
-- 
+calculates the damage done by eruption
 
 address: 0x02242FD8
 ```
@@ -3652,8 +3695,9 @@ address: 0x02242FD8
 <summary>tryimprison - 0x89</summary>
 
 ```
-tryimprison
-- 
+tryimprison address
+tries to do imprison's effect
+- address is where the script jumps to if the command fails
 
 address: 0x02243030
 ```
@@ -3662,8 +3706,9 @@ address: 0x02243030
 <summary>trygrudge - 0x8A</summary>
 
 ```
-trygrudge
-- 
+trygrudge address
+tries to execute grudge's effect
+- address is where the script jumps to if the command fails
 
 address: 0x02243148
 ```
@@ -3672,8 +3717,9 @@ address: 0x02243148
 <summary>trysnatch - 0x8B</summary>
 
 ```
-trysnatch
-- 
+trysnatch address
+tries to execute snatch's effect
+- address is where the script jumps to if the command fails
 
 address: 0x022431F0
 ```
@@ -3683,7 +3729,7 @@ address: 0x022431F0
 
 ```
 lowkickdamagecalc
-- 
+calculates the damage done by low kick
 
 address: 0x0224324C
 ```
@@ -3693,7 +3739,7 @@ address: 0x0224324C
 
 ```
 weatherballdamagecalc
-- 
+calculates the damage done by weather ball.  additionally sets the type depending on the weather
 
 address: 0x022432AC
 ```
@@ -3702,8 +3748,9 @@ address: 0x022432AC
 <summary>trypursuit - 0x8E</summary>
 
 ```
-trypursuit
-- 
+trypursuit address
+tries to execute pursuit's effect
+- address is where the script jumps to if the command fails
 
 address: 0x0224336C
 ```
@@ -3713,7 +3760,7 @@ address: 0x0224336C
 
 ```
 typecheck
-- 
+appears to manually adjust for type effectiveness.  used in pursuit's script
 
 address: 0x02243510
 ```
