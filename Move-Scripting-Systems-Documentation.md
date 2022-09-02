@@ -657,7 +657,7 @@ _0094:
 Documenting more new script commands:
 ```
 playmovesoundeffect battler
-plays the move's damaging sound effect
+plays the move's damaging sound effect with pan based on "battler"
 - battler is the basis of the sound pan
 
 monflicker battler
@@ -1828,6 +1828,7 @@ BOOL function (void *, struct BattleStruct *);
 ```
 While the first ``void *`` parameter is actually a structure that we rarely have to enumerate in the code that we edit (hence its ``void`` typing), the ``BattleStruct`` structure gives just about all the information that we want in the battle at any given time.
 
+## First New Command - 0xE1 ``reduceweight``
 Our battle script command will be called ``reduceweight`` and will take one parameter--the amount by which to reduce the weight.  We add the function elsewhere in the ``battle_script_commands.c`` file:
 ```c
 BOOL btl_scr_cmd_E1_reduceweight(void *bw, struct BattleStruct *sp)
@@ -1916,6 +1917,9 @@ NoStatusEffect:
     changevar VAR_OP_SETMASK, VAR_10, 0x80000000
     endscript
 ```
+
+## Script Command 0xE2 - ``heavyslamdamagecalc``
+
 
 # Battle Script Command Reference
 <details>
@@ -3769,18 +3773,36 @@ address: 0x02243510
 <summary>checkoneturnflag - 0x90</summary>
 
 ```
-checkoneturnflag
-- 
+checkoneturnflag battler, flag, value, address
+checks the oneturnflag structure on "battler" for "flag" and if it's equal to "value".  if so, jumps to "address"
+only used for checking protect and setting it to 0 when subscript 81 is called and not feint is used
+- battler is the battler to check for oneturnflags
+- flag is the flag value to check.  enumerations below
+- value is the value to check the flag for
+- address is where to jump to if the value in flag is equal to value
 
 address: 0x02243558
+
+possible flag values:
+#define OTF_STRUGGLE 0
+#define OTF_PP_DECREASE 1
+#define OTF_PROTECT 2
+#define OTF_HELPING_HAND 3
+#define OTF_MAGIC_COAT 4
+#define OTF_SNATCH 5
+#define OTF_ROOST 6
 ```
 </details>
 <details>
 <summary>setoneturnflag - 0x91</summary>
 
 ```
-setoneturnflag
-- 
+setoneturnflag battler, flag, value
+sets "flag" in "battler"'s oneturnflag structure to "value"
+only used to set protect to 0 and set roost to 1 when it is used
+- battler is the battler that has the oneturnflag to set
+- flag is the flag value to set
+- value is the value to set the flag to
 
 address: 0x0224365C
 ```
@@ -3790,7 +3812,7 @@ address: 0x0224365C
 
 ```
 gyroballdamagecalc
-- 
+calculates the damage done by gyro ball
 
 address: 0x02243754
 ```
@@ -3799,8 +3821,9 @@ address: 0x02243754
 <summary>metalburstdamagecalc - 0x93</summary>
 
 ```
-metalburstdamagecalc
-- 
+metalburstdamagecalc address
+calculates the damage done by metal burst.  jumps to "address" if the move would fail due to not being hit last turn
+- address is the address to jump to if the move fails
 
 address: 0x02243798
 ```
@@ -3810,7 +3833,7 @@ address: 0x02243798
 
 ```
 paybackdamagecalc
-- 
+calculates the damage done by payback
 
 address: 0x0224388C
 ```
@@ -3820,7 +3843,7 @@ address: 0x0224388C
 
 ```
 trumpcarddamagecalc
-- 
+calculates the damage done by trump card
 
 address: 0x022438D4
 ```
@@ -3830,7 +3853,7 @@ address: 0x022438D4
 
 ```
 wringoutdamagecalc
-- 
+calculates the damage done by wring out
 
 address: 0x02243918
 ```
@@ -3839,8 +3862,9 @@ address: 0x02243918
 <summary>trymefirst - 0x97</summary>
 
 ```
-trymefirst
-- 
+trymefirst address
+tries to execute me first's effect
+- address is the place to jump to if me first fails
 
 address: 0x02243950
 ```
@@ -3849,8 +3873,9 @@ address: 0x02243950
 <summary>trycopycat - 0x98</summary>
 
 ```
-trycopycat
-- 
+trycopycat address
+tries to execute copycat's effect
+- address is the place to jump to if copycat fails
 
 address: 0x02243A0C
 ```
@@ -3860,7 +3885,7 @@ address: 0x02243A0C
 
 ```
 punishmentdamagecalc
-- 
+damage calculator for punishment
 
 address: 0x02243A68
 ```
@@ -3870,17 +3895,30 @@ address: 0x02243A68
 
 ```
 trysuckerpunch
-- 
+tries to execute sucker punch's effect
+- address is the place to jump to if sucker punch fails
 
 address: 0x02243AC0
 ```
 </details>
 <details>
-<summary>checkbattlercondition - 0x9B</summary>
+<summary>checkbattlercondition - 0x9B (suggested name:  checksidecondition)</summary>
 
 ```
-checkbattlercondition
-- 
+checkbattlercondition battler, mode, status, address
+checks side belonging to "battler" for "condition" and jumps to "address" depending on "mode"
+- battler is the battler whose side to check
+- mode determines how the condition is checked and "address" is jumped to.  if 0, "address" is jumped to when "condition"'s counter is 0.  if 1, "address" is jumped to when "condition"'s counter is nonzero.  if 2, "address" is never jumped to, and the "condition" is cleared
+- status is the condition to check/manipulate, enumerations below
+- address is the place to jump to if the check passes
+
+possible status values:
+#define SIDE_STATUS_LIGHT_SCREEN 0
+#define SIDE_STATUS_REFLECT 1
+#define SIDE_STATUS_MIST 2
+#define SIDE_STATUS_SAFEGUARD 3
+#define SIDE_STATUS_SPIKES 4
+#define SIDE_STATUS_TOXIC_SPIKES 5
 
 address: 0x02243B3C
 ```
@@ -3889,8 +3927,9 @@ address: 0x02243B3C
 <summary>tryfeint - 0x9C</summary>
 
 ```
-tryfeint
-- 
+tryfeint address
+if feint won't work, jumps to "address".  doesn't actually do the effect
+- address is where the script jumps in case of failure
 
 address: 0x02243D20
 ```
@@ -3899,8 +3938,9 @@ address: 0x02243D20
 <summary>trypsychoshift - 0x9D</summary>
 
 ```
-trypsychoshift
-- 
+trypsychoshift address
+if psycho shift won't work, jumps to "address".  doesn't actually do the effect
+- address is where the script jumps in case of failure
 
 address: 0x02243D50
 ```
@@ -3909,8 +3949,9 @@ address: 0x02243D50
 <summary>trylastresort - 0x9E</summary>
 
 ```
-trylastresort
-- 
+trylastresort address
+if last resort won't work, jumps to "address".  doesn't actually do the effect
+- address is where the script jumps in case of failure
 
 address: 0x02243D9C
 ```
@@ -3919,18 +3960,19 @@ address: 0x02243D9C
 <summary>trytoxicspikes - 0x9F</summary>
 
 ```
-trytoxicspikes
-- 
+trytoxicspikes address
+tries to execute toxic spikes' effect.  if it fails, jumps to "address"
+- address is where the script jumps if the command fails
 
 address: 0x02243DE8
 ```
 </details>
 <details>
-<summary>checktoxicspikes - 0xA0</summary>
+<summary>checktoxicspikes - 0xA0 (the command is completely wrong in the dumper)</summary>
 
 ```
-checktoxicspikes
-- 
+checktoxicspikes battler, address
+checks if toxic spikes is present on "battler"'s field, jumping to "address" if it is not present
 
 address: 0x02243E6C
 ```
@@ -3939,38 +3981,42 @@ address: 0x02243E6C
 <summary>moldbreakerabilitycheck - 0xA1</summary>
 
 ```
-moldbreakerabilitycheck
-- 
+moldbreakerabilitycheck checker, battler, ability, destination
+jump to "destination" if "battler" has or doesn't have "ability" based on "checker"--if "checker" is 0, jumps if the "battler" has the "ability", otherwise jump if doesn't have "ability"
+like "abilitycheck"
 
 address: 0x02243F18
 ```
 </details>
 <details>
-<summary>checkbattlersequal - 0xA2</summary>
+<summary>checkbattlersequal - 0xA2 (suggested name:  checkonsameteam)</summary>
 
 ```
-checkbattlersequal
-- 
+checkbattlersequal battler1, battler2, address
+jump to "address" if "battler1" and "battler2" are on the same team
+- battler1 is a battler to check for
+- battler2 is another battler to check for
+- address is the location to jump to if the battlers are on the same team
 
 address: 0x02244040
 ```
 </details>
 <details>
-<summary>trypickup - 0xA3</summary>
+<summary>trypickup - 0xA3 (suggested name:  pickup)</summary>
 
 ```
 trypickup
-- 
+execute pickup's effect (including all the random stuff)
 
 address: 0x022440A0
 ```
 </details>
 <details>
-<summary>dotrickroom - 0xA4</summary>
+<summary>dotrickroom - 0xA4 (suggested name:  trickroom)</summary>
 
 ```
 dotrickroom
-- 
+execute trick room's effect
 
 address: 0x02244224
 ```
@@ -3979,8 +4025,10 @@ address: 0x02244224
 <summary>checkmovefinished - 0xA5</summary>
 
 ```
-checkmovefinished
-- 
+checkmovefinished battler, address
+jump to "address" if the "battler" is finished with its move
+- battler is the battler to check
+- address is the destination to jump if "battler" is finished with its move
 
 address: 0x0224424C
 ```
@@ -4028,18 +4076,19 @@ address: 0x02244344
 <summary>trycamouflage - 0xA9</summary>
 
 ```
-trycamouflage
-- 
+trycamouflage address
+tries to do camouflage's effect and jumps to "address" if it fails
+- address is the location to jump to if the command fails
 
 address: 0x02244390
 ```
 </details>
 <details>
-<summary>donaturepower - 0xAA</summary>
+<summary>donaturepower - 0xAA (suggested name:  naturepower)</summary>
 
 ```
 donaturepower
-- 
+reassigns the move to be the one that nature power impersonates
 
 address: 0x02244428
 ```
@@ -4049,7 +4098,7 @@ address: 0x02244428
 
 ```
 dosecretpower
-- 
+reassigns the move effect to be the one that secret power impersonates
 
 address: 0x02244458
 ```
@@ -4058,8 +4107,9 @@ address: 0x02244458
 <summary>trynaturalgift - 0xAC</summary>
 
 ```
-trynaturalgift
-- 
+trynaturalgift address
+reassigns everything to the natural gift entries in the item data narc.  jumps to "address" if the command fails
+- address is the location to jump to if the command fails
 
 address: 0x02244488
 ```
@@ -4068,8 +4118,10 @@ address: 0x02244488
 <summary>trypluck - 0xAD</summary>
 
 ```
-trypluck
-- 
+trypluck address1, address2
+tries to do pluck's move effect.  jumps to "address1" if the target has sticky hold, "address2" if the move fails otherwise
+- address1 is the location to jump to if the target has sticky hold
+- address2 is the location to jump to if the command fails
 
 address: 0x022444D0
 ```
@@ -4078,8 +4130,9 @@ address: 0x022444D0
 <summary>tryfling - 0xAE</summary>
 
 ```
-tryfling
-- 
+tryfling address
+tries to do fling's move effect.  jumps to "address" if the command fails
+- address is the location to jump to if the command fails
 
 address: 0x0224454C
 ```
@@ -4088,8 +4141,9 @@ address: 0x0224454C
 <summary>yesnobox - 0xAF</summary>
 
 ```
-yesnobox
-- 
+yesnobox type
+summons a yes/no selection menu based on "type".  only "type"'s used are 0x3 and 0x4, only time the command is used is for switching in a new mon when one faints
+- "type" is the type of selection menu brought up
 
 address: 0x0224457C
 ```
@@ -4098,8 +4152,10 @@ address: 0x0224457C
 <summary>yesnowait - 0xB0</summary>
 
 ```
-yesnowait
-- 
+yesnowait address1, address2
+waits for the yes/no selection menu to have a selection made
+- address1 is the location to jump if the player selects yes
+- address2 is the location to jump if the player selects no or presses b
 
 address: 0x022445AC
 ```
@@ -4109,7 +4165,7 @@ address: 0x022445AC
 
 ```
 monlist
-- 
+shows the pokemon party selection screen.  seems to be similar to "showmonlist"
 
 address: 0x0224460C
 ```
@@ -4118,8 +4174,9 @@ address: 0x0224460C
 <summary>monlistwait - 0xB2</summary>
 
 ```
-monlistwait
-- 
+monlistwait address
+waits for the selection from "monlist".  jumps to "address" if the player cancels
+- address is the location to jump to if the player cancels
 
 address: 0x0224463C
 ```
@@ -4129,7 +4186,7 @@ address: 0x0224463C
 
 ```
 setbattleresult
-- 
+sets the battle result if in a wireless battle
 
 address: 0x02244688
 ```
@@ -4138,8 +4195,10 @@ address: 0x02244688
 <summary>checkstealthrock - 0xB4</summary>
 
 ```
-checkstealthrock
-- 
+checkstealthrock battler, address
+checks for stealth rock set up on "battler"'s side, jumping to "address" if not present/the "battler" has fainted.  also sets the damage done to the proper value
+- battler is the battler to check for stealth rock
+- address is the location to jump to if stealth rock doesn't do damage
 
 address: 0x022446AC
 ```
@@ -4148,8 +4207,9 @@ address: 0x022446AC
 <summary>checkeffectactivation - 0xB5</summary>
 
 ```
-checkeffectactivation
-- 
+checkeffectactivation address
+checks to see if the current move's effect will activate.  jumps to "address" if the effect does not activate
+- address is the location to jump to if the effect does not activate
 
 address: 0x022447B8
 ```
@@ -4158,8 +4218,9 @@ address: 0x022447B8
 <summary>checkchatteractivation - 0xB6</summary>
 
 ```
-checkchatteractivation
-- 
+checkchatteractivation address
+checks to see if chatter's effect will activate.  jumps to "address" if the effect does not activate
+- address is the location to jump to if the effect does not activate
 
 address: 0x02244840
 ```
@@ -4194,8 +4255,11 @@ getmoveparameter fields:
 <summary>mosaic - 0xB8</summary>
 
 ```
-mosaic
-- 
+mosaic battler, mosaicness, time
+does a little transform animation thing to "battler" based on "num".  "time" is always 1 it seems
+- battler is the battler to mosaic
+- mosaicness is the desired intensity in a sense - 8 is how far it normally goes, where 0 reverts the changes
+- time is always 1
 
 address: 0x02244924
 ```
@@ -4204,8 +4268,8 @@ address: 0x02244924
 <summary>changeform - 0xB9</summary>
 
 ```
-changeform
-- 
+changeform battler
+recalculates the stats for "battler" when it changes form(e)
 
 address: 0x02244964
 ```
@@ -4215,7 +4279,7 @@ address: 0x02244964
 
 ```
 changebackground
-- 
+used once in subscript 0.  seems to be for assigning the current battle background to what it should be
 
 address: 0x02244990
 ```
@@ -4224,8 +4288,9 @@ address: 0x02244990
 <summary>recoverstatus - 0xBB</summary>
 
 ```
-recoverstatus
-- 
+recoverstatus battler
+recovers any status that "battler" is afflicted with
+- battler is the battler inflicted with status to heal
 
 address: 0x022449A8
 ```
@@ -4234,48 +4299,54 @@ address: 0x022449A8
 <summary>tryescape - 0xBC</summary>
 
 ```
-tryescape
-- 
+tryescape battler, address
+tries to escape with "battler", jumping to "address" if the escape is succsesful
+- battler is the battler to use for speed calculation
+- address is the location to jump to if the escape is successful
 
 address: 0x022449E8
 ```
 </details>
 <details>
-<summary>initstartballguage - 0xBD</summary>
+<summary>initstartballguage - 0xBD (suggested name: initstartballgauge)</summary>
 
 ```
-initstartballguage
-- 
+initstartballguage battler
+slides in the ball gauge of "battler"
+- battler is the battler whose ball gauge to show
 
 address: 0x02244A2C
 ```
 </details>
 <details>
-<summary>deletestartballguage - 0xBE</summary>
+<summary>deletestartballguage - 0xBE (suggested name: deletestartballgauge)</summary>
 
 ```
-deletestartballguage
-- 
+deletestartballguage battler
+slides out the ball gauge of "battler"
+- battler is the battler whose ball gauge to slide off
 
 address: 0x02244A58
 ```
 </details>
 <details>
-<summary>initballguage - 0xBF</summary>
+<summary>initballguage - 0xBF (suggested name: initballguage)</summary>
 
 ```
-initballguage
-- 
+initballguage battler
+name is speculative, but also appears to initialize the ball gauge
+- battler is the battler whose ball gauge to initialize
 
 address: 0x02244A84
 ```
 </details>
 <details>
-<summary>deleteballguage - 0xC0</summary>
+<summary>deleteballguage - 0xC0 (suggested name: deleteballgauge)</summary>
 
 ```
-deleteballguage
-- 
+deleteballguage battler
+name is speculative, but also appears to delete the ball gauge
+- battler is the battler whose ball gauge to delete
 
 address: 0x02244AB0
 ```
@@ -4285,7 +4356,7 @@ address: 0x02244AB0
 
 ```
 loadballgfx
-- 
+loads the ball gfx
 
 address: 0x02244ADC
 ```
@@ -4295,7 +4366,7 @@ address: 0x02244ADC
 
 ```
 deleteballgfx
-- 
+unloads the ball gfx
 
 address: 0x02244AF4
 ```
@@ -4304,8 +4375,11 @@ address: 0x02244AF4
 <summary>incrementgamestat - 0xC3</summary>
 
 ```
-incrementgamestat
-- 
+incrementgamestat battler, num, id
+i believe this increments game stat "id" of "battler".  somehow incorporates "num"
+- battler is the battler that has the player with game stats to increment
+- num is something, normally 1 or 0
+- id is the stat id to increment
 
 address: 0x02244B0C
 ```
@@ -4314,18 +4388,20 @@ address: 0x02244B0C
 <summary>cmd_C4 - 0xC4</summary>
 
 ```
-cmd_C4
-- 
+cmd_C4 battler
+not sure what this command does.  seems to prepare "battler"'s sprite to change?
+- battler is the sprite to prep to change
 
 address: 0x02244B4C
 ```
 </details>
 <details>
-<summary>checkifcurrentmovehits - 0xC5</summary>
+<summary>checkifcurrentmovehits - 0xC5 (suggested name: abilityeffectcheckonhit)</summary>
 
 ```
-checkifcurrentmovehits
-- 
+checkifcurrentmovehits address
+jump to "address" if the current move does not activate the target's ability
+- address is the location to jump to if the current move does not activate the target's ability
 
 address: 0x02244B78
 ```
@@ -4334,8 +4410,8 @@ address: 0x02244B78
 <summary>cmd_C6 - 0xC6</summary>
 
 ```
-cmd_C6
-- 
+cmd_C6 battler
+has something to do with sprites
 
 address: 0x02244BAC
 ```
@@ -4344,8 +4420,8 @@ address: 0x02244BAC
 <summary>cmd_C7 - 0xC7</summary>
 
 ```
-cmd_C7
-- 
+cmd_C7 battler
+has something to do with sprites.  reverts "cmd_C6"
 
 address: 0x02244C3C
 ```
@@ -4354,8 +4430,10 @@ address: 0x02244C3C
 <summary>checkwipeout - 0xC8</summary>
 
 ```
-checkwipeout
-- 
+checkwipeout battler, address
+checks if "battler"'s team has wiped out by adding the party's hp together, jumping to address if nobody is alive
+- battler is the battler whose team to check if anyone is alive
+- address is the location to jump to if a wipeout should occur
 
 address: 0x02244CCC
 ```
@@ -4364,8 +4442,10 @@ address: 0x02244CCC
 <summary>tryacupressure - 0xC9</summary>
 
 ```
-tryacupressure
-- 
+tryacupressure address
+queues up acupressure's effect, jumps to "address" if it fails
+- address is the location to jump to if the command fails
+
 address: 0x02244E78
 ```
 </details>
@@ -4373,8 +4453,9 @@ address: 0x02244E78
 <summary>removeitem - 0xCA</summary>
 
 ```
-removeitem
-- 
+removeitem battler
+removes "battler"'s item, queuing it as an item for recycle
+- battler is the battler whose item to remove
 
 address: 0x02244EF8
 ```
@@ -4383,8 +4464,9 @@ address: 0x02244EF8
 <summary>tryrecycle - 0xCB</summary>
 
 ```
-tryrecycle
-- 
+tryrecycle battler
+restores "battler"'s item to the one last recyclable
+- battler is the battler whose recyclable item to restore
 
 address: 0x02244F44
 ```
@@ -4393,8 +4475,9 @@ address: 0x02244F44
 <summary>itemeffectcheckonhit - 0xCC</summary>
 
 ```
-itemeffectcheckonhit
-- 
+itemeffectcheckonhit address
+jumps to "address" if the current item on the target does not activate
+- address is the location to jump to if the current item on the target does not activate
 
 address: 0x02244F88
 ```
@@ -4404,7 +4487,7 @@ address: 0x02244F88
 
 ```
 battleresultmessage
-- 
+displays the result message of a wireless battle
 
 address: 0x02244FBC
 ```
@@ -4414,7 +4497,7 @@ address: 0x02244FBC
 
 ```
 runawaymessage
-- 
+displays the run away message of a wireless battle
 
 address: 0x02244FD4
 ```
@@ -4424,17 +4507,20 @@ address: 0x02244FD4
 
 ```
 giveupmessage
-- 
+displays the give up message of a wireless battle
 
 address: 0x02244FF0
 ```
 </details>
 <details>
-<summary>cmd_D0_checkhpsomething - 0xD0 (suggested name: check1hp)</summary>
+<summary>cmd_D0_checkhpsomething - 0xD0 (suggested name: checkshouldleavewith1hp)</summary>
 
 ```
-cmd_D0_checkhpsomething
-- 
+cmd_D0_checkhpsomething battler
+check if the current move should leave the battler with 1 hp instead of KO'ing it
+- battler is the battler whose hp to check
+
+this has been expanded to check for sturdy properly in hg-engine
 
 address: 0x02245008
 ```
@@ -4443,18 +4529,24 @@ address: 0x02245008
 <summary>trynaturalcure - 0xD1</summary>
 
 ```
-trynaturalcure
-- 
+trynaturalcure battler, address
+tries to heal "battler" on switch out, jumping to "address" if it fails
+- battler is the battler to try to recover using natural cure
+- address is the location to jump to if the command fails
+
+this has been expanded to include regenerator in hg-engine
 
 address: 0x022450B0
 ```
 </details>
 <details>
-<summary>checknostatus - 0xD2</summary>
+<summary>checknostatus - 0xD2 (suggested name: checksubstitute)</summary>
 
 ```
-checknostatus
-- 
+checknostatus battler, address
+checks if "battler" has substitute up, and jumps to "address" if it does
+- battler is the battler to check for substitute
+- address is the location to jump to if the substitute is up
 
 address: 0x0224514C
 ```
@@ -4463,8 +4555,9 @@ address: 0x0224514C
 <summary>checkcloudnine - 0xD3</summary>
 
 ```
-checkcloudnine
-- 
+checkcloudnine address
+checks to see if cloud nine/any ability that nullifies weather is present and jumps to "address" if it is present
+- address is the location to jump to if weather should be nullified
 
 address: 0x022451A8
 ```
@@ -4474,28 +4567,30 @@ address: 0x022451A8
 
 ```
 cmd_D4 battler
-not sure what this command does.
-- battler is the battler to affect
+assigns BATTLER_DEFENDER to be the same as "battler"
+- battler is the battler to be designated as BATTLER_DEFENDER
 
 address: 0x022451F8
 ```
 </details>
 <details>
-<summary>checkwhenitemmakesmovehit - 0xD5</summary>
+<summary>checkwhenitemmakesmovehit - 0xD5 (suggested name: checkuturnitemeffect)</summary>
 
 ```
-checkwhenitemmakesmovehit
-- 
+checkwhenitemmakesmovehit address
+jump to "address" if u-turn doesn't make an item activate
+- address is the location to jump to if u-turn doesn't make an item activate
 
 address: 0x02245228
 ```
 </details>
 <details>
-<summary>cmd_D6 - 0xD6</summary>
+<summary>cmd_D6 - 0xD6 (suggested name: swaptosubstitutesprite)</summary>
 
 ```
-cmd_D6
-- 
+cmd_D6 battler
+swaps "battler"'s sprite with the substitute doll's sprite
+- battler is the battler whose sprite to swap with the substitute doll
 
 address: 0x0224525C
 ```
@@ -4505,7 +4600,7 @@ address: 0x0224525C
 
 ```
 playmovesoundeffect battler
-plays the move's damaging sound effect
+plays the move's damaging sound effect with pan based on "battler"
 - battler is the basis of the sound pan
 
 address: 0x02245288
@@ -4515,8 +4610,9 @@ address: 0x02245288
 <summary>playsong - 0xD8</summary>
 
 ```
-playsong
-- 
+playsong battler, id
+plays the song "id" with pan based on "battler"
+- battler is the basis of the sound pan
 
 address: 0x022452B4
 ```
@@ -4525,8 +4621,9 @@ address: 0x022452B4
 <summary>checkifsafariencounterdone - 0xD9</summary>
 
 ```
-checkifsafariencounterdone
-- 
+checkifsafariencounterdone address
+checks to see if the safari encounter currently at play should end based on how many boxes are filled
+- address is the location to jump to if the safari encounter is done
 
 address: 0x022452EC
 ```
@@ -4535,18 +4632,21 @@ address: 0x022452EC
 <summary>waitwithoutbuttonpress - 0xDA</summary>
 
 ```
-waitwithoutbuttonpress
-- 
+waitwithoutbuttonpress time
+waits for "time" frames without waiting for a button press at all
+- time is the amount of frames to wait for
 
 address: 0x02245324
 ```
 </details>
 <details>
-<summary>checkmovetypematches - 0xDB</summary>
+<summary>checkmovetypematches - 0xDB (suggested name: checkifcurrentmoveistype)</summary>
 
 ```
-checkmovetypematches
-- 
+checkmovetypematches type, address
+jumps to "address" if the current move is "type"
+- type is the type to check for
+- address is the location to jump to if the current move's type matches
 
 address: 0x02245390
 ```
@@ -4555,8 +4655,11 @@ address: 0x02245390
 <summary>getdatafrompersonalnarc - 0xDC</summary>
 
 ```
-getdatafrompersonalnarc
-- 
+getdatafrompersonalnarc monnum, formnum, num
+grabs data from the personal narc corresponding to "monnum" and "formnum", where "formnum" is a variable.  "num" is the personal narc field id.  stores result in VAR_09
+- monnum is the base species
+- formnum is a variable containing the form number
+- num is the personal narc id to grab
 
 address: 0x022453D0
 ```
@@ -4565,8 +4668,9 @@ address: 0x022453D0
 <summary>refreshmondata - 0xDD</summary>
 
 ```
-refreshmondata
-- 
+refreshmondata battler
+refreshes the mon data "battler", recalculating the stats.  used in forme changes, specifically shaymin and giratina
+- battler is the battler whose stats to recalculate
 
 address: 0x02245418
 ```
@@ -4575,8 +4679,8 @@ address: 0x02245418
 <summary>cmd_DE - 0xDE</summary>
 
 ```
-cmd_DE
-- 
+cmd_DE num1, num2
+not sure what this command does.  only used to end battles in subscript 5
 
 address: 0x02245450
 ```
@@ -4586,7 +4690,7 @@ address: 0x02245450
 
 ```
 cmd_DF
-- 
+not sure what this command does.  only used to end battles in subscript 5, potentially a sort of blackout screen command
 
 address: 0x022454A0
 ```
@@ -4602,6 +4706,3 @@ address: 0x022454CC
 ```
 </details>
 </details>
-
-
-# Animation Script Command Reference
