@@ -1,4 +1,4 @@
-# Documentation on the Form System
+# Form System Documentation
 This page serves to document the additional forme changes and to document how the form system works.
 
 Firstly, the form system in HGSS is very all over the place.  Each individual system (icons, learnsets, personal data, etc.) has some sort of appending to the original narc that occurs that contains the form data.  Most functions then have a massive if statement table to determine what the actual index is.  Icons specifically have 50 extra slots after the original 493.
