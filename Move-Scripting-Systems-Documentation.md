@@ -1919,7 +1919,55 @@ NoStatusEffect:
 ```
 
 ## Script Command 0xE2 - ``heavyslamdamagecalc``
+Here we make a damage calculator for the move Heavy Slam specifically.  It compares the ratio of the user's weight to the target's weight and writes the base power based on that.  The lower the target's weight compared to the attacker's weight, the more damage the move does.
 
+The code, showing exactly that happen, at the end of ``src/battle_script_commands.c`` (as well as a declaration at the beginning):
+```c
+BOOL btl_scr_cmd_E2_heavyslamdamagecalc(void *bw, struct BattleStruct *sp)
+{
+    u32 ratio;
+
+    IncrementBattleScriptPtr(sp, 1);
+
+    // grab the ratio of defense weight/attack weight as a % to 2 decimal places
+    ratio = (sp->battlemon[sp->defence_client].weight * 1000) / sp->battlemon[sp->attack_client].weight;
+
+    if (ratio <= 2000)      // < 20.00%
+        sp->damage_power = 120;
+    else if (ratio <= 2500) // 20.01% - 25.00%
+        sp->damage_power = 100;
+    else if (ratio <= 3334) // 25.01% - 33.34%
+        sp->damage_power = 80;
+    else if (ratio <= 5000) // 33.35% - 50.00%
+        sp->damage_power = 60;
+    else                    // > 50.01%
+        sp->damage_power = 40;
+
+    return FALSE;
+}
+```
+Now we need to add the new command to the new battle script instructions table:
+```c
+const btl_scr_cmd_func NewBattleScriptCmdTable[] =
+{
+    [0xE1 - START_OF_NEW_BTL_SCR_CMDS] = btl_scr_cmd_E1_reduceweight,
+    [0xE2 - START_OF_NEW_BTL_SCR_CMDS] = btl_scr_cmd_E2_heavyslamdamagecalc,
+};
+```
+Finally, add a battle script macro for the command to ``armips/include/battlescriptcmd.s``:
+```
+.macro heavyslamdamagecalc
+    .word 0xE2
+.endmacro
+```
+The command in action from usage in a battle script, specifically just the ``battle_eff_seq`` script.  This doesn't even require a subscript!  Based on the one for Gyro Ball (``armips/move/battle_eff_seq/219.s``):
+```
+HeavySlamEffectScript:
+    heavyslamdamagecalc
+    critcalc
+    damagecalc
+    endscript
+```
 
 # Battle Script Command Reference
 <details>
@@ -4703,6 +4751,27 @@ endscript
 ends the script and hands exection back to the overall battle engine if nothing else is queued
 
 address: 0x022454CC
+```
+</details>
+
+<br>
+
+new script commands:
+<details>
+<summary>reduceweight - 0xE1</summary>
+
+```
+reduceweight delta
+reduces the attacker's weight by "delta".  "delta" can be negative to increase the opponent's weight
+- delta is the amount to reduce the user's weight by
+```
+</details>
+<details>
+<summary>heavyslamdamagecalc - 0xE2</summary>
+
+```
+heavyslamdamagecalc
+calculates the base power for the move heavy slam
 ```
 </details>
 </details>
