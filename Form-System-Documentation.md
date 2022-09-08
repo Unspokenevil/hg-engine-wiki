@@ -1,4 +1,4 @@
-# Form System Documentation
+# Documentation on the Form System
 This page serves to document the additional forme changes and to document how the form system works.
 
 Firstly, the form system in HGSS is very all over the place.  Each individual system (icons, learnsets, personal data, etc.) has some sort of appending to the original narc that occurs that contains the form data.  Most functions then have a massive if statement table to determine what the actual index is.  Icons specifically have 50 extra slots after the original 493.
@@ -446,6 +446,11 @@ Along with new forms, various new methods to change specific Pokemon forms have 
 ### Mega Evolution
 Every mega evolution is actually just a form of the base Pokemon.  When holding the specific mega stone for the species, the Pokemon will mega evolve.
 
+### Deerling and Sawsbuck - TODO
+Deerling and Sawsbuck in the PC do not change form.  They only change form in the party.  They change form if the code ever accesses the player's party directly from the save (which it will basically instantly).
+
+Wild Deerling and Sawsbuck are generated according to the current form.
+
 ### Darmanitan's Zen Mode
 Darmanitan with their Hidden Ability bit set get the ability Zen Mode.  This allows for Darmanitan to swap between Zen Mode and Normal Mode as it pleases.  Galarian Darmanitan will become Galarian Zen Mode Darmanitan as well.
 
@@ -472,10 +477,62 @@ Kyurem that have the DNA Splicers used on them set a chain of events off:
     - The Kyurem then reverts to forme 0.
     - Fusion Flare/Bolt is replaced with Scary Face, and Ice Burn/Freeze Shock is replaced with Glaciate.
 
-### Deerling and Sawsbuck - TODO
-Deerling and Sawsbuck in the PC do not change form.  They only change form in the party.  They change form if the code ever accesses the player's party directly from the save (which it will basically instantly).
-
 Each season lasts a month.  Spring is in January, May, and September.  Summer is in February, June, and October.  Autumn is in March, July, and November.  Winter is then in April, August, and December.  This mimics the Gen 5 season system.
 
 ### Keldeo Resolute - TODO
 While there is currently no way to transform Keldeo Ordinary to Resolute, Keldeo Resolute, upon forgetting Sacred Sword, will transform back into Keldeo Ordinary.
+
+### Greninja Ash - TODO
+A Greninja with form id 1 will have the Battle Bond ability.  In battle, said Greninja will transform into Ash Greninja when a move it uses directly causes another Pokemon to faint.  This reverts upon fainting or the battle's ending.  However, a Greninja that has transformed can still retransform upon revival in battles.
+
+### Vivillon - TODO
+Wild Vivillon will default to Meadow form until the player sets their location in the GTS.  Upon doing this, the Vivillon form will change to emulate how it is described in Bulbapedia.  The full list of countries that give a specific form are:
+
+<details>
+<summary>Vivillon Forms per Location</summary>
+
+<br>
+
+| Location  | Vivillon Form |
+|-----------|---------------|
+| Country   | Meadow        |
+</details>
+
+### Aegislash Blade - TODO
+Aegislash with Stance Change will transform into Blade Form when attacking in battle, and Shield Form when not attacking in battle.
+
+### Pumpkaboo/Gourgeist Sizes - TODO
+Wild Pumpkaboo and Gourgeist will become one of their sizes somewhat at random, with Small, Medium, and Large each appearing 33% of the time.  A Super size Pumpkaboo/Gourgeist is generated 1% of the time.
+
+### Xerneas Active - TODO
+In battle, Xerneas turns into Active Forme.  It reverts at the end of the battle.
+
+### Zygarde Stages - TODO
+
+### Hoopa Unbound - TODO
+
+### Rockruff Behavior - TODO
+
+### Minior Meteor/Core and Color - TODO
+
+### Necrozma (Ultra) Dusk Mane/Dawn Wings - TODO
+
+### Cramorant Gulping/Gorging - TODO
+
+### Toxtricity Low Key - TODO
+
+### Sinistea/Polteageist Antique - TODO
+
+### Alcremie - TODO
+
+### Eiscue Noice Face - TODO
+
+### Morpeko Hangry - TODO
+
+### Zacian/Zamazenta Crowned - TODO
+
+### Urshifu Rapid Strike - TODO
+
+### Zarude Dada - TODO
+
+### Calyrex Behavior - TODO
