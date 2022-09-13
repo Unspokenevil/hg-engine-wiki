@@ -446,10 +446,19 @@ Along with new forms, various new methods to change specific Pokemon forms have 
 ### Mega Evolution
 Every mega evolution is actually just a form of the base Pokemon.  When holding the specific mega stone for the species, the Pokemon will mega evolve.
 
-### Deerling and Sawsbuck - TODO
-Deerling and Sawsbuck in the PC do not change form.  They only change form in the party.  They change form if the code ever accesses the player's party directly from the save (which it will basically instantly).
+### Deerling and Sawsbuck
+Deerling and Sawsbuck in the PC do not change form.  They only change form in the party.  
 
-Wild Deerling and Sawsbuck are generated according to the current form.
+They update at the same time as the checks for Shaymin that would revert to Land forme would update--time needs to move forward for it to actually change, moving backwards will not properly update the party.
+
+Wild Deerling and Sawsbuck are generated according to the current season, which is just Spring - Summer - Fall - Winter, in that order, starting from January:
+
+| Season | Months                  |
+|--------|-------------------------|
+| Spring | January, May, September |
+| Summer | February, June, October |
+| Autumn | March, July, November   |
+| Winter | April, August, December |
 
 ### Darmanitan's Zen Mode
 Darmanitan with their Hidden Ability bit set get the ability Zen Mode.  This allows for Darmanitan to swap between Zen Mode and Normal Mode as it pleases.  Galarian Darmanitan will become Galarian Zen Mode Darmanitan as well.
@@ -477,8 +486,6 @@ Kyurem that have the DNA Splicers used on them set a chain of events off:
     - The Kyurem then reverts to forme 0.
     - Fusion Flare/Bolt is replaced with Scary Face, and Ice Burn/Freeze Shock is replaced with Glaciate.
 
-Each season lasts a month.  Spring is in January, May, and September.  Summer is in February, June, and October.  Autumn is in March, July, and November.  Winter is then in April, August, and December.  This mimics the Gen 5 season system.
-
 ### Keldeo Resolute - TODO
 While there is currently no way to transform Keldeo Ordinary to Resolute, Keldeo Resolute, upon forgetting Sacred Sword, will transform back into Keldeo Ordinary.
 
@@ -496,13 +503,11 @@ Wild Vivillon will default to Meadow form until the player sets their location i
 | Location  | Vivillon Form |
 |-----------|---------------|
 | Country   | Meadow        |
+
 </details>
 
 ### Aegislash Blade - TODO
 Aegislash with Stance Change will transform into Blade Form when attacking in battle, and Shield Form when not attacking in battle.
-
-### Pumpkaboo/Gourgeist Sizes - TODO
-Wild Pumpkaboo and Gourgeist will become one of their sizes somewhat at random, with Small, Medium, and Large each appearing 33% of the time.  A Super size Pumpkaboo/Gourgeist is generated 1% of the time.
 
 ### Xerneas Active - TODO
 In battle, Xerneas turns into Active Forme.  It reverts at the end of the battle.
