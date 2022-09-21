@@ -514,11 +514,13 @@ The image handler from this is very versatile and indexes the image on its own. 
 
 ### ``data/graphics/sprites``
 
-Each species gets a folder with its 4-digit ID on it.  Inside of this folder, there are 4 files:  00.png, 01.png, 02.png, and 03.png.  00 and 01 are the female and male shiny backsprites (respectively), while 02 and 03 are the female and male normal front sprites.  The shiny palette is derived entirely from the back sprite, while the normal palette is derived from the front sprite.  Be careful in creating shiny backsprite palettes to ensure that all colors are handled properly.  Genderless Pokémon only have male sprites.  Solely male or female Pokémon only have the sprites that correspond with their gender.
+Each species gets a folder with its 4-digit ID on it.  Inside of this folder, there are 2 more folders, male and female.  Finally, each of these folders has a ``front.png`` and a ``back.png`` with a ``.key`` file for each.  The shiny palette is derived entirely from the male back sprite in the instance it exist, otherwise the female back sprite is used, while the normal palette is derived from the male front sprite (the female front sprite if the male front sprite doesn't exist).
 
-Due to the sensitive nature of how this tool works, the sprite needs to be 8bpp indexed such that each pixel represents a byte.  However, the first 16 colors are the only ones that can be used--any more and the tool will quit out with an error.
+Be careful in creating shiny backsprite palettes to ensure that all colors are handled properly.  Genderless Pokémon only have male sprites.  Solely male or female Pokémon only have the sprites that correspond with their gender.
 
-The top left 2 pixels in the first row also can not be any sprite data--they must be transparent.  This is due to how the encryption key is stored in the file, and it being messed up when other data is present there.
+Similar to the icons, ``nitrogfx`` is used for these.  All the sprites that are currently in the repository have their 0-index color set to be transparent, but this is not necessary at all.
+
+The top left 2 pixels in the first row also can not be any sprite data--they must be transparent.  This is due to how the encryption key is stored in the file, and it being messed up when other data is present there.  The ``.key`` files contain this encryption key, and is just a 4-byte file containing the key.  This can safely be copied from any other sprite and function just fine.
 
 ## Needs Further Research
 
