@@ -23,7 +23,7 @@ Files discussed are all in ``armips/data``.  These are discussed in alphabetical
 - ``levelupdata.s``
 - ``mondata.s``
 - ``monoverworlds.s`` is discussed in Overworld System Documentation.
-- ``moves.s`` is discussed in Move Expansion Documentation.
+- ``moves.s`` is discussed in Move Data Structure Documentation.
 - ``regionaldex.s``
 - ``spriteoffsets.s``
 - ``tmlearnset.s``
