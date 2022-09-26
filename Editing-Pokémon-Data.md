@@ -15,6 +15,7 @@ Files discussed are all in ``armips/data``.  These are discussed in alphabetical
 - ``pokedex/weight.s``
 - ``trainers/trainers.s`` is discussed in Trainer Pokémon Structure Documentation.
 - ``babymons.s``
+- ``baseexp.s``
 - ``eggmoves.s``
 - ``evodata.s``
 - ``heighttable.s``
@@ -257,6 +258,10 @@ babymon SPECIES_TRAPINCH, SPECIES_TRAPINCH
 babymon SPECIES_VIBRAVA, SPECIES_TRAPINCH
 babymon SPECIES_FLYGON, SPECIES_TRAPINCH
 ```
+
+### ``baseexp.s``
+
+Starting in generation 5, Pokémon have base experience yields of over 255.  This is the file that lists all of them for every Pokémon, with a 2-byte halfword entry per Pokémon that defines the base experience as used in the calculator.  This is part of the ``Experience Overhaul Documentation`` as well.
 
 ### ``eggmoves.s``
 
