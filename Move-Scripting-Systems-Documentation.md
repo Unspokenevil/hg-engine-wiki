@@ -552,11 +552,11 @@ Now let's look at Curse as a Ghost type (``armips/battle_sub_seq/097.s``):
 ```
 a001_097:
     if IF_MASK, VAR_10, 0x10000, _00D0
-    checknostatus BATTLER_DEFENDER, _00D0
+    checksubstitute BATTLER_DEFENDER, _00D0
     ifmonstat IF_MASK, BATTLER_DEFENDER, MON_DATA_STATUS_2, 0x10000000, _00D0
     gotosubscript 76
-    changevartomonvalue VAR_OP_SETMASK, BATTLER_DEFENDER, MON_DATA_STATUS_2, 0x10000000
-    changevartomonvalue2 VAR_OP_GET_RESULT, BATTLER_ATTACKER, MON_DATA_MAX_HP, VAR_HP_TEMP
+    changemondatabyvalue VAR_OP_SETMASK, BATTLER_DEFENDER, MON_DATA_STATUS_2, 0x10000000
+    changemondatabyvar VAR_OP_GET_RESULT, BATTLER_ATTACKER, MON_DATA_MAX_HP, VAR_HP_TEMP
     changevar VAR_OP_MUL, VAR_HP_TEMP, -1
     damagediv VAR_HP_TEMP, 2
     changevar VAR_OP_SETMASK, VAR_06, 0x40
@@ -572,16 +572,14 @@ _00D0:
 ```
 A few new script commands here:
 ```
-changevartomonvalue operator, battler, field, value
-a more accurate name would be "changemondatabyvalue," will work on fixing this.
+changemondatabyvalue operator, battler, field, value
 changes mon data "field" by "value" as specified by "operator"
 - operator is the same as the "changevar" operators
 - battler is the battler to grab the data from
 - field is the data to grab/set from the battler
 - value is the argument for the operator
 
-changevartomonvalue2 operator, battler, field, var
-a more accurate name would be "changemondatabyvar," will work on fixing this.
+changemondatabyvar operator, battler, field, var
 changes mon data "field" by "var"'s value as specified by "operator"
 - operator is the same as the "changevar" operators.  if looking to set the var to the mon data field, use VAR_OP_GET_RESULT
 - battler is the battler to grab the data from
@@ -593,12 +591,12 @@ sets damage to be "var" / "value"
 - var is the numerator in the division
 - value is the denominator in the division
 ```
-If ``VAR_10`` has ``0x10000`` set, the script sets the move failed bit in ``VAR_10`` and ends the script.  Similar for the ``checknostatus`` command, where if the ``BATTLER_DEFENDER`` has some status then the move fails and the script ends.  Finally, if the curse bit is set in the Pokémon's ``MON_DATA_STATUS_2`` field, then the move fails as well.  The move then calls ``battle_sub_seq`` script 76 (``armips/move/battle_sub_seq/076.s``):
+If ``VAR_10`` has ``0x10000`` set, the script sets the move failed bit in ``VAR_10`` and ends the script.  Similar for the ``checksubstitute`` command, where if the ``BATTLER_DEFENDER`` has some status then the move fails and the script ends.  Finally, if the curse bit is set in the Pokémon's ``MON_DATA_STATUS_2`` field, then the move fails as well.  The move then calls ``battle_sub_seq`` script 76 (``armips/move/battle_sub_seq/076.s``):
 ```
 a001_076:
     printattackmessage
     waitmessage
-    seteffectprimary BATTLER_ATTACKER
+    playanimation BATTLER_ATTACKER
     waitmessage
     endscript
 ```
@@ -607,8 +605,7 @@ Two new very simple commands from this one:
 printattackmessage
 prints the current attack message from a027 file 003 (data/text/003.txt).
 
-seteffectprimary battler
-a more accurate name would be "playanimation," will work on fixing this.
+playanimation battler
 plays the current attack's animation based on "battler"
 - battler is the primary battler to base the animation on
 ```
@@ -619,8 +616,8 @@ So at ``gotosubscript 76`` from the Curse subscript above, the attack name is pr
 a001_097:
 ...
     gotosubscript 76
-    changevartomonvalue VAR_OP_SETMASK, BATTLER_DEFENDER, MON_DATA_STATUS_2, 0x10000000
-    changevartomonvalue2 VAR_OP_GET_RESULT, BATTLER_ATTACKER, MON_DATA_MAX_HP, VAR_HP_TEMP
+    changemondatabyvalue VAR_OP_SETMASK, BATTLER_DEFENDER, MON_DATA_STATUS_2, 0x10000000
+    changemondatabyvar VAR_OP_GET_RESULT, BATTLER_ATTACKER, MON_DATA_MAX_HP, VAR_HP_TEMP
     changevar VAR_OP_MUL, VAR_HP_TEMP, -1
     damagediv VAR_HP_TEMP, 2
     changevar VAR_OP_SETMASK, VAR_06, 0x40
@@ -634,7 +631,7 @@ _00D0:
     changevar VAR_OP_SETMASK, VAR_10, 0x40
     endscript
 ```
-The Curse bit is then set (you can think of this as the ``BATTLER_DEFENDER`` is inflicted with Curse by the ``changevartomonvalue`` command there), and the ``BATTLER_ATTACKER``'s max HP is placed into ``VAR_HP_TEMP``.  ``VAR_HP_TEMP`` is made to be negative (by multiplying by -1), and the damage to be dealt is set to ``VAR_HP_TEMP / 2``--half of the max HP.  The bit in ``VAR_06`` is set to signal to subscript 2 that is coming up that the move sound effect should not be played, that the HP should just be manipulated (as we will see in a moment).  Finally, the ``VAR_BATTLER_SOMETHING`` is set to be ``VAR_ATTACKER``--the temporary work battler is set to be the attacker so that subscript 2, which is written to be generic, will know what to do.  We go to subscript 2 (``armips/move/battle_sub_seq/002.s``):
+The Curse bit is then set (you can think of this as the ``BATTLER_DEFENDER`` is inflicted with Curse by the ``changemondatabyvalue`` command there), and the ``BATTLER_ATTACKER``'s max HP is placed into ``VAR_HP_TEMP``.  ``VAR_HP_TEMP`` is made to be negative (by multiplying by -1), and the damage to be dealt is set to ``VAR_HP_TEMP / 2``--half of the max HP.  The bit in ``VAR_06`` is set to signal to subscript 2 that is coming up that the move sound effect should not be played, that the HP should just be manipulated (as we will see in a moment).  Finally, the ``VAR_BATTLER_SOMETHING`` is set to be ``VAR_ATTACKER``--the temporary work battler is set to be the attacker so that subscript 2, which is written to be generic, will know what to do.  We go to subscript 2 (``armips/move/battle_sub_seq/002.s``):
 ```
 a001_002:
     if IF_MASK, VAR_06, 0x40, _0044
@@ -718,7 +715,7 @@ Meaning that the first ``{STRVAR_1 1, 0, 0}`` will be replaced with the nickname
 In adding a new move that doesn't have an effect that already exists, we need to add a new ``battle_eff_seq`` script.  In this repo, it's simply a matter of creating a new `.s` file in the folder.  As an example, I will be looking to implement Simple Beam--an effect that isn't currently done in the repo--as move effect 292 that will queue up subscript 330 to do its effect.  
 
 ## Adding Simple Beam's Effect
-Simple Beam sets the defender's ability to Simple unless if the ability it would overwrite is any of Truant, Multitype, Stance Change, Schooling, Comatose, Shields Down, Disguise, RKS System, Battle Bond, Power Construct, Ice Face, Gulp Missile, or As One.  All of these checks can be done directly from the battle scripts themselves using ``ifmonstat`` and ``changevartomonvalue``.
+Simple Beam sets the defender's ability to Simple unless if the ability it would overwrite is any of Truant, Multitype, Stance Change, Schooling, Comatose, Shields Down, Disguise, RKS System, Battle Bond, Power Construct, Ice Face, Gulp Missile, or As One.  All of these checks can be done directly from the battle scripts themselves using ``ifmonstat`` and ``changemondatabyvalue``.
 
 To start out, we can finally discuss the headers of each script file, which you'd see if you opened any of the files directly from the repo.  These will largely be the same for each scripts, with exceptions depending on if more constants are needed:
 ```
@@ -792,16 +789,16 @@ Now we look to make the Simple Beam subscript, adding a ``battle_sub_seq`` scrip
 
 simpleBeamSubScript: // a001_330
 ```
-Now to build the script.  We need to change the defender's ability to Simple.  We've covered a command to do so, ``changevartomonvalue`` (which should be ``changemondatabyvalue``):
+Now to build the script.  We need to change the defender's ability to Simple.  We've covered a command to do so, ``changemondatabyvalue`` (which should be ``changemondatabyvalue``):
 ```
 simpleBeamSubScript: // a001_330
-    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SIMPLE // set the defender's ability to simple
+    changemondatabyvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SIMPLE // set the defender's ability to simple
     endscript
 ```
 But now the animation just plays and the move ends with no indication of what happened.  From there, we need to print a message, for which we need to add a new message as well:
 ```
 simpleBeamSubScript: // a001_330
-    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SIMPLE // set the defender's ability to simple
+    changemondatabyvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SIMPLE // set the defender's ability to simple
     printmessage 1348, TAG_NICK_ABILITY, BATTLER_DEFENDER, BATTLER_DEFENDER, "NaN", "NaN", "NaN", "NaN"
     endscript
 ```
@@ -837,7 +834,7 @@ Combining it all together:
 simpleBeamSubScript: // a001_330
     ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_TRUANT, moveFails // move fails if the defender has truant
 
-    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SIMPLE // set the defender's ability to simple
+    changemondatabyvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SIMPLE // set the defender's ability to simple
     printmessage 1348, TAG_NICK_ABILITY, BATTLER_DEFENDER, BATTLER_DEFENDER, "NaN", "NaN", "NaN", "NaN"
     endscript
 
@@ -862,7 +859,7 @@ simpleBeamSubScript: // a001_330
     ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_GULP_MISSILE, moveFails     // move fails if the defender has gulp missile
     ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_AS_ONE, moveFails           // move fails if the defender has as one
 
-    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SIMPLE // set the defender's ability to simple
+    changemondatabyvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SIMPLE // set the defender's ability to simple
     printmessage 1348, TAG_NICK_ABILITY, BATTLER_DEFENDER, BATTLER_DEFENDER, "NaN", "NaN", "NaN", "NaN"
     endscript
 
@@ -922,7 +919,7 @@ simpleBeamSubScript: // a001_330
     ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_ICE_FACE, moveFails         // move fails if the defender has ice face
     ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_GULP_MISSILE, moveFails     // move fails if the defender has gulp missile
     ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_AS_ONE, moveFails           // move fails if the defender has as one
-    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SIMPLE // set the defender's ability to simple
+    changemondatabyvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_ABILITY, ABILITY_SIMPLE // set the defender's ability to simple
     printmessage 1348, TAG_NICK_ABILITY, BATTLER_DEFENDER, BATTLER_DEFENDER, "NaN", "NaN", "NaN", "NaN"
     endscript
 moveFails:
@@ -1697,15 +1694,15 @@ chooses a random number between "start" and "start"+"range" inclusive, storing i
 The goal is to set the attacker's typing to a random type that isn't the one it already has.  We make a new ``battle_eff_seq`` that queues up a new ``battle_sub_seq`` script applying to the attacker (with ``ADD_STATUS_ATTACKER``) to set the player's type to something in and of itself.  We skip the ``battle_eff_seq`` script and move to the ``battle_sub_seq``, as this ``battle_eff_seq`` is similar to the rest of them.
 ```
 setType:
-    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_1, TYPE_WATER
-    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_2, TYPE_WATER
+    changemondatabyvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_1, TYPE_WATER
+    changemondatabyvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_2, TYPE_WATER
     endscript
 ```
 This script sets the Pokémon's type to be monotype water.  There is no indication that it happens--it just happens, and the animation of the move plays.  We add a message to print as well as a jump to subscript 76 so that the animation and all plays in order:
 ```
 setType:
-    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_1, TYPE_WATER
-    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_2, TYPE_WATER
+    changemondatabyvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_1, TYPE_WATER
+    changemondatabyvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_2, TYPE_WATER
     gotosubscript 76
     printmessage 178, TAG_NICK_TYPE, BATTLER_ATTACKER, BATTLER_WORK, "NaN", "NaN", "NaN", "NaN" // {STRVAR_1 1, 0, 0} transformed\ninto the {STRVAR_1 15, 1, 0} type!
     waitmessage
@@ -1717,8 +1714,8 @@ We can directly change the type to Water this way and even use the Conversion ba
 Changing the script to buffer the Water type properly:
 ```
 setType:
-    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_1, TYPE_WATER
-    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_2, TYPE_WATER
+    changemondatabyvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_1, TYPE_WATER
+    changemondatabyvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_2, TYPE_WATER
     changevar VAR_OP_SET, VAR_22, TYPE_WATER
     gotosubscript 76
     printmessage 178, TAG_NICK_TYPE, BATTLER_ATTACKER, BATTLER_WORK, "NaN", "NaN", "NaN", "NaN" // {STRVAR_1 1, 0, 0} transformed\ninto the {STRVAR_1 15, 1, 0} type!
@@ -1733,8 +1730,8 @@ setType:
     ifmonstat IF_EQUAL, BATTLER_DEFENDER, MON_DATA_TYPE_2, TYPE_WATER, moveFails
 
 moveWorks:
-    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_1, TYPE_WATER
-    changevartomonvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_2, TYPE_WATER
+    changemondatabyvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_1, TYPE_WATER
+    changemondatabyvalue VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_2, TYPE_WATER
     changevar VAR_OP_SET, VAR_22, TYPE_WATER
     gotosubscript 76
     printmessage 178, TAG_NICK_TYPE, BATTLER_ATTACKER, BATTLER_WORK, "NaN", "NaN", "NaN", "NaN" // {STRVAR_1 1, 0, 0} transformed\ninto the {STRVAR_1 15, 1, 0} type!
@@ -1748,7 +1745,7 @@ moveFails:
 ```
 Here, we add 2 ``ifmonstat`` checks to see if the types are both Water or not.  Note that the second one only ever runs if the first one is successful--i.e. if the script execution falls through to ``moveWorks`` (without the jump from the first ``ifmonstat``) then the first Pokémon's type is Water, but the second is different--which still qualifies for what we want to do with it.
 
-Now we need to generate a random type and adjust all of these checks to be against another variable instead of against a constant.  ``ifmonstat`` becomes ``ifmonstat2``, ``changevartomonvalue`` becomes ``changevartomonvalue2``, ``changevar`` becomes ``changevar2``.  A quick documentation addition:
+Now we need to generate a random type and adjust all of these checks to be against another variable instead of against a constant.  ``ifmonstat`` becomes ``ifmonstat2``, ``changemondatabyvalue`` becomes ``changemondatabyvar``, ``changevar`` becomes ``changevar2``.  A quick documentation addition:
 ```
 ifmonstat2 operator, battler, field, variable, address
 ifmonstat except variable-based
@@ -1768,8 +1765,8 @@ setRandomType:
     ifmonstat2 IF_EQUAL, BATTLER_DEFENDER, MON_DATA_TYPE_2, VAR_09, moveFails
 
 moveWorks:
-    changevartomonvalue2 VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_1, VAR_09
-    changevartomonvalue2 VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_2, VAR_09
+    changemondatabyvar VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_1, VAR_09
+    changemondatabyvar VAR_OP_SET, BATTLER_DEFENDER, MON_DATA_TYPE_2, VAR_09
     changevar2 VAR_OP_SET, VAR_22, VAR_09
     gotosubscript 76
     printmessage 178, TAG_NICK_TYPE, BATTLER_ATTACKER, BATTLER_WORK, "NaN", "NaN", "NaN", "NaN" // {STRVAR_1 1, 0, 0} transformed\ninto the {STRVAR_1 15, 1, 0} type!
@@ -2335,11 +2332,10 @@ address: 0x0223DFB0
 ```
 </details>
 <details>
-<summary>seteffectprimary  - 0x17 (suggested name: playanimation)</summary>
+<summary>playanimation  - 0x17</summary>
 
 ```
-seteffectprimary battler
-a more accurate name would be "playanimation," will work on fixing this.
+playanimation battler
 plays the current attack's animation based on "battler"
 - battler is the primary battler to base the animation on
 
@@ -2347,11 +2343,10 @@ address: 0x0223E004
 ```
 </details>
 <details>
-<summary>seteffectsecondary  - 0x18 (suggested name: playanimation2)</summary>
+<summary>playanimation2  - 0x18</summary>
 
 ```
-seteffectsecondary battler, attacker, defender
-a more accurate name would be "playanimation2," will work on fixing this.
+playanimation2 battler, attacker, defender
 plays the current attack's animation based on "battler".  notably, transform only works under this for some reason.
 - battler is the primary battler to base the animation on
 - attacker is the battler used as the attacker
@@ -2791,11 +2786,10 @@ address: 0x0223ED78
 ```
 </details>
 <details>
-<summary>changevartomonvalue - 0x34 (suggested name:  changemondatabyvalue)</summary>
+<summary>changemondatabyvalue - 0x34</summary>
 
 ```
-changevartomonvalue operator, battler, field, value
-a more accurate name would be "changemondatabyvalue," will work on fixing this.
+changemondatabyvalue operator, battler, field, value
 changes mon data "field" by "value" as specified by "operator"
 - operator is the same as the "changevar" operators
 - battler is the battler to grab the data from
@@ -2869,11 +2863,10 @@ see changevar for operator enumerations
 ```
 </details>
 <details>
-<summary>changevartomonvalue2 - 0x3A (suggested name:  changemondatabyvar)</summary>
+<summary>changemondatabyvar - 0x3A</summary>
 
 ```
-changevartomonvalue2 operator, battler, field, var
-a more accurate name would be "changemondatabyvar," will work on fixing this.
+changemondatabyvar operator, battler, field, var
 changes mon data "field" by "var"'s value as specified by "operator"
 - operator is the same as the "changevar" operators.  if looking to set the var to the mon data field, use VAR_OP_GET_RESULT
 - battler is the battler to grab the data from
@@ -2917,10 +2910,10 @@ address: 0x0223F8D4
 ```
 </details>
 <details>
-<summary>checkifchatot - 0x3E (suggested name: setmovetomirrormove)</summary>
+<summary>setmovetomirrormove - 0x3E</summary>
 
 ```
-checkifchatot
+setmovetomirrormove
 sets current move to one that mirror move has copied and immediately jumps to its effect script.  if the command fails, the script continues, otherwise the new move is run
 
 address: 0x0223F904
@@ -3342,10 +3335,10 @@ address: 0x02241290
 ```
 </details>
 <details>
-<summary>willprotectwork - 0x64 (suggested name: tryprotect)</summary>
+<summary>tryprotect - 0x64</summary>
 
 ```
-willprotectwork address
+tryprotect address
 tries to execute protect's effect
 - address is where the script jumps to if the command fails
 
@@ -3430,10 +3423,10 @@ address: 0x02241AB4
 ```
 </details>
 <details>
-<summary>exitloopatvalue - 0x6C (suggested name: jumpifvarisvalidbattler)</summary>
+<summary>jumpifvarisvalidbattler - 0x6C</summary>
 
 ```
-exitloopatvalue var, address
+jumpifvarisvalidbattler var, address
 jumps to "address" if "var" contains a valid battler index.  used to jump through all the battlers
 - var is the variable that is the loop index with the battler index
 - address is the location to jump to if "var" has a valid battler index
@@ -3529,10 +3522,10 @@ address: 0x022421D4
 ```
 </details>
 <details>
-<summary>dorapidspineffect - 0x75 (suggested name:  rapidspin)</summary>
+<summary>rapidspin - 0x75</summary>
 
 ```
-dorapidspineffect
+rapidspin
 do all of rapid spin's effects, like getting all of the hazards out of the way
 
 address: 0x02242238
@@ -3559,10 +3552,10 @@ address: 0x02242424
 ```
 </details>
 <details>
-<summary>dopsychup - 0x78 (suggested name: psychup)</summary>
+<summary>psychup - 0x78</summary>
 
 ```
-dopsychup
+psychup
 copies the stat changes of BATTLER_DEFENDER
 
 address: 0x02242510
@@ -3615,10 +3608,10 @@ address: 0x02242710
 ```
 </details>
 <details>
-<summary>dofollowme - 0x7D (suggested name:  followme)</summary>
+<summary>followme - 0x7D</summary>
 
 ```
-dofollowme
+followme
 executes follow me's effect
 
 address: 0x0224296C
@@ -3670,10 +3663,10 @@ address: 0x02242B9C
 ```
 </details>
 <details>
-<summary>trymagiccoat - 0x82 (suggested name:  trysetmagiccoat)</summary>
+<summary>trysetmagiccoat - 0x82</summary>
 
 ```
-trymagiccoat address
+trysetmagiccoat address
 tries to activate magic coat's flag on the user
 - address is where the script jumps to if the command fails
 
@@ -3681,20 +3674,20 @@ address: 0x02242C80
 ```
 </details>
 <details>
-<summary>trymagiccoat2 - 0x83 (suggested name: magiccoat)</summary>
+<summary>magiccoat - 0x83</summary>
 
 ```
-trymagiccoat2
+magiccoat
 executes magic coat's effect when it activates
 
 address: 0x02242CDC
 ```
 </details>
 <details>
-<summary>dorevenge - 0x84 (suggested name: revengedamagecalc)</summary>
+<summary>revengedamagecalc - 0x84</summary>
 
 ```
-dorevenge
+revengedamagecalc
 calculates the damage done by revenge
 
 address: 0x02242D90
@@ -3723,10 +3716,10 @@ address: 0x02242E74
 ```
 </details>
 <details>
-<summary>tryknockitemoff - 0x87 (suggested name:  tryknockoff)</summary>
+<summary>tryknockoff - 0x87</summary>
 
 ```
-tryknockitemoff address
+tryknockoff address
 tries to remove the item from the defender
 - address is where the script jumps to if the command fails
 
@@ -3950,10 +3943,10 @@ address: 0x02243AC0
 ```
 </details>
 <details>
-<summary>checkbattlercondition - 0x9B (suggested name:  checksidecondition)</summary>
+<summary>checksidecondition - 0x9B</summary>
 
 ```
-checkbattlercondition battler, mode, status, address
+checksidecondition battler, mode, status, address
 checks side belonging to "battler" for "condition" and jumps to "address" depending on "mode"
 - battler is the battler whose side to check
 - mode determines how the condition is checked and "address" is jumped to.  if 0, "address" is jumped to when "condition"'s counter is 0.  if 1, "address" is jumped to when "condition"'s counter is nonzero.  if 2, "address" is never jumped to, and the "condition" is cleared
@@ -4037,10 +4030,10 @@ address: 0x02243F18
 ```
 </details>
 <details>
-<summary>checkbattlersequal - 0xA2 (suggested name:  checkonsameteam)</summary>
+<summary>checkonsameteam - 0xA2</summary>
 
 ```
-checkbattlersequal battler1, battler2, address
+checkonsameteam battler1, battler2, address
 jump to "address" if "battler1" and "battler2" are on the same team
 - battler1 is a battler to check for
 - battler2 is another battler to check for
@@ -4050,20 +4043,20 @@ address: 0x02244040
 ```
 </details>
 <details>
-<summary>trypickup - 0xA3 (suggested name:  pickup)</summary>
+<summary>pickup - 0xA3</summary>
 
 ```
-trypickup
+pickup
 execute pickup's effect (including all the random stuff)
 
 address: 0x022440A0
 ```
 </details>
 <details>
-<summary>dotrickroom - 0xA4 (suggested name:  trickroom)</summary>
+<summary>trickroom - 0xA4</summary>
 
 ```
-dotrickroom
+trickroom
 execute trick room's effect
 
 address: 0x02244224
@@ -4132,10 +4125,10 @@ address: 0x02244390
 ```
 </details>
 <details>
-<summary>donaturepower - 0xAA (suggested name:  naturepower)</summary>
+<summary>naturepower - 0xAA</summary>
 
 ```
-donaturepower
+naturepower
 reassigns the move to be the one that nature power impersonates
 
 address: 0x02244428
@@ -4356,10 +4349,10 @@ address: 0x022449E8
 ```
 </details>
 <details>
-<summary>initstartballguage - 0xBD (suggested name: initstartballgauge)</summary>
+<summary>initstartballgauge - 0xBD</summary>
 
 ```
-initstartballguage battler
+initstartballgauge battler
 slides in the ball gauge of "battler"
 - battler is the battler whose ball gauge to show
 
@@ -4367,10 +4360,10 @@ address: 0x02244A2C
 ```
 </details>
 <details>
-<summary>deletestartballguage - 0xBE (suggested name: deletestartballgauge)</summary>
+<summary>deletestartballgauge - 0xBE</summary>
 
 ```
-deletestartballguage battler
+deletestartballgauge battler
 slides out the ball gauge of "battler"
 - battler is the battler whose ball gauge to slide off
 
@@ -4378,10 +4371,10 @@ address: 0x02244A58
 ```
 </details>
 <details>
-<summary>initballguage - 0xBF (suggested name: initballguage)</summary>
+<summary>initballgauge - 0xBF</summary>
 
 ```
-initballguage battler
+initballgauge battler
 name is speculative, but also appears to initialize the ball gauge
 - battler is the battler whose ball gauge to initialize
 
@@ -4389,10 +4382,10 @@ address: 0x02244A84
 ```
 </details>
 <details>
-<summary>deleteballguage - 0xC0 (suggested name: deleteballgauge)</summary>
+<summary>deleteballgauge - 0xC0</summary>
 
 ```
-deleteballguage battler
+deleteballgauge battler
 name is speculative, but also appears to delete the ball gauge
 - battler is the battler whose ball gauge to delete
 
@@ -4444,10 +4437,10 @@ address: 0x02244B4C
 ```
 </details>
 <details>
-<summary>checkifcurrentmovehits - 0xC5 (suggested name: abilityeffectcheckonhit)</summary>
+<summary>abilityeffectcheckonhit - 0xC5</summary>
 
 ```
-checkifcurrentmovehits address
+abilityeffectcheckonhit address
 jump to "address" if the current move does not activate the target's ability
 - address is the location to jump to if the current move does not activate the target's ability
 
@@ -4561,10 +4554,10 @@ address: 0x02244FF0
 ```
 </details>
 <details>
-<summary>cmd_D0_checkhpsomething - 0xD0 (suggested name: checkshouldleavewith1hp)</summary>
+<summary>checkshouldleavewith1hp - 0xD0</summary>
 
 ```
-cmd_D0_checkhpsomething battler
+checkshouldleavewith1hp battler
 check if the current move should leave the battler with 1 hp instead of KO'ing it
 - battler is the battler whose hp to check
 
@@ -4588,10 +4581,10 @@ address: 0x022450B0
 ```
 </details>
 <details>
-<summary>checknostatus - 0xD2 (suggested name: checksubstitute)</summary>
+<summary>checksubstitute - 0xD2</summary>
 
 ```
-checknostatus battler, address
+checksubstitute battler, address
 checks if "battler" has substitute up, and jumps to "address" if it does
 - battler is the battler to check for substitute
 - address is the location to jump to if the substitute is up
@@ -4622,10 +4615,10 @@ address: 0x022451F8
 ```
 </details>
 <details>
-<summary>checkwhenitemmakesmovehit - 0xD5 (suggested name: checkuturnitemeffect)</summary>
+<summary>checkuturnitemeffect - 0xD5</summary>
 
 ```
-checkwhenitemmakesmovehit address
+checkuturnitemeffect address
 jump to "address" if u-turn doesn't make an item activate
 - address is the location to jump to if u-turn doesn't make an item activate
 
@@ -4633,10 +4626,10 @@ address: 0x02245228
 ```
 </details>
 <details>
-<summary>cmd_D6 - 0xD6 (suggested name: swaptosubstitutesprite)</summary>
+<summary>swaptosubstitutesprite - 0xD6</summary>
 
 ```
-cmd_D6 battler
+swaptosubstitutesprite battler
 swaps "battler"'s sprite with the substitute doll's sprite
 - battler is the battler whose sprite to swap with the substitute doll
 
@@ -4688,10 +4681,10 @@ address: 0x02245324
 ```
 </details>
 <details>
-<summary>checkmovetypematches - 0xDB (suggested name: checkifcurrentmoveistype)</summary>
+<summary>checkifcurrentmoveistype - 0xDB</summary>
 
 ```
-checkmovetypematches type, address
+checkifcurrentmoveistype type, address
 jumps to "address" if the current move is "type"
 - type is the type to check for
 - address is the location to jump to if the current move's type matches
