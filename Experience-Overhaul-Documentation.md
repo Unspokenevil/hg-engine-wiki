@@ -17,4 +17,4 @@ The formula for the experience under this system without any multipliers is as s
 
 $$ exp = \lfloor\frac{b  L}{7}\rfloor $$
 
-``b`` is the base experience of the Pokémon defeated multiplied by 255 / 390 so as not to artificially inflate the experience gained.  This factor is based on Audino having a 390 base experience yield, which I assume would map to 255 in the single-byte system.  This specifically tries to correct down for experience that is gained with the new larger base stats.  ``L`` is the level of the Pokémon defeated to better match expected output.
+``b`` is the base experience of the Pokémon defeated multiplied by 255 / 390 so as not to artificially inflate the experience gained.  This factor is based on Audino having a 390 base experience yield, which I assume would map to 255 in the single-byte system.  This specifically tries to correct down for experience that is gained with the new larger base stats.  ``L`` is the level of the Pokémon defeated.
