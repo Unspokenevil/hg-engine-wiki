@@ -289,6 +289,8 @@ eggmoveentry SPECIES_MARILL
 
 Here, Marill gets an entry despite the baby Azurill existing.  Likewise, Pikachu, Wobbuffet, and others of their kind get entries.
 
+Pending further research, each Pokémon is limited to 16 egg moves.
+
 ### ``evodata.s``
 
 Evolutions have a file per Pokémon describing method of evolution, parameter for that method, and the species that it evolves into.  Each of these is a 2-byte halfword, totaling 6 bytes per evolution.
