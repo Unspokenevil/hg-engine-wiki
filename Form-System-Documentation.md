@@ -439,9 +439,22 @@ Adding new forms is then exactly just like adding new species, just adding the n
     Avalugg
     Decidueye
 </details>
+<details> <!-- significant gender differences -->
+<summary>- Significant Gender Differences</summary>
+<br>
+
+    Unfezant
+    Frillish
+    Jellicent
+    Pyroar
+    Meowstic
+</details>
 
 ## Additional Form-Changing Methods
 Along with new forms, various new methods to change specific Pokemon forms have also been implemented.  These are discussed below.
+
+### Significant Gender Differences - TODO
+While Gen 4 was the generation that introduced gender differences, the things that could differ between genders was very limited.  As a result, significant gender differences (that at least change icons between genders) require separate forms.  These are currently Unfezant, Frillish, Jellicent, Pyroar, and Meowstic.  The plan is to change the evolution method for Litleo and Espurr to combine form with target species to allow for females to evolve into their gendered counterpart.
 
 ### Mega Evolution
 Every mega evolution is actually just a form of the base Pokemon.  When holding the specific mega stone for the species, the Pokemon will mega evolve.
@@ -463,15 +476,6 @@ Wild Deerling and Sawsbuck are generated according to the current season, which 
 ### Darmanitan's Zen Mode
 Darmanitan with their Hidden Ability bit set get the ability Zen Mode.  This allows for Darmanitan to swap between Zen Mode and Normal Mode as it pleases.  Galarian Darmanitan will become Galarian Zen Mode Darmanitan as well.
 
-### Meloetta Pirouette
-A Meloetta using Relic Song changes into its Pirouette Forme.  When switching out or fainting, the Meloetta changes back to its normal forme.
-
-### Genesect Formes
-A Genesect given any one of its Drive items will have that drive inserted on its head.
-
-### Therian Formes
-Tornadus, Thundurus, Landorus, and Enamorus--when a Reveal Mirror is used on them--will transform to and from their Therian formes and their Incarnate formes.
-
 ### Kyurem Black & White
 Kyurem that have the DNA Splicers used on them set a chain of events off:
 - First, it checks for the forme of the Kyurem.
@@ -488,6 +492,15 @@ Kyurem that have the DNA Splicers used on them set a chain of events off:
 
 ### Keldeo Resolute - TODO
 While there is currently no way to transform Keldeo Ordinary to Resolute, Keldeo Resolute, upon forgetting Sacred Sword, will transform back into Keldeo Ordinary.
+
+### Meloetta Pirouette
+A Meloetta using Relic Song changes into its Pirouette Forme.  When switching out or fainting, the Meloetta changes back to its normal forme.
+
+### Genesect Formes
+A Genesect given any one of its Drive items will have that drive inserted on its head.
+
+### Therian Formes
+Tornadus, Thundurus, Landorus, and Enamorus--when a Reveal Mirror is used on them--will transform to and from their Therian formes and their Incarnate formes.
 
 ### Greninja Ash - TODO
 A Greninja with form id 1 will have the Battle Bond ability.  In battle, said Greninja will transform into Ash Greninja when a move it uses directly causes another Pokemon to faint.  This reverts upon fainting or the battle's ending.  However, a Greninja that has transformed can still retransform upon revival in battles.
