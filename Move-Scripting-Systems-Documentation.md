@@ -4767,4 +4767,13 @@ heavyslamdamagecalc
 calculates the base power for the move heavy slam
 ```
 </details>
+<details>
+<summary>isuserlowerlevel - 0xE3</summary>
+
+```
+isuserlowerlevel address
+jumps to "address" if the attacker is a lower level than the defender
+- address is the place to jump to if the check succeeds
+```
+</details>
 </details>
