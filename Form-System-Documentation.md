@@ -3,7 +3,7 @@ This page serves to document the additional forme changes and to document how th
 
 Firstly, the form system in HGSS is very all over the place.  Each individual system (icons, learnsets, personal data, etc.) has some sort of appending to the original narc that occurs that contains the form data.  Most functions then have a massive if statement table to determine what the actual index is.  Icons specifically have 50 extra slots after the original 493.
 
-As a result of this, expanding this system starts at 544.  Expanded Pokemon indices go from 544 (Victini) to 955 (Enamorus).  New form data, in all narc files, then resumes at 956.  Forms for Gens 3 and 4 still use their sprite and icon data from the vanilla game for the most part (as that is still handled by the if statements), but new forms are handled by the table ``PokeFormDataTbl`` in ``src/pokemon.c``.  This is an array of ``FormData`` structures and specifies the base species, the form number, whether or not the form should be reverted after battle, and the new species that the form data will come from.
+As a result of this, expanding this system starts at 544.  Expanded Pokémon indices go from 544 (Victini) to 955 (Enamorus).  New form data, in all narc files, then resumes at 956.  Forms for Gens 3 and 4 still use their sprite and icon data from the vanilla game for the most part (as that is still handled by the if statements), but new forms are handled by the table ``PokeFormDataTbl`` in ``src/Pokémon.c``.  This is an array of ``FormData`` structures and specifies the base species, the form number, whether or not the form should be reverted after battle, and the new species that the form data will come from.
 
 The ``FormData`` structure:
 ```c
@@ -17,7 +17,7 @@ struct FormData
     u16 file;
 };
 ```
-This structure is then iterated through to find which file to read from for Pokemon with forms.
+This structure is then iterated through to find which file to read from for Pokémon with forms.
 
 Adding new forms is then exactly just like adding new species, just adding the new data to all the folders necessary.  We use ``SPECIES_*`` constants just about everywhere we can--the new form data is no exception, with each form data getting a constant, i.e. ``SPECIES_MELOETTA_PIROUETTE`` or ``SPECIES_KYUREM_BLACK``.
 
@@ -448,16 +448,53 @@ Adding new forms is then exactly just like adding new species, just adding the n
     Jellicent
     Pyroar
     Meowstic
+    Basculegion
 </details>
 
 ## Additional Form-Changing Methods
-Along with new forms, various new methods to change specific Pokemon forms have also been implemented.  These are discussed below.
+Along with new forms, various new methods to change specific Pokémon forms have also been implemented.  These are discussed below.
 
-### Significant Gender Differences - TODO
-While Gen 4 was the generation that introduced gender differences, the things that could differ between genders was very limited.  As a result, significant gender differences (that at least change icons between genders) require separate forms.  These are currently Unfezant, Frillish, Jellicent, Pyroar, and Meowstic.  The plan is to change the evolution method for Litleo and Espurr to combine form with target species to allow for females to evolve into their gendered counterpart.
+### Significant Gender Differences
+While Gen 4 was the generation that introduced gender differences, the things that could differ between genders was very limited.  As a result, significant gender differences (that at least change icons between genders) require separate forms.  These are currently Unfezant, Frillish, Jellicent, Pyroar, and Meowstic. 
+
+Unfezant, Frillish, Jellicent, Pyroar, Meowstic, Basculegion are currently the only ones this applies to.  Specifying that a Frillish should appear in the wild will make it so that only male Frillish will appear in the wild.  The wild entries will also need a separate entry for female Frillish.  This goes for all of the listed Pokémon as well.
+
+Tranquill, Litleo, Espurr, and White Stripe Basculin all have their evolutions tweaked to force females to evolve into the female form.  Specifically, when a female evolves, it will set its form to the female form.  This is done by an evolution table overhaul that allows us to specify forms as such:
+
+```
+evodata SPECIES_LITLEO
+    evolutionwithform EVO_LEVEL_MALE, 35, SPECIES_PYROAR, 0
+    evolutionwithform EVO_LEVEL_FEMALE, 35, SPECIES_PYROAR, 1
+    evolution EVO_NONE, 0, SPECIES_NONE
+    evolution EVO_NONE, 0, SPECIES_NONE
+    evolution EVO_NONE, 0, SPECIES_NONE
+    evolution EVO_NONE, 0, SPECIES_NONE
+    evolution EVO_NONE, 0, SPECIES_NONE
+    evolution EVO_NONE, 0, SPECIES_NONE
+    evolution EVO_NONE, 0, SPECIES_NONE
+terminateevodata
+```
+
+Specifying a form of 0 in the evolution doesn't actually change forms upon evolution.  This can be solved by specifying an invalid form for the Pokémon in the form field, such as is done for White-Stripe Basculin, with form 2, to evolve into Basculegion:
+
+```
+// evolution methods/parameters are placeholder until those have been implemented
+evodata SPECIES_BASCULIN_WHITE_STRIPED
+    evolutionwithform EVO_LEVEL_MALE, 0, SPECIES_BASCULEGION, 2 // set to invalid form to force loading male form assets
+    evolutionwithform EVO_LEVEL_FEMALE, 0, SPECIES_BASCULEGION, 1
+    evolution EVO_NONE, 0, SPECIES_NONE
+    evolution EVO_NONE, 0, SPECIES_NONE
+    evolution EVO_NONE, 0, SPECIES_NONE
+    evolution EVO_NONE, 0, SPECIES_NONE
+    evolution EVO_NONE, 0, SPECIES_NONE
+    evolution EVO_NONE, 0, SPECIES_NONE
+    evolution EVO_NONE, 0, SPECIES_NONE
+terminateevodata
+```
+
 
 ### Mega Evolution
-Every mega evolution is actually just a form of the base Pokemon.  When holding the specific mega stone for the species, the Pokemon will mega evolve.
+Every mega evolution is actually just a form of the base Pokémon.  When holding the specific mega stone for the species, the Pokémon will mega evolve.
 
 ### Deerling and Sawsbuck
 Deerling and Sawsbuck in the PC do not change form.  They only change form in the party.  
@@ -474,7 +511,7 @@ Wild Deerling and Sawsbuck are generated according to the current season, which 
 | Winter | April, August, December |
 
 ### Darmanitan's Zen Mode
-Darmanitan with their Hidden Ability bit set get the ability Zen Mode.  This allows for Darmanitan to swap between Zen Mode and Normal Mode as it pleases.  Galarian Darmanitan will become Galarian Zen Mode Darmanitan as well.
+Darmanitan with their Hidden Ability bit set get the ability Zen Mode.  This allows for Darmanitan to swap between Zen Mode and Normal Mode.  Zen Mode activates in-battle when Darmanitan's HP falls below half, turning it to Zen Mode Darmanitan.  Galarian Darmanitan will become Galarian Zen Mode Darmanitan as well.
 
 ### Kyurem Black & White
 Kyurem that have the DNA Splicers used on them set a chain of events off:
@@ -503,7 +540,7 @@ A Genesect given any one of its Drive items will have that drive inserted on its
 Tornadus, Thundurus, Landorus, and Enamorus--when a Reveal Mirror is used on them--will transform to and from their Therian formes and their Incarnate formes.
 
 ### Greninja Ash - TODO
-A Greninja with form id 1 will have the Battle Bond ability.  In battle, said Greninja will transform into Ash Greninja when a move it uses directly causes another Pokemon to faint.  This reverts upon fainting or the battle's ending.  However, a Greninja that has transformed can still retransform upon revival in battles.
+A Greninja with form id 1 will have the Battle Bond ability.  In battle, said Greninja will transform into Ash Greninja when a move it uses directly causes another Pokémon to faint.  This reverts upon fainting or the battle's ending.  However, a Greninja that has transformed can still retransform upon revival in battles.
 
 ### Vivillon - TODO
 Wild Vivillon will default to Meadow form until the player sets their location in the GTS.  Upon doing this, the Vivillon form will change to emulate how it is described in Bulbapedia.  The full list of countries that give a specific form are:
