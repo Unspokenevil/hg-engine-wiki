@@ -39,7 +39,7 @@ Because of the npc Pokémon tags that are present, the solution to this is to sp
 .halfword 1052,  811, OVERWORLD_SIZE_SMALL // SPECIES_ELECTIVIRE
 ```
 
-The code that covers this is in ``armips/asm/overworlds.s`` as ``get_mon_ow_tag``.  This split now covers that Rhyperior, with a base follower ID of 566, now needs to map to the tag 1050 (as well as every follower ID above 566).  With Pikachu having both forms and a gender difference, the code handles Pikachu as an edge case where forms actually add ``(form id + 1)`` to the base follower ID.
+The code that covers this is in ``src/pokemon.c`` as ``get_mon_ow_tag``.  This split now covers that Rhyperior, with a base follower ID of 566, now needs to map to the tag 1050 (as well as every follower ID above 566).  With Pikachu having both forms and a gender difference, the code handles Pikachu as an edge case where forms actually add ``(form id + 1)`` to the base follower ID.
 
 The main advantage of the tag system is that it allows for us to divorce the tags from the gfx order in a081, allowing us to add more gfx in whatever order we please.  This primarily is useful for adding new forms wherever instead of immediately after the previously Pokémon as has been done already--there is no need to rename the existing Pokémon in ``data/graphics/overworlds/`` to fit the "new" system, and we can add forms wherever we please.
 
