@@ -79,6 +79,29 @@ Most Pokémon overworlds are 32x32.  Certain species have 64x64 overworlds, deno
 .halfword  717,  537, OVERWORLD_SIZE_LARGE // female
 ```
 
+Forms are defined directly after the base species:
+
+```
+.halfword 1162,  918, OVERWORLD_SIZE_SMALL // SPECIES_PETILIL
+.halfword 1163,  919, OVERWORLD_SIZE_SMALL // SPECIES_LILLIGANT
+.halfword 1164,  297, OVERWORLD_SIZE_SMALL // hisui - note that the 297 is bulbasaur and a placeholder
+.halfword 1165,  920, OVERWORLD_SIZE_SMALL // SPECIES_BASCULIN
+.halfword 1166,  921, OVERWORLD_SIZE_SMALL // blue stripe
+.halfword 1167,  297, OVERWORLD_SIZE_SMALL // white stripe - note that the 297 is bulbasaur and a placeholder
+.halfword 1168,  922, OVERWORLD_SIZE_SMALL // SPECIES_SANDILE
+.halfword 1169,  923, OVERWORLD_SIZE_SMALL // SPECIES_KROKOROK
+```
+
+Diglett and Dugtrio do not have a shadow under them:
+
+```
+.halfword  500,  348, OVERWORLD_SIZE_SMALL_NO_SHADOW // SPECIES_DIGLETT
+.halfword  501,  297, OVERWORLD_SIZE_SMALL_NO_SHADOW // alola
+.halfword  502,  349, OVERWORLD_SIZE_SMALL_NO_SHADOW // SPECIES_DUGTRIO
+.halfword  503,  297, OVERWORLD_SIZE_SMALL_NO_SHADOW // alola
+```
+
+
 ### ``gDimorphismTable``
 
 This is the table that determines whether or not the Pokémon overworlds have gender differences and thus have a female "form" that adds 1 to the base follower ID.
@@ -92,6 +115,42 @@ Each species gets a byte that's either 0 or 1, 0 denoting no gender differences 
 ```
 
 Gligar, while it has gender differences in its battle sprite, does not have one that is visible in the overworld.  It gets a 0 here.  Steelix has a gender difference that is visible in the overworld.  It gets a 1 here.  Snubbull does not have a gender difference.  It gets a 0 here.
+
+
+### ``NumOfOWFormsPerMon``
+
+This is the table that designates the amount of alternate forms per Pokémon that will be taken into adjustment in the overworld.  This is completely separate from gender differences and also takes priority over gender differences in all cases except for Pikachu, who has both gender differences and its cap forms.
+
+Each species gets a byte that determines the maximum amount of alternate forms that the Pokémon can take in the overworld.  For example:
+
+```
+/* SPECIES_EKANS           */ .byte 0
+/* SPECIES_ARBOK           */ .byte 0
+/* SPECIES_PIKACHU         */ .byte 14
+/* SPECIES_RAICHU          */ .byte 1
+/* SPECIES_SANDSHREW       */ .byte 1
+/* SPECIES_SANDSLASH       */ .byte 1
+/* SPECIES_NIDORAN_F       */ .byte 0
+```
+
+Pikachu can take all of...
+- Cosplay
+- Rock Star
+- Belle
+- Pop Star
+- PhD
+- Libre
+- Original Cap
+- Hoenn Cap
+- Sinnoh Cap
+- Unova Cap
+- Kalos Cap
+- Alola Cap
+- Partner Cap
+- World Cap
+
+... for a total of 14 forms.  Raichu, Sandshrew, and Sandslash all have their Alolan formes that they can take in the overworld as well.
+
 
 ### ``narc a141``
 
