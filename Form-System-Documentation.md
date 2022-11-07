@@ -1,4 +1,4 @@
-# Documentation on the Form System
+# Form System Documentation
 This page serves to document the additional forme changes and to document how the form system works.
 
 Firstly, the form system in HGSS is very all over the place.  Each individual system (icons, learnsets, personal data, etc.) has some sort of appending to the original narc that occurs that contains the form data.  Most functions then have a massive if statement table to determine what the actual index is.  Icons specifically have 50 extra slots after the original 493.
@@ -455,9 +455,9 @@ Adding new forms is then exactly just like adding new species, just adding the n
 Along with new forms, various new methods to change specific Pokémon forms have also been implemented.  These are discussed below.
 
 ### Significant Gender Differences
-While Gen 4 was the generation that introduced gender differences, the things that could differ between genders was very limited.  As a result, significant gender differences (that at least change icons between genders) require separate forms.  These are currently Unfezant, Frillish, Jellicent, Pyroar, and Meowstic. 
+While Gen 4 was the generation that introduced gender differences, the things that could differ between genders was very limited.  As a result, significant gender differences (that at least change icons between genders) require separate forms.
 
-Unfezant, Frillish, Jellicent, Pyroar, Meowstic, Basculegion are currently the only ones this applies to.  Specifying that a Frillish should appear in the wild will make it so that only male Frillish will appear in the wild.  The wild entries will also need a separate entry for female Frillish.  This goes for all of the listed Pokémon as well.
+Unfezant, Frillish, Jellicent, Pyroar, Meowstic, and Basculegion are currently the only ones this applies to.  Specifying that a Frillish should appear in the wild will make it so that only male Frillish will appear in the wild.  The wild entries will also need a separate entry for female Frillish.  This goes for all of the listed Pokémon as well.
 
 Tranquill, Litleo, Espurr, and White Stripe Basculin all have their evolutions tweaked to force females to evolve into the female form.  Specifically, when a female evolves, it will set its form to the female form.  This is done by an evolution table overhaul that allows us to specify forms as such:
 
