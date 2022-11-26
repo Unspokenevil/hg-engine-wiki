@@ -13,18 +13,18 @@ Files discussed are all in ``armips/data``.  These are discussed in alphabetical
 - ``pokedex/femaletrainerypos.s`` and ``pokedex/maletrainerypos.s``
 - ``pokedex/pokedexdata.s``
 - ``pokedex/weight.s``
-- ``trainers/trainers.s`` is discussed in Trainer Pokémon Structure Documentation.
+- ``trainers/trainers.s`` is discussed in [[Trainer Pokémon Structure Documentation|Trainer Pokémon Structure Documentation]].
 - ``babymons.s``
 - ``baseexp.s``
 - ``eggmoves.s``
 - ``evodata.s``
 - ``heighttable.s``
-- ``hiddenabilities.s`` is discussed in Hidden Ability Documentation.
+- ``hiddenabilities.s`` is discussed in [[Hidden Ability Documentation|Hidden Ability Documentation]].
 - ``iconpalettetable.s``
 - ``levelupdata.s``
 - ``mondata.s``
-- ``monoverworlds.s`` is discussed in Overworld System Documentation.
-- ``moves.s`` is discussed in Move Data Structure Documentation.
+- ``monoverworlds.s`` is discussed in [[Overworld System Documentation|Overworld System Documentation]].
+- ``moves.s`` is discussed in [[Move Data Structure Documentation|Move Data Structure Documentation]].
 - ``regionaldex.s``
 - ``spriteoffsets.s``
 - ``tmlearnset.s``
