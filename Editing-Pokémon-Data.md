@@ -297,6 +297,8 @@ Evolutions have a file per Pokémon describing method of evolution, parameter fo
 
 Vanilla HGSS has 7 evolutions defined for each Pokémon.  This repo has expanded that to 9 to support Eevee and whatever happens in the upcoming generations.
 
+This repository further allows the user to specify a form to evolve into based on that evolution method.  This will change the form of the Pokémon upon evolving to be the one specified (as long as it is nonzero).
+
 Each entry needs to be padded out to the limit to ensure that no invalid data is read.
 
 This makes an example look like this:
@@ -313,6 +315,22 @@ evodata SPECIES_GLOOM
     evolution EVO_NONE, 0, SPECIES_NONE
     evolution EVO_NONE, 0, SPECIES_NONE
     terminateevodata
+```
+
+An example entry with forms:
+
+```
+evodata SPECIES_LITLEO
+    evolutionwithform EVO_LEVEL_MALE, 35, SPECIES_PYROAR, 0
+    evolutionwithform EVO_LEVEL_FEMALE, 35, SPECIES_PYROAR, 1
+    evolution EVO_NONE, 0, SPECIES_NONE
+    evolution EVO_NONE, 0, SPECIES_NONE
+    evolution EVO_NONE, 0, SPECIES_NONE
+    evolution EVO_NONE, 0, SPECIES_NONE
+    evolution EVO_NONE, 0, SPECIES_NONE
+    evolution EVO_NONE, 0, SPECIES_NONE
+    evolution EVO_NONE, 0, SPECIES_NONE
+terminateevodata
 ```
 
 The currently supported evolution methods:
