@@ -4009,7 +4009,7 @@ address: 0x02243DE8
 ```
 </details>
 <details>
-<summary>checktoxicspikes - 0xA0 (the command is completely wrong in the dumper)</summary>
+<summary>checktoxicspikes - 0xA0</summary>
 
 ```
 checktoxicspikes battler, address
