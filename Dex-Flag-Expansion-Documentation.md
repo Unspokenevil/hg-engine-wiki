@@ -1,4 +1,4 @@
-## Dex Flag Expansion Notes
+## Dex Flag Expansion Documentation
 
 I originally did this completely in assembly.  This makes it a little cumbersome to fix if for whatever reason things are broken.
 
