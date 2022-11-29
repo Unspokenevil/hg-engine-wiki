@@ -4,6 +4,7 @@ hg-engine is an engine overhaul for English Pokémon HeartGold with a focus on b
 
 - [Vision/Goals](#visiongoals)
 - [Current Status](#current-status)
+- [Wiki Contents](#wiki-contents)
 - [FAQ](#faq)
 
 ### Vision/Goals
@@ -19,8 +20,8 @@ There is no timeline for this.  I have been working with a small team on this si
 A rough list of what all comes in this repository and the status:
 - Mega Evolution*
 - Hidden Abilities* (detailed in [[Hidden Ability Documentation|Hidden Ability Documentation]])
-- Level-influence experience system* (as in gens 5, 7, and 8)
-- Brand new Abilities (through Gen 5 currently, sporadically above that)
+- Level-influence experience system* (as in gens 5, 7, and 8, detailed in [[Experience Overhaul Documentation|Experience Overhaul Documentation]])
+- [Brand new Abilities](https://github.com/users/BluRosie/projects/1)
 - Brand new forms (current support detailed in [[Form System Documentation|Form System Documentation]]
 - Brand new Moves (work in progress, currently [a third of the way through Gen 5](https://github.com/BluRosie/hg-engine/issues/17))
 - All Pokémon through gen 8 have data defined.  All of the data is built from files in this repository.  For editing, see [[Editing Pokémon Data|Editing Pokémon Data]].  We are working on getting sprites done for all of the Pokémon in the style of HeartGold.  Reach out to me if you would like to help!
@@ -29,7 +30,24 @@ A rough list of what all comes in this repository and the status:
 - 60 FPS battles*
 - Always set battles*
 
-<sup><sub><b>*</b> - configurable at compile time, can be completely disabled</sub></sup>
+<sup><sub><b>*</b> - configurable at compile time, can be completely disabled, see [CONFIG.md](https://github.com/BluRosie/hg-engine/blob/main/CONFIG.md)</sub></sup>
+
+### Wiki Contents
+
+- Tutorials
+  - [[Editing Pokémon Data|Editing Pokémon Data]]
+  - [[Move Scripting Systems Documentation|Move Scripting Systems Documentation]] is a big tutorial with documentation at the end
+- Documentation
+  - [[Dex Flag Expansion|Dex Flag Expansion Documentation]]
+  - [[Experience Overhaul|Experience Overhaul Documentation]]
+  - [[Form System|Form System Documentation]]
+  - [[Hidden Ability System|Hidden Ability Documentation]]
+  - [[Move Data Structure|Move Data Structure Documentation]]
+  - [[Move Scripting Systems Documentation|Move Scripting Systems Documentation]]
+  - [[Overworld System Documentation|Overworld System Documentation]]
+  - [[Trainer Pokémon Structure Documentation|Trainer Pokémon Structure Documentation]]
+  - [[Wild Pokémon Table Changes|Wild Pokémon Table Changes]]
+
 
 ### FAQ
 <details>
