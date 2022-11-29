@@ -1,5 +1,5 @@
 # Move Data Structure Documentation
-Moves each have a simple structure detailing various properties of the move.  Not much to cover here.  All of them can be edited as part of hg-engine in ``armips/data/moves.s``.
+Moves each have a simple structure detailing various properties of the move.  Not much to cover here.  All of them can be edited as part of hg-engine in [``armips/data/moves.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/data/moves.s).
 
 The full structure:
 ```c
@@ -20,7 +20,7 @@ struct MoveData
 }
 ```
 A short description of each parameter:
-- ``battleeffect`` is the ``battle_eff_seq`` script that is run.  See Move Scripting Systems Documentation.
+- ``battleeffect`` is the ``battle_eff_seq`` script that is run.  See [[Move Scripting Systems Documentation|Move Scripting Systems Documentation]].
 - ``split`` is the category the move has in the physical/special split, either ``MOVE_PHYSICAL``, ``MOVE_SPECIAL``, or ``MOVE_STATUS``
 - ``basepower`` is the base power of the move as it shows up in the summary screen
 - ``type`` is the move's type
