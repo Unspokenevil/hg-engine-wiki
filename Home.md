@@ -91,5 +91,7 @@ This includes optional donations, streamer-tailored hacks, whatever.  There is a
 <summary>Where can I get help for this?</summary>
 <br>
 
-Join the [Kingdom of DS Hacking Discord server](https://discord.gg/zAtqJDW2jC).  Read the rules there and make sure you're comfortable in the 11-minute anti-spam probationary period that every new join goes through in that server.  Once you get access, head over to `#hg-feature-expansion` and ask there.  *Please do not reask your question*.  It will be addressed if possible.
+First, check [[Troubleshooting|Troubleshooting]] and see if your problem is there and the directions there help you out.
+
+From there, join the [Kingdom of DS Hacking Discord server](https://discord.gg/zAtqJDW2jC).  Read the rules there and make sure you're comfortable in the 11-minute anti-spam probationary period that every new join goes through in that server.  Once you get access, head over to `#hg-feature-expansions` and ask there.  *Please do not reask your question*.  It will be addressed if possible.
 </details>
