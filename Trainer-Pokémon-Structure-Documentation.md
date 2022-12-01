@@ -64,7 +64,7 @@ To maintain compatibility with the original structure, much of the original fiel
 - ``ivs`` is a value 0-255 that is scaled from 0-31 that is then used for the IV's for all of the stats of that specific entry.
 - ``abilityslot`` seems to be somewhat used to influence the PID of the mon when looking to force the gender of the mon one way or the other, but otherwise the lsb is the only one that matters, toggling the ability.  Under hg-engine, setting ``abilityslot`` to ``2`` will have the hidden ability activate.  ``abilityslot`` influencing the nature can then be reimplemented under the ``nature`` field.
 - ``level`` is the level of the mon.
-- ``monsno`` is the species of the mon.  This is technically ``(form << 10) | species``**.
+- ``monsno`` is the species of the mon.  This is now technically ``(form << 11) | species``**.
 - ``itemno`` is conditionally read depending on the trainer data ``data_type`` having the flag ``TRAINER_DATA_TYPE_ITEMS`` set.  This is the held item of the mon.
 - ``moves[]`` are conditionally read depending on the trainer data ``data_type`` having the flag ``TRAINER_DATA_TYPE_MOVES`` set.  These are the moves that the mon can use in battle.
 - ``ballseal`` determines the ball seal that appears when the mon is sent out.  It is not conditionally read, and the game needs it to appear at the end of the structure (for whatever reason).
