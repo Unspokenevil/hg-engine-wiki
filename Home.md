@@ -26,7 +26,7 @@ A rough list of what all comes in this repository and the status:
 - Brand new Moves (work in progress, currently [a third of the way through Gen 5](https://github.com/BluRosie/hg-engine/issues/17))
 - All Pokémon through gen 8 have data defined.  All of the data is built from files in this repository.  For editing, see [[Editing Pokémon Data|Editing Pokémon Data]].  We are working on getting sprites done for all of the Pokémon in the style of HeartGold.  Reach out to me if you would like to help!
 - Completely customizable trainers, including specifying IV's, EV's, shininess, and even specifying specific stat values (see [[Trainer Pokémon Structure Documentation|Trainer Pokémon Structure Documentation]])
-- Wild Pokémon can have their form specified (see [[Wild Pokémon Table Changes|Wild Pokémon Table Changes]]).
+- Wild Pokémon can have their form specified (see [[Wild Pokémon Table Documentation|Wild Pokémon Table Documentation]]).
 - 60 FPS battles*
 - Always set battles*
 - Fairy type*
