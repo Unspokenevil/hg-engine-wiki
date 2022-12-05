@@ -55,6 +55,7 @@ superrodrate 75
 walklevels 3, 2, 3, 2, 2, 2, 4, 4, 3, 4, 3, 4
 // walklevels specifies the levels of each slot.  each slot gets its own individual level without a range, which is different compared to the encounter format of later entries.
 // replace "pokemon SPECIES_*" with "monwithform SPECIES_*, formid" to get the specific form of a pokemon.  if i want a galarian darumaka, i'd put "monwithform SPECIES_DARUMAKA, 1"
+// probabilities:  20, 20, 10, 10, 10, 10, 5, 5, 4, 4, 1, 1
 
 
 // morning encounter slots
@@ -112,6 +113,7 @@ pokemon SPECIES_CHINGLING
 // either way, change "encounter SPECIES_*, minlevel, maxlevel" to "encounterwithform SPECIES_*, formid, minlevel, maxlevel" to add the form to the new encounter
 
 // surf encounters
+// probabilities:  60, 30, 5, 4, 1
 encounter SPECIES_MAGIKARP, 10, 20
 encounter SPECIES_MAGIKARP, 5, 15
 encounter SPECIES_MAGIKARP, 2, 10
@@ -119,10 +121,12 @@ encounter SPECIES_MAGIKARP, 2, 10
 encounter SPECIES_MAGIKARP, 2, 10
 
 // rock smash encounters
+// probabilities:  90, 10
 encounter SPECIES_DUNSPARCE, 4, 8
 encounter SPECIES_GEODUDE, 8, 14
 
 // old rod encounters
+// probabilities:  60, 30, 5, 4, 1
 encounter SPECIES_MAGIKARP, 10, 10
 encounter SPECIES_MAGIKARP, 10, 10
 encounter SPECIES_MAGIKARP, 10, 10
@@ -130,6 +134,7 @@ encounter SPECIES_GOLDEEN, 10, 10
 encounter SPECIES_GOLDEEN, 10, 10
 
 // good rod encounters
+// probabilities:  40, 40, 15, 4, 1
 encounter SPECIES_MAGIKARP, 20, 20
 encounter SPECIES_GOLDEEN, 20, 20
 encounter SPECIES_GOLDEEN, 20, 20
@@ -137,6 +142,7 @@ encounter SPECIES_GOLDEEN, 20, 20
 encounter SPECIES_GOLDEEN, 20, 20
 
 // super rod encounters
+// probabilities:  40, 40, 15, 4, 1
 encounter SPECIES_GOLDEEN, 40, 40
 encounter SPECIES_GOLDEEN, 40, 40
 encounter SPECIES_MAGIKARP, 40, 40
