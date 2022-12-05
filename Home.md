@@ -47,7 +47,7 @@ A rough list of what all comes in this repository and the status:
   - [[Move Scripting Systems Documentation|Move Scripting Systems Documentation]]
   - [[Overworld System Documentation|Overworld System Documentation]]
   - [[Trainer Pokémon Structure Documentation|Trainer Pokémon Structure Documentation]]
-  - [[Wild Pokémon Table Changes|Wild Pokémon Table Changes]]
+  - [[Wild Pokémon Table Documentation|Wild Pokémon Table Documentation]]
 
 
 ### FAQ
