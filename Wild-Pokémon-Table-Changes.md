@@ -39,6 +39,6 @@ typedef	struct
 } __attribute__((packed)) EncounterData;
 ```
 
-Every ``u16`` field in this structure (including the ``StandardEncounter`` substructure) represents a species of Pokémon.  These have all been changed to be interpreted as ``(form << 11 | species)``.  This allows for up to 1024 indices of Pokémon, and mirrors what was implemented in vanilla for trainer Pokémon species.
+Every ``u16`` field in this structure (including the ``StandardEncounter`` substructure) represents a species of Pokémon.  These have all been changed to be interpreted as ``(form << 11 | species)``.  This allows for up to 2048 indices of Pokémon, and mirrors what was implemented in vanilla for trainer Pokémon species.
 
 This is currently not supported to be edited by any existing tool, nor is it planned to be.  I may dump it into this repo and build it similar to the trainers or even expand on these structures by making the unused ``padding_x6`` field into a set of flags that the game can use to expand on the structure for more customizability concerning wild Pokémon.
