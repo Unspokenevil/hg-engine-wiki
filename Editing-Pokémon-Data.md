@@ -17,6 +17,7 @@ Files discussed are all in ``armips/data``.  These are discussed in alphabetical
 - ``babymons.s``
 - ``baseexp.s``
 - ``eggmoves.s``
+- ``encounters.s`` is discussed in [[Wild Pokémon Table Documentation|Wild Pokémon Table Documentation]].
 - ``evodata.s``
 - ``heighttable.s``
 - ``hiddenabilities.s`` is discussed in [[Hidden Ability Documentation|Hidden Ability Documentation]].
