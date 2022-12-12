@@ -37,4 +37,4 @@ struct DexSaveData
 
 This allows for 2048 Pokémon to be seen, caught, and male/female comparisons.
 
-All of Dex Expansion is disabled with the `ALLOW_SAVE_CHANGES` config in `armips/include/config.s`.  This is done to maintain PKHeX compatibility in hacks that desire to do so.
+All of Dex Flag Expansion is disabled with the `ALLOW_SAVE_CHANGES` config in `armips/include/config.s`.  This is done to maintain PKHeX compatibility in hacks that desire to do so.
