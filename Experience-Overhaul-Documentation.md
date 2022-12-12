@@ -11,7 +11,7 @@ $$ exp = \lfloor\frac{b  L}{5}\rfloor * \lfloor\frac{(2L + 10)^2}{\lfloor (L+Lp+
 This is then split in half if a Pokémon holding the Exp. Share is present, at which point half of the experience goes to both holders and non-holders split up "evenly" between them (which is to say, each Pokémon has their own share individually calculated, and the amount that participated further divides the calculation).  Lucky Egg bonuses and traded Pokémon bonuses are also applied here.
 
 ### Flat Rate
-There is a configuration in ``include/config.h`` that allows you to revert to a flat rate, i.e. the default Heart Gold rate.  This is done by setting the ``EXPERIENCE_FORMULA_GEN`` configure define to a generation in which a flat experience rate was present.
+There is a configuration in [``include/config.h``](https://github.com/BluRosie/hg-engine/blob/main/include/config.h) that allows you to revert to a flat rate, i.e. the default Heart Gold rate.  This is done by setting the ``EXPERIENCE_FORMULA_GEN`` configure define to a generation in which a flat experience rate was present.
 
 The formula for the experience under this system without any multipliers is as such:
 
