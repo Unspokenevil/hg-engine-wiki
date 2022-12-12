@@ -2,7 +2,7 @@
 
 This repo does very little to actually modify the overworld system, only extending the existing one and shuffling things around.
 
-Astute editors of overworlds in the NDS games will be quick to point out that the overworld gfx in the game have a pretty large difference between the number that they appear as in the a081 narc and the number that they are assigned in DSPRE.  This assignment is done by what I choose to call a tag system, each tag corresponding to an entry containing the tag, the graphics it corresponds to, and what I call the callback parameters.  Each of these is a u16, giving 6 bytes for each tag in a table that I have labeled as ``gOWTagToFileNum`` (in ``armips/data/monoverworlds.s``).
+Astute editors of overworlds in the NDS games will be quick to point out that the overworld gfx in the game have a pretty large difference between the number that they appear as in the a081 narc and the number that they are assigned in DSPRE.  This assignment is done by what I choose to call a tag system, each tag corresponding to an entry containing the tag, the graphics it corresponds to, and what I call the callback parameters.  Each of these is a u16, giving 6 bytes for each tag in a table that I have labeled as ``gOWTagToFileNum`` (in [``armips/data/monoverworlds.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/data/monoverworlds.s)).
 
 The format of each tag is as follows:
 
@@ -23,7 +23,7 @@ Great care was taken to rearrange the overworlds to allow space for all the new 
 
 There is a separate number that each species has to map it to its entry in a141, which I call the follower ID.  The a141 file chooses other parameters that each Pokémon has, such as ability to enter buildings and how fast it bounces.  In vanilla, this is offset exactly 0x1AC from the tag for all Pokémon--this is how the game gets the tag for each overworld.
 
-Furthermore, there is a table in the vanilla game that maps each species to its follower ID.  I have it in the repo as ``sSpeciesToOWGfx`` (in ``src/pokemon.c``).  Gender differences (if applicable) add 1 to the base follower ID to get the female follower ID, with the male follower ID being the base.  Forms add the form id to the base follower ID to get the form follower ID.
+Furthermore, there is a table in the vanilla game that maps each species to its follower ID.  I have it in the repo as ``sSpeciesToOWGfx`` (in [``src/pokemon.c``](https://github.com/BluRosie/hg-engine/blob/main/src/pokemon.c)).  Gender differences (if applicable) add 1 to the base follower ID to get the female follower ID, with the male follower ID being the base.  Forms add the form id to the base follower ID to get the form follower ID.
 
 0x1AC is then added to the follower ID to get the tag.  This is then used to retrieve the overworld gfx (the ``gfx`` from ``gOWTagToFileNum``) and how the game should handle it (the ``callback_params`` from ``gOWTagToFileNum``).
 
@@ -39,9 +39,9 @@ Because of the npc Pokémon tags that are present, the solution to this is to sp
 .halfword 1052,  811, OVERWORLD_SIZE_SMALL // SPECIES_ELECTIVIRE
 ```
 
-The code that covers this is in ``src/pokemon.c`` as ``get_mon_ow_tag``.  This split now covers that Rhyperior, with a base follower ID of 566, now needs to map to the tag 1050 (as well as every follower ID above 566).  With Pikachu having both forms and a gender difference, the code handles Pikachu as an edge case where forms actually add ``(form id + 1)`` to the base follower ID.
+The code that covers this is in [``src/pokemon.c``](https://github.com/BluRosie/hg-engine/blob/main/src/pokemon.c) as ``get_mon_ow_tag``.  This split now covers that Rhyperior, with a base follower ID of 566, now needs to map to the tag 1050 (as well as every follower ID above 566).  With Pikachu having both forms and a gender difference, the code handles Pikachu as an edge case where forms actually add ``(form id + 1)`` to the base follower ID.
 
-The main advantage of the tag system is that it allows for us to divorce the tags from the gfx order in a081, allowing us to add more gfx in whatever order we please.  This primarily is useful for adding new forms wherever instead of immediately after the previously Pokémon as has been done already--there is no need to rename the existing Pokémon in ``data/graphics/overworlds/`` to fit the "new" system, and we can add forms wherever we please.
+The main advantage of the tag system is that it allows for us to divorce the tags from the gfx order in a081, allowing us to add more gfx in whatever order we please.  This primarily is useful for adding new forms wherever instead of immediately after the previously Pokémon as has been done already--there is no need to rename the existing Pokémon in [``data/graphics/overworlds/``](https://github.com/BluRosie/hg-engine/tree/main/data/graphics/overworlds) to fit the "new" system, and we can add forms wherever we please.
 
 ## Editing entries
 
@@ -49,11 +49,11 @@ While there isn't necessarily any reason currently to edit entries, should the n
 
 Each species is helpfully mapped to its entries, whether in the form of a comment after the entry or preceeding it as its index when in the C array.
 
-For overworlds, everything that you need to edit is in ``src/pokemon.c`` or ``armips/data/monoverworlds.s``.  Apart from adding new Pokémon, ``src/pokemon.c`` may not even need to be touched.
+For overworlds, everything that you need to edit is in [``src/pokemon.c``](https://github.com/BluRosie/hg-engine/blob/main/src/pokemon.c) or [``armips/data/monoverworlds.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/data/monoverworlds.s).  Apart from adding new Pokémon, [``src/pokemon.c``](https://github.com/BluRosie/hg-engine/blob/main/src/pokemon.c) may not even need to be touched.
 
 ### ``sSpeciesToOWGfx``
 
-In ``src/pokemon.c``, the file starts out with this table that maps each species to its base follower ID (and thus the corresponding file in a141).  This is offset by ``0x1AC`` to get the base species tag if before the Lickilicky species split or ``0x1E4`` if occuring after the species split.
+In [``src/pokemon.c``](https://github.com/BluRosie/hg-engine/blob/main/src/pokemon.c), the file starts out with this table that maps each species to its base follower ID (and thus the corresponding file in a141).  This is offset by ``0x1AC`` to get the base species tag if before the Lickilicky species split or ``0x1E4`` if occuring after the species split.
 
 An entry just looks like the species name followed by a number (the whitespace is not important):
 
@@ -63,7 +63,7 @@ An entry just looks like the species name followed by a number (the whitespace i
 
 ### ``gOWTagToFileNum``
 
-Now we get to ``armips/data/monoverworlds.s``, where the file starts out with ``gOWTagToFileNum``.  This by necessity has to have it for _every_ overworld and not just the Pokémon overworlds, so it is not recommended that you edit anything before line 364 with the comment ``// pokémon follower specific overworlds start here``.
+Now we get to [``armips/data/monoverworlds.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/data/monoverworlds.s), where the file starts out with ``gOWTagToFileNum``.  This by necessity has to have it for _every_ overworld and not just the Pokémon overworlds, so it is not recommended that you edit anything before line 364 with the comment ``// pokémon follower specific overworlds start here``.
 
 This table then has an entry for each Pokémon and its forms, with the tag, gfx id in a081, and callback enumerated, in that order:
 
