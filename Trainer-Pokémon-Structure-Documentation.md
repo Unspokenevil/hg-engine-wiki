@@ -90,7 +90,7 @@ New fields added:
 - ``ppcounts[]`` is conditionally read depending on the mon data ``additionalflags`` having the flag ``TRAINER_DATA_EXTRA_TYPE_PP_COUNTS`` set.  This will set the mon
 - ``nickname[]`` is conditionally read depending on the mon data ``additionalflags`` having the flag ``TRAINER_DATA_EXTRA_TYPE_NICKNAME`` set.  This is the string nickname that the Pokémon will have.  (currently unimplemented fully)
 
-Trainers are now all editable in the repository itself.  Pokeditor plans on supporting them eventually as well, and I may end up continuing a fork of DSPRE that will end up supporting this, depending on demand.  This is done in the armips files located in armips/data/trainers.s.  As can be seen in there, the existing trainers have been dumped and are editable directly in that file.  These are then built on building the repository and automatically injected into the ROM.
+Trainers are now all editable in the repository itself.  Pokeditor plans on supporting them eventually as well, and I may end up continuing a fork of DSPRE that will end up supporting this, depending on demand.  This is done in the armips files located in [armips/data/trainers/trainers.s](https://github.com/BluRosie/hg-engine/blob/main/armips/data/trainers/trainers.s).  As can be seen in there, the existing trainers have been dumped and are editable directly in that file.  These are then built on building the repository and automatically injected into the ROM.
 
 Already defined are macros that the assembler can use to populate these extra fields.  These are as follows, and must be in the order presented.  Taking a flag out of the trainermontype field allows that field to be omitted:
 
@@ -208,7 +208,7 @@ endparty
 ends the party file that is currently open
 ```
 
-A fully decked out trainer using this system is buildable using macros that are already specified by the assembler armips.  The definitions of these can be changed in armips/include/macros.s near the end.  Here is an example of a trainer that utilizes new features of this system extensively:
+A fully decked out trainer using this system is buildable using macros that are already specified by the assembler armips.  The definitions of these can be changed in [armips/include/macros.s](https://github.com/BluRosie/hg-engine/blob/main/armips/include/macros.s) near the end.  Here is an example of a trainer that utilizes new features of this system extensively:
 ```
 trainerdata TRAINER_JUAN_1
     trainermontype TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_MOVES | TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_ABILITY | TRAINER_DATA_TYPE_BALL | TRAINER_DATA_TYPE_IV_EV_SET | TRAINER_DATA_TYPE_NATURE_SET | TRAINER_DATA_TYPE_SHINY_LOCK | TRAINER_DATA_TYPE_ADDITIONAL_FLAGS
