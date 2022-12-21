@@ -43,6 +43,7 @@ A rough list of what all comes in this repository and the status:
   - [[Experience Overhaul|Experience Overhaul Documentation]]
   - [[Form System|Form System Documentation]]
   - [[Hidden Ability System|Hidden Ability Documentation]]
+  - [[Item System Documentation|Item System Documentation]]
   - [[Move Data Structure|Move Data Structure Documentation]]
   - [[Move Scripting Systems Documentation|Move Scripting Systems Documentation]]
   - [[Overworld System Documentation|Overworld System Documentation]]
