@@ -43,6 +43,10 @@ Every ``u16`` field in this structure (including the ``StandardEncounter`` subst
 
 The vanilla wild encounters are dumped to [`armips/data/encounters.s`](https://github.com/BluRosie/hg-engine/blob/main/armips/data/encounters.s).  The format is pretty intuitive, and basically follows the above format pretty closely for each:
 
+<details>
+<summary>Click for example wild encounter table!</summary>
+<br>
+
 ```
 encounterdata  69 // creates the file to populate
 
@@ -159,4 +163,18 @@ pokemon SPECIES_GOLDEEN
 pokemon SPECIES_MAGIKARP
 
 .close
+```
+</details>
+If you wanted a Pokémon with a form to appear in the wild, any `pokemon` slot would just change to a `monwithform`, and any `encounter` into an `encounterwithform`:
+
+```
+pokemon SPECIES_GEODUDE
+...
+monwithform SPECIES_GEODUDE, 1 // alolan geodude
+
+...
+
+encounter SPECIES_GRAVELER, 40, 40
+...
+encounterwithform SPECIES_GRAVELER, 1, 40, 40 // alolan graveler
 ```
