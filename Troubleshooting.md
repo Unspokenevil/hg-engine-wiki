@@ -1,6 +1,16 @@
 ## Troubleshooting
 
 <details>
+<summary>My wild Pokémon with forms show up in a weird corrupt Dex and the game crashes? (See attached image)</summary>
+<br>
+
+![image](https://user-images.githubusercontent.com/16446370/210486548-d9bbe1a2-33a1-4b7d-b9b0-e9ca1d313c2b.png)
+
+Ensure you are using the encounter macros properly in [`armips/data/encounters.s`](https://github.com/BluRosie/hg-engine/blob/main/armips/data/encounters.s) as per [[Wild Pokémon Table Documentation|Wild-Pokémon-Table-Documentation]].
+
+</details>
+
+<details>
 <summary>Build fails when it can't find "csc.exe"</summary>
 <br>
 
