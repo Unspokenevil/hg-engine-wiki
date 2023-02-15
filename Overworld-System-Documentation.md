@@ -63,7 +63,7 @@ An entry just looks like the species name followed by a number (the whitespace i
 
 ### ``gOWTagToFileNum``
 
-Now we get to [``src/field/overworld_table.c``](https://github.com/BluRosie/hg-engine/blob/main/src/field/overworld_table.c), where the file starts out with ``gOWTagToFileNum``.  This by necessity has to have it for _every_ overworld and not just the Pokémon overworlds, so it is not recommended that you edit anything before line 454 with the comment ``// pokémon follower specific overworlds start here``.
+Now we get to [``src/field/overworld_table.c``](https://github.com/BluRosie/hg-engine/blob/main/src/field/overworld_table.c), where the file starts out with ``gOWTagToFileNum``.  This by necessity has to have it for _every_ overworld and not just the Pokémon overworlds, so it is not recommended that you edit anything before line 353 with the comment ``// pokémon follower specific overworlds start here``.
 
 This table then has an entry for each Pokémon and its forms, with the tag, gfx id in a081, and callback enumerated, in that order:
 
