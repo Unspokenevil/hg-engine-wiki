@@ -2,7 +2,7 @@
 
 This repo does very little to actually modify the overworld system, only extending the existing one and shuffling things around.
 
-Astute editors of overworlds in the NDS games will be quick to point out that the overworld gfx in the game have a pretty large difference between the number that they appear as in the a081 narc and the number that they are assigned in DSPRE.  This assignment is done by what I choose to call a tag system, each tag corresponding to an entry containing the tag, the graphics it corresponds to, and what I call the callback parameters.  Each of these is a u16, giving 6 bytes for each tag in a table that I have labeled as ``gOWTagToFileNum`` (in [``armips/data/monoverworlds.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/data/monoverworlds.s)).
+Astute editors of overworlds in the NDS games will be quick to point out that the overworld gfx in the game have a pretty large difference between the number that they appear as in the a081 narc and the number that they are assigned in DSPRE.  This assignment is done by what I choose to call a tag system, each tag corresponding to an entry containing the tag, the graphics it corresponds to, and what I call the callback parameters.  Each of these is a u16, giving 6 bytes for each tag in a table that I have labeled as ``gOWTagToFileNum`` (in [``src/field/overworld_table.c``](https://github.com/BluRosie/hg-engine/blob/main/src/field/overworld_table.c)).
 
 The format of each tag is as follows:
 
@@ -29,14 +29,14 @@ Furthermore, there is a table in the vanilla game that maps each species to its 
 
 Because of the npc Pokémon tags that are present, the solution to this is to split the species down a line whether they are before the npc Pokémon or after.  Because of all of the form offsets, this split now occurs at Lickilicky, and can be seen in the table:
 
-```
-.halfword  991,  806, OVERWORLD_SIZE_SMALL // SPECIES_WEAVILE
-.halfword  992,  807, OVERWORLD_SIZE_SMALL // SPECIES_MAGNEZONE
-.halfword  993,  808, OVERWORLD_SIZE_SMALL // SPECIES_LICKILICKY
+```c
+    { .tag =  991, .gfx =  806, .callback_params = OVERWORLD_SIZE_SMALL}, // SPECIES_WEAVILE
+    { .tag =  992, .gfx =  807, .callback_params = OVERWORLD_SIZE_SMALL}, // SPECIES_MAGNEZONE
+    { .tag =  993, .gfx =  808, .callback_params = OVERWORLD_SIZE_SMALL}, // SPECIES_LICKILICKY
 // npc mon entries
-.halfword 1050,  809, OVERWORLD_SIZE_SMALL // SPECIES_RHYPERIOR
-.halfword 1051,  810, OVERWORLD_SIZE_SMALL // SPECIES_TANGROWTH
-.halfword 1052,  811, OVERWORLD_SIZE_SMALL // SPECIES_ELECTIVIRE
+    { .tag = 1050, .gfx =  809, .callback_params = OVERWORLD_SIZE_SMALL}, // SPECIES_RHYPERIOR
+    { .tag = 1051, .gfx =  810, .callback_params = OVERWORLD_SIZE_SMALL}, // SPECIES_TANGROWTH
+    { .tag = 1052, .gfx =  811, .callback_params = OVERWORLD_SIZE_SMALL}, // SPECIES_ELECTIVIRE
 ```
 
 The code that covers this is in [``src/pokemon.c``](https://github.com/BluRosie/hg-engine/blob/main/src/pokemon.c) as ``get_mon_ow_tag``.  This split now covers that Rhyperior, with a base follower ID of 566, now needs to map to the tag 1050 (as well as every follower ID above 566).  With Pikachu having both forms and a gender difference, the code handles Pikachu as an edge case where forms actually add ``(form id + 1)`` to the base follower ID.
@@ -49,7 +49,7 @@ While there isn't necessarily any reason currently to edit entries, should the n
 
 Each species is helpfully mapped to its entries, whether in the form of a comment after the entry or preceeding it as its index when in the C array.
 
-For overworlds, everything that you need to edit is in [``src/pokemon.c``](https://github.com/BluRosie/hg-engine/blob/main/src/pokemon.c) or [``armips/data/monoverworlds.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/data/monoverworlds.s).  Apart from adding new Pokémon, [``src/pokemon.c``](https://github.com/BluRosie/hg-engine/blob/main/src/pokemon.c) may not even need to be touched.
+For overworlds, everything that you need to edit is in [``src/pokemon.c``](https://github.com/BluRosie/hg-engine/blob/main/src/pokemon.c), [``armips/data/monoverworlds.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/data/monoverworlds.s), or [``src/field/overworld_table.c``](https://github.com/BluRosie/hg-engine/blob/main/src/field/overworld_table.c).  Apart from adding new Pokémon, [``src/pokemon.c``](https://github.com/BluRosie/hg-engine/blob/main/src/pokemon.c) may not even need to be touched.
 
 ### ``sSpeciesToOWGfx``
 
@@ -63,46 +63,48 @@ An entry just looks like the species name followed by a number (the whitespace i
 
 ### ``gOWTagToFileNum``
 
-Now we get to [``armips/data/monoverworlds.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/data/monoverworlds.s), where the file starts out with ``gOWTagToFileNum``.  This by necessity has to have it for _every_ overworld and not just the Pokémon overworlds, so it is not recommended that you edit anything before line 364 with the comment ``// pokémon follower specific overworlds start here``.
+Now we get to [``src/field/overworld_table.c``](https://github.com/BluRosie/hg-engine/blob/main/src/field/overworld_table.c), where the file starts out with ``gOWTagToFileNum``.  This by necessity has to have it for _every_ overworld and not just the Pokémon overworlds, so it is not recommended that you edit anything before line 454 with the comment ``// pokémon follower specific overworlds start here``.
 
 This table then has an entry for each Pokémon and its forms, with the tag, gfx id in a081, and callback enumerated, in that order:
 
-```
-.halfword  709,  529, OVERWORLD_SIZE_SMALL // SPECIES_WOBBUFFET
-.halfword  710,  530, OVERWORLD_SIZE_SMALL // female
+```c
+    { .tag =  709, .gfx =  529, .callback_params = OVERWORLD_SIZE_SMALL}, // SPECIES_WOBBUFFET
+    { .tag =  710, .gfx =  530, .callback_params = OVERWORLD_SIZE_SMALL}, // female
 ```
 
 Most Pokémon overworlds are 32x32.  Certain species have 64x64 overworlds, denoted here by ``OVERWORLD_SIZE_LARGE``:
 
-```
-.halfword  716,  536, OVERWORLD_SIZE_LARGE // SPECIES_STEELIX
-.halfword  717,  537, OVERWORLD_SIZE_LARGE // female
+```c
+    { .tag =  716, .gfx =  536, .callback_params = OVERWORLD_SIZE_LARGE}, // SPECIES_STEELIX
+    { .tag =  717, .gfx =  537, .callback_params = OVERWORLD_SIZE_LARGE}, // female
 ```
 
 Forms are defined directly after the base species:
 
-```
-.halfword 1162,  918, OVERWORLD_SIZE_SMALL // SPECIES_PETILIL
-.halfword 1163,  919, OVERWORLD_SIZE_SMALL // SPECIES_LILLIGANT
-.halfword 1164,  297, OVERWORLD_SIZE_SMALL // hisui - note that the 297 is bulbasaur and a placeholder
-.halfword 1165,  920, OVERWORLD_SIZE_SMALL // SPECIES_BASCULIN
-.halfword 1166,  921, OVERWORLD_SIZE_SMALL // blue stripe
-.halfword 1167,  297, OVERWORLD_SIZE_SMALL // white stripe - note that the 297 is bulbasaur and a placeholder
-.halfword 1168,  922, OVERWORLD_SIZE_SMALL // SPECIES_SANDILE
-.halfword 1169,  923, OVERWORLD_SIZE_SMALL // SPECIES_KROKOROK
+```c
+    { .tag = 1162, .gfx =  918, .callback_params = OVERWORLD_SIZE_SMALL}, // SPECIES_PETILIL
+    { .tag = 1163, .gfx =  919, .callback_params = OVERWORLD_SIZE_SMALL}, // SPECIES_LILLIGANT
+    { .tag = 1164, .gfx =  297, .callback_params = OVERWORLD_SIZE_SMALL}, // hisui - note that the 297 is bulbasaur and a placeholder
+    { .tag = 1165, .gfx =  920, .callback_params = OVERWORLD_SIZE_SMALL}, // SPECIES_BASCULIN
+    { .tag = 1166, .gfx =  921, .callback_params = OVERWORLD_SIZE_SMALL}, // blue stripe
+    { .tag = 1167, .gfx =  297, .callback_params = OVERWORLD_SIZE_SMALL}, // white stripe - note that the 297 is bulbasaur and a placeholder
+    { .tag = 1168, .gfx =  922, .callback_params = OVERWORLD_SIZE_SMALL}, // SPECIES_SANDILE
+    { .tag = 1169, .gfx =  923, .callback_params = OVERWORLD_SIZE_SMALL}, // SPECIES_KROKOROK
 ```
 
 Diglett and Dugtrio do not have a shadow under them:
 
-```
-.halfword  500,  348, OVERWORLD_SIZE_SMALL_NO_SHADOW // SPECIES_DIGLETT
-.halfword  501,  297, OVERWORLD_SIZE_SMALL_NO_SHADOW // alola
-.halfword  502,  349, OVERWORLD_SIZE_SMALL_NO_SHADOW // SPECIES_DUGTRIO
-.halfword  503,  297, OVERWORLD_SIZE_SMALL_NO_SHADOW // alola
+```c
+    { .tag =  500, .gfx =  348, .callback_params = OVERWORLD_SIZE_SMALL_NO_SHADOW}, // SPECIES_DIGLETT
+    { .tag =  501, .gfx =  297, .callback_params = OVERWORLD_SIZE_SMALL_NO_SHADOW}, // alola
+    { .tag =  502, .gfx =  349, .callback_params = OVERWORLD_SIZE_SMALL_NO_SHADOW}, // SPECIES_DUGTRIO
+    { .tag =  503, .gfx =  297, .callback_params = OVERWORLD_SIZE_SMALL_NO_SHADOW}, // alola
 ```
 
 
 ### ``gDimorphismTable``
+
+Now we pivot back to [``armips/data/monoverworlds.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/data/monoverworlds.s).
 
 This is the table that determines whether or not the Pokémon overworlds have gender differences and thus have a female "form" that adds 1 to the base follower ID.
 
