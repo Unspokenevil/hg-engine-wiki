@@ -33,12 +33,12 @@ I believe this is used intermittently for when an animation needs to happen and 
 I personally learn primarily by example.  A lot of what the beginning stages of battle script editing were in Gens 2 and 3 was mashing hexadecimal together and seeing what all worked--before there were any competent editors (and even for a while after there were, as people preferred pasting assembled hex into the rom directly for some reason).  A similar approach can be taken for this, identifying certain blocks that look like, when isolated, can be ported and placed wherever.
 
 ## Example 1 - Tackle
-To start out, we can look at Tackle and how it works.  Tackle, with move index 33, uses ``armips/move/battle_move_seq/033.s`` as the script that it immediately executes:
+To start out, we can look at Tackle and how it works.  Tackle, with move index 33, uses [``armips/move/battle_move_seq/033.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_move_seq/033.s) as the script that it immediately executes:
 ```
 a000_033:
     jumptocurmoveeffectscript
 ```
-This is the script that is present for almost all moves.  Because of this, I will omit looking at ``battle_move_seq`` in future examples to save space--what you can take away is basically that the ``battle_eff_seq`` is what is the main script and that a ``battle_move_seq`` script needs to be present for the mvoe lest the game crashes.  Most moves just jump to the current move effect script.  Looking at the ``battleeffect`` field from its move data entry (see ``armips/data/moves.s``):
+This is the script that is present for almost all moves.  Because of this, I will omit looking at ``battle_move_seq`` in future examples to save space--what you can take away is basically that the ``battle_eff_seq`` is what is the main script and that a ``battle_move_seq`` script needs to be present for the mvoe lest the game crashes.  Most moves just jump to the current move effect script.  Looking at the ``battleeffect`` field from its move data entry (see [``armips/data/moves.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/data/moves.s)):
 ```
 movedata MOVE_TACKLE
     battleeffect 0
@@ -46,7 +46,7 @@ movedata MOVE_TACKLE
     basepower 40
 ...
 ```
-With a ``battleeffect`` field of 0, the script jumps to ``battle_eff_seq`` script 0 (``armips/move/battle_eff_seq/000.s``).
+With a ``battleeffect`` field of 0, the script jumps to ``battle_eff_seq`` script 0 ([``armips/move/battle_eff_seq/000.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_eff_seq/000.s)).
 
 This script is then the basic damage-dealing script with no bells or whistles:
 ```
@@ -83,13 +83,13 @@ movedata MOVE_GROWL
     basepower 0
 ...
 ```
-``armips/move/battle_eff_seq/019.s`` (Tail Whip):
+[``armips/move/battle_eff_seq/019.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_eff_seq/019.s) (Tail Whip):
 ```
 a030_019:
     changevar VAR_OP_SET, VAR_ADD_STATUS1, 0x80000017
     endscript
 ```
-``armips/move/battle_eff_seq/018.s`` (Growl):
+[``armips/move/battle_eff_seq/018.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_eff_seq/018.s) (Growl):
 ```
 a030_018:
     changevar VAR_OP_SET, VAR_ADD_STATUS1, 0x80000016
@@ -119,7 +119,7 @@ a030_019:
     changevar VAR_OP_SET, VAR_ADD_STATUS1, 0x80000000 | 23 // 0x17 = 23, hexadecimal to decimal
     endscript
 ```
-The most significant bits are dedicated to determining which Pokémon on the field the effect should apply to.  0x80000000 signals to the code that the target is the Pokémon that the effect applies to, and 0x40000000 signals that the effect applies to the attacker.  There are a few more values as well, but those are the more important ones at the moment.  These have convenient defines in ``armips/include/battlescriptcmd.s`` that allow us to break this down further:
+The most significant bits are dedicated to determining which Pokémon on the field the effect should apply to.  0x80000000 signals to the code that the target is the Pokémon that the effect applies to, and 0x40000000 signals that the effect applies to the attacker.  There are a few more values as well, but those are the more important ones at the moment.  These have convenient defines in [``armips/include/battlescriptcmd.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/include/battlescriptcmd.s) that allow us to break this down further:
 ```
 a030_019:
     changevar VAR_OP_SET, VAR_ADD_STATUS1, ADD_STATUS_DEFENDER | 23 // 0x17 = 23, hexadecimal to decimal
@@ -127,7 +127,7 @@ a030_019:
 ```
 Now we know that this battle script tells the game to apply a certain effect to the defender.
 
-The ``23`` correlates to a ``battle_sub_seq`` script through the table ``move_effect_to_subscripts`` in ``src/moves.c``:
+The ``23`` correlates to a ``battle_sub_seq`` script through the table ``move_effect_to_subscripts`` in [``src/moves.c``](https://github.com/BluRosie/hg-engine/blob/main/src/moves.c):
 ```c
 u32 move_effect_to_subscripts[] =
 {
@@ -138,7 +138,7 @@ u32 move_effect_to_subscripts[] =
 // ...
 };
 ```
-Now ``battle_sub_seq`` script 12 (``armips/move/battle_sub_seq/012.s``) is responsible for every single stat adjustment in battles, just fed slightly different parameters.  The modularity makes it difficult to understand, and we may cover it more comprehensively later.  Just know off the bat that it is responsible for stat changes--it will come up later.
+Now ``battle_sub_seq`` script 12 ([``armips/move/battle_sub_seq/012.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_sub_seq/012.s)) is responsible for every single stat adjustment in battles, just fed slightly different parameters.  The modularity makes it difficult to understand, and we may cover it more comprehensively later.  Just know off the bat that it is responsible for stat changes--it will come up later.
 
 The big takeaway currently is that Growl, when treated similarly to Tail Whip:
 ```
@@ -157,7 +157,7 @@ movedata MOVE_RAIN_DANCE
     basepower 0
 ...
 ```
-``armips/move/battle_eff_seq/136.s``:
+[``armips/move/battle_eff_seq/136.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_eff_seq/136.s):
 ```
 a030_136:
     if IF_MASK, VAR_FIELD_EFFECT, 0x3, _0094
@@ -230,7 +230,7 @@ u32 move_effect_to_subscripts[] =
 // ...
 };
 ```
-This takes us down a rabbit trail (``armips/move/battle_sub_seq/103.s``):
+This takes us down a rabbit trail ([``armips/move/battle_sub_seq/103.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_sub_seq/103.s)):
 ```
 a001_103:
     gotosubscript 57
@@ -242,7 +242,7 @@ gotosubscript num
 calls battle_sub_seq script "num".  returns to the caller after an endscript is reached
 - num is the index of the ``battle_sub_seq`` script to jump to
 ```
-Which ends at (``armips/move/battle_sub_seq/057.s``):
+Which ends at ([``armips/move/battle_sub_seq/057.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_sub_seq/057.s)):
 ```
 a001_057:
     printpreparedmessage
@@ -259,7 +259,7 @@ pause script execution for "time" frames
 waitmessage
 pause script execution until current message is done printing.  not just done for messages, also used for various states that take up time that script execution needs to pause for (although not animations).
 ```
-This script just prints the prepared message from the ``preparemessage`` command back in ``armips/move/battle_eff_seq/136.s``, waits for 30 frames, and ends the script.
+This script just prints the prepared message from the ``preparemessage`` command back in [``armips/move/battle_eff_seq/136.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_eff_seq/136.s), waits for 30 frames, and ends the script.
 
 The queued ``battle_sub_seq`` script, despite taking us through another ``battle_sub_seq`` script, is solely responsible for printing the message prepared in the ``battle_eff_seq`` script!  
 
@@ -281,7 +281,7 @@ movedata MOVE_CHARGE_BEAM
     basepower 50
 ...
 ```
-``armips/battle_eff_seq/139.s``:
+[``armips/battle_eff_seq/139.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_eff_seq/139.s):
 ```
 a030_139:
     changevar VAR_OP_SET, VAR_ADD_STATUS2, 0x4000000F // ADD_STATUS_ATTACKER | 15
@@ -289,7 +289,7 @@ a030_139:
     damagecalc
     endscript
 ```
-``armips/battle_eff_seq/276.s``:
+[``armips/battle_eff_seq/276.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_eff_seq/276.s):
 ```
 a030_276:
     changevar VAR_OP_SET, VAR_ADD_STATUS2, 0x40000012 // ADD_STATUS_ATTACKER | 18
@@ -331,7 +331,7 @@ movedata MOVE_ANCIENT_POWER
     basepower 60
 ...
 ```
-``armips/move/battle_eff_seq/109.s``:
+[``armips/move/battle_eff_seq/109.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_eff_seq/109.s):
 ```
 a030_109:
     ifmonstat IF_EQUAL, BATTLER_ATTACKER, MON_DATA_TYPE_1, TYPE_GHOST, _0044
@@ -346,7 +346,7 @@ _0060:
     changevar VAR_OP_SET, VAR_MOVE_EFFECT, 0x1
     endscript
 ```
-``armips/move/battle_eff_seq/140.s``:
+[``armips/move/battle_eff_seq/140.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_eff_seq/140.s):
 ```
 a030_140:
     changevar VAR_OP_SET, VAR_ADD_STATUS2, 0x40000022 // ADD_STATUS_ATTACKER | 34
@@ -386,7 +386,7 @@ u32 move_effect_to_subscripts[] =
 ...
 };
 ```
-``armips/battle_sub_seq/119.s``:
+[``armips/battle_sub_seq/119.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_sub_seq/119.s):
 ```
 a001_119:
     changevar VAR_OP_SETMASK, VAR_60, 0x80
@@ -427,7 +427,7 @@ movedata MOVE_SUPERPOWER
     basepower 120
 ...
 ```
-``armips/move/battle_sub_seq/182.s``:
+[``armips/move/battle_sub_seq/182.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_sub_seq/182.s):
 ```
 a030_182:
     changevar VAR_OP_SET, VAR_ADD_STATUS2, 0x60000025 // ADD_STATUS_ATTACKER | ADD_STATUS_WORK | 37
@@ -435,7 +435,7 @@ a030_182:
     damagecalc
     endscript
 ```
-``move_effect_to_subscripts`` in ``src/moves.c``:
+``move_effect_to_subscripts`` in [``src/moves.c``](https://github.com/BluRosie/hg-engine/blob/main/src/moves.c):
 ```c
 u32 move_effect_to_subscripts[] =
 {
@@ -446,7 +446,7 @@ u32 move_effect_to_subscripts[] =
 ...
 };
 ```
-``armips/move/battle_sub_seq/138.s``:
+[``armips/move/battle_sub_seq/138.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_sub_seq/138.s):
 ```
 a001_138:
     changevar VAR_OP_SETMASK, VAR_60, 0x80
@@ -458,7 +458,7 @@ a001_138:
     changevar VAR_OP_CLEARMASK, VAR_60, 0x80
     endscript
 ```
-``move_effect_to_subscripts`` in ``src/moves.c``:
+``move_effect_to_subscripts`` in [``src/moves.c``](https://github.com/BluRosie/hg-engine/blob/main/src/moves.c):
 ```c
 u32 move_effect_to_subscripts[] =
 {
@@ -473,7 +473,7 @@ u32 move_effect_to_subscripts[] =
 I am honestly not sure of what the masks that it sets are, but pretty sure one toggles animations (the ``0x80``) instead of having them replay for every stat gain.  The last one probably signals that everything is over and the stat gains are done with.
 
 ### Curse as a stat-changing move
-Finally, we can look at the rest of Curse (battle script repasted here for convenience, ``armips/move/battle_eff_seq/109.s``):
+Finally, we can look at the rest of Curse (battle script repasted here for convenience, [``armips/move/battle_eff_seq/109.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_eff_seq/109.s)):
 <details>
 <summary>a030_109 - Curse effect script (click to dropdown!)</summary>
 
@@ -496,7 +496,7 @@ _0060:
 </details>
 I am not sure what setting the ``VAR_MOVE_EFFECT`` to ``0x1`` does here.  Perhaps it is done when showing that the move effect is changing somehow?  I suspect that it has something to do with Curse explicitly, as I can't seem to nail it down.
 
-``armips/move/battle_eff_seq/140.s``:
+[``armips/move/battle_eff_seq/140.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_eff_seq/140.s):
 ```
 a030_140:
     changevar VAR_OP_SET, VAR_ADD_STATUS2, 0x40000022 // ADD_STATUS_ATTACKER | 34
@@ -516,7 +516,7 @@ u32 move_effect_to_subscripts[] =
 ...
 };
 ```
-``armips/battle_sub_seq/096.s``
+[``armips/battle_sub_seq/096.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_sub_seq/096.s)
 ```
 a001_096:
     changevar VAR_OP_SET, VAR_34, 0x18 // 24
@@ -548,7 +548,7 @@ u32 move_effect_to_subscripts[] =
 We can see that the speed -1 is queued first, followed by the attack +1 and the speed +1.  We can further see that when switching from the negative stat boosts to the positive stat boosts, ``VAR_06`` is masked with ``0x4001``.  Furthermore, the animation plays twice--once for the decrease, and once again for the increase--we can tell because the ``VAR_60`` mask with ``0x80`` thus doesn't happen until after the speed decrease happens.
 
 ### Curse as a Ghost type
-Now let's look at Curse as a Ghost type (``armips/battle_sub_seq/097.s``):
+Now let's look at Curse as a Ghost type ([``armips/battle_sub_seq/097.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_sub_seq/097.s)):
 ```
 a001_097:
     if IF_MASK, VAR_10, 0x10000, _00D0
@@ -591,7 +591,7 @@ sets damage to be "var" / "value"
 - var is the numerator in the division
 - value is the denominator in the division
 ```
-If ``VAR_10`` has ``0x10000`` set, the script sets the move failed bit in ``VAR_10`` and ends the script.  Similar for the ``checksubstitute`` command, where if the ``BATTLER_DEFENDER`` has some status then the move fails and the script ends.  Finally, if the curse bit is set in the Pokémon's ``MON_DATA_STATUS_2`` field, then the move fails as well.  The move then calls ``battle_sub_seq`` script 76 (``armips/move/battle_sub_seq/076.s``):
+If ``VAR_10`` has ``0x10000`` set, the script sets the move failed bit in ``VAR_10`` and ends the script.  Similar for the ``checksubstitute`` command, where if the ``BATTLER_DEFENDER`` has some status then the move fails and the script ends.  Finally, if the curse bit is set in the Pokémon's ``MON_DATA_STATUS_2`` field, then the move fails as well.  The move then calls ``battle_sub_seq`` script 76 ([``armips/move/battle_sub_seq/076.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_sub_seq/076.s)):
 ```
 a001_076:
     printattackmessage
@@ -631,7 +631,7 @@ _00D0:
     changevar VAR_OP_SETMASK, VAR_10, 0x40
     endscript
 ```
-The Curse bit is then set (you can think of this as the ``BATTLER_DEFENDER`` is inflicted with Curse by the ``changemondatabyvalue`` command there), and the ``BATTLER_ATTACKER``'s max HP is placed into ``VAR_HP_TEMP``.  ``VAR_HP_TEMP`` is made to be negative (by multiplying by -1), and the damage to be dealt is set to ``VAR_HP_TEMP / 2``--half of the max HP.  The bit in ``VAR_06`` is set to signal to subscript 2 that is coming up that the move sound effect should not be played, that the HP should just be manipulated (as we will see in a moment).  Finally, the ``VAR_BATTLER_SOMETHING`` is set to be ``VAR_ATTACKER``--the temporary work battler is set to be the attacker so that subscript 2, which is written to be generic, will know what to do.  We go to subscript 2 (``armips/move/battle_sub_seq/002.s``):
+The Curse bit is then set (you can think of this as the ``BATTLER_DEFENDER`` is inflicted with Curse by the ``changemondatabyvalue`` command there), and the ``BATTLER_ATTACKER``'s max HP is placed into ``VAR_HP_TEMP``.  ``VAR_HP_TEMP`` is made to be negative (by multiplying by -1), and the damage to be dealt is set to ``VAR_HP_TEMP / 2``--half of the max HP.  The bit in ``VAR_06`` is set to signal to subscript 2 that is coming up that the move sound effect should not be played, that the HP should just be manipulated (as we will see in a moment).  Finally, the ``VAR_BATTLER_SOMETHING`` is set to be ``VAR_ATTACKER``--the temporary work battler is set to be the attacker so that subscript 2, which is written to be generic, will know what to do.  We go to subscript 2 ([``armips/move/battle_sub_seq/002.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_sub_seq/002.s)):
 ```
 a001_002:
     if IF_MASK, VAR_06, 0x40, _0044
@@ -705,7 +705,7 @@ Here we see that there are two fields that it grabs, so it requires 2 of the 6 `
 [422] The foe’s {STRVAR_1 1, 0, 0} cut its own HP\nand laid a curse on {STRVAR_1 1, 1, 0}!
 [423] The foe’s {STRVAR_1 1, 0, 0} cut its own HP\nand laid a curse on the foe’s\f{STRVAR_1 1, 1, 0}!
 ```
-Here we are introduced to a way of doing things that is rather interesting and is very much a massive waste of space:  The only string variables used are for the nicknames directly.  Otherwise, the ``printmessage`` command will just add on for the correct circumstance to achieve a new message that correctly reflects the battle at hand.  Generally speaking, most moves that only buffer 1 battler from the field will have 3 messages, one for the player, the wild mon, and the foe's mon--this is even the case for the ``printattackmessage`` text archive, ``data/text/003.txt``.  In Curse's case, because one battler is using the move on another battler and both are buffered, there are 7 cases, all automatically adjusted for like the above.  It then takes two battlers, and the command looks somewhat better like this:
+Here we are introduced to a way of doing things that is rather interesting and is very much a massive waste of space:  The only string variables used are for the nicknames directly.  Otherwise, the ``printmessage`` command will just add on for the correct circumstance to achieve a new message that correctly reflects the battle at hand.  Generally speaking, most moves that only buffer 1 battler from the field will have 3 messages, one for the player, the wild mon, and the foe's mon--this is even the case for the ``printattackmessage`` text archive, ([``data/text/003.txt``](https://github.com/BluRosie/hg-engine/blob/main/data/text/003.txt)).  In Curse's case, because one battler is using the move on another battler and both are buffered, there are 7 cases, all automatically adjusted for like the above.  It then takes two battlers, and the command looks somewhat better like this:
 ```
 printmessage 417, TAG_NICK_NICK, BATTLER_ATTACKER, BATTLER_DEFENDER, "NaN", "NaN", "NaN", "NaN"
 ```
@@ -757,7 +757,7 @@ simpleBeamScript: // a030_292
     changevar VAR_OP_SET, VAR_ADD_STATUS1, ADD_STATUS_DEFENDER | xxx
     endscript
 ```
-So now we know that we queue up a script that affects the defender.  What do we put in for ``xx``, the index of ``move_effect_to_subscripts``?  In this repo, you can actually just add on to the end of ``move_effect_to_subscripts`` in ``src/moves.c``.  So we add on a new entry to the end:
+So now we know that we queue up a script that affects the defender.  What do we put in for ``xx``, the index of ``move_effect_to_subscripts``?  In this repo, you can actually just add on to the end of ``move_effect_to_subscripts`` in [``src/moves.c``](https://github.com/BluRosie/hg-engine/blob/main/src/moves.c).  So we add on a new entry to the end:
 ```c
 u32 move_effect_to_subscripts[] =
 {
@@ -869,7 +869,7 @@ moveFails:
 ```
 That should be all needed to do the effect for Simple Beam!  For future examples, I will be skipping the header creation for simplicity--just know that it will be there.
 
-To recap:  Add a new ``battle_eff_seq`` script that queues up a ``battle_sub_seq`` script, add a new entry to ``move_effect_to_subscripts`` in ``src/moves.c`` that corresponds to the one you queued up in the ``battle_eff_seq`` script, and then add a new ``battle_sub_seq`` that corresponds to the entry you just added to ``move_effect_to_subscripts`` that then performs all of the effects.
+To recap:  Add a new ``battle_eff_seq`` script that queues up a ``battle_sub_seq`` script, add a new entry to ``move_effect_to_subscripts`` in [``src/moves.c``](https://github.com/BluRosie/hg-engine/blob/main/src/moves.c) that corresponds to the one you queued up in the ``battle_eff_seq`` script, and then add a new ``battle_sub_seq`` that corresponds to the entry you just added to ``move_effect_to_subscripts`` that then performs all of the effects.
 <details>
 <summary>Simple Beam created scripts (click to dropdown!)</summary>
 
@@ -929,14 +929,14 @@ moveFails:
 </details>
 
 ## Adding Fairy Type Handling to Judgment
-Old moves are also updatable in hg-engine--a few that have been are Rapid Spin and Judgment.  Let's look at what Judgment does to see how we can add Fairy type handling to it, quick look back at ``armips/data/moves.s``:
+Old moves are also updatable in hg-engine--a few that have been are Rapid Spin and Judgment.  Let's look at what Judgment does to see how we can add Fairy type handling to it, quick look back at [``armips/data/moves.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/data/moves.s):
 ```
 movedata MOVE_JUDGMENT
     battleeffect 268
     pss SPLIT_SPECIAL
     basepower 100
 ```
-So we look at ``battle_eff_seq`` script 268 (``armips/move/battle_eff_seq/268.s``) (the old version [here](https://github.com/BluRosie/hg-engine/blob/7180691503c90a80ff184802d069f299584013d4/armips/move/battle_eff_seq/268.s)):
+So we look at ``battle_eff_seq`` script 268 ([``armips/move/battle_eff_seq/268.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_eff_seq/268.s)) (the old version [here](https://github.com/BluRosie/hg-engine/blob/7180691503c90a80ff184802d069f299584013d4/armips/move/battle_eff_seq/268.s)):
 <details>
 <summary>a030_268 - Judgment effect script unlabeled (click to dropdown!)</summary>
 
@@ -1614,7 +1614,7 @@ a030_283:
     changevar VAR_OP_SET, VAR_ADD_STATUS1, ADD_STATUS_ATTACKER | ADD_STATUS_QUIVER_DANCE
     endscript
 ```
-Here, we see that a ``battle_sub_seq`` script queued up through ``VAR_ADD_STATUS1`` that supposedly is ``ADD_STATUS_QUIVER_DANCE``--we define new ``ADD_STATUS`` constants as they appear at the top of ``armips/include/battlescriptcmd.s``.  This even further clarifies the purpose of the script, so that when we're looking back at what we did and see an ``ADD_STATUS_QUIVER_DANCE`` instead of ``148`` we know better what to do.  Ideally, new scripts don't have to use any sort of numbers at all!  We can define whatever constants whenever we need them.
+Here, we see that a ``battle_sub_seq`` script queued up through ``VAR_ADD_STATUS1`` that supposedly is ``ADD_STATUS_QUIVER_DANCE``--we define new ``ADD_STATUS`` constants as they appear at the top of [``armips/include/battlescriptcmd.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/include/battlescriptcmd.s).  This even further clarifies the purpose of the script, so that when we're looking back at what we did and see an ``ADD_STATUS_QUIVER_DANCE`` instead of ``148`` we know better what to do.  Ideally, new scripts don't have to use any sort of numbers at all!  We can define whatever constants whenever we need them.
 
 Adding the new entry to ``move_effect_to_subscripts``:
 ```c
@@ -1709,7 +1709,7 @@ setType:
     wait 0x1E
     endscript
 ```
-We can directly change the type to Water this way and even use the Conversion battle message for it (from ``armips/move/battle_sub_seq/045.s``).  When the type changes in-game, however, the new type fails to buffer correctly.  For this, we turn to a new variable:  ``VAR_22``.  ``VAR_22`` is the temporary message buffer variable, and it determines many indices that the script system uses to buffer words into string variables.  When using ``TAG_NICK_TYPE``, the ``printmessage`` command first buffers the nickname of the Pokémon that is specified by the first ``battler`` parameter.  Then the type name is buffered using the value in ``VAR_22`` directly.
+We can directly change the type to Water this way and even use the Conversion battle message for it (from [``armips/move/battle_sub_seq/045.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_sub_seq/045.s)).  When the type changes in-game, however, the new type fails to buffer correctly.  For this, we turn to a new variable:  ``VAR_22``.  ``VAR_22`` is the temporary message buffer variable, and it determines many indices that the script system uses to buffer words into string variables.  When using ``TAG_NICK_TYPE``, the ``printmessage`` command first buffers the nickname of the Pokémon that is specified by the first ``battler`` parameter.  Then the type name is buffered using the value in ``VAR_22`` directly.
 
 Changing the script to buffer the Water type properly:
 ```
@@ -1786,7 +1786,7 @@ Once in a while you need access to some functionality that absolutely can not be
 
 This section will cover specifically adding new script commands with a few examples.  hg-engine has made this relatively easy compared to the base game, with the only need being expanding a table with a new entry & new code that details that entry.
 
-Old script commands end at ``0xE0`` with ``endscript``.  To maintain compatibility with vanilla scripts, we just add on to those, starting with ``0xE1`` and counting up from there.  Instead of repointing the whole table, there is an expanded table and the vanilla table.  The vanilla table is still in overlay 12 and left untouched, but when new command is parsed the handler hands it off to the new table instead.  Examining the code in ``src/battle_script_commands.c``, we can see:
+Old script commands end at ``0xE0`` with ``endscript``.  To maintain compatibility with vanilla scripts, we just add on to those, starting with ``0xE1`` and counting up from there.  Instead of repointing the whole table, there is an expanded table and the vanilla table.  The vanilla table is still in overlay 12 and left untouched, but when new command is parsed the handler hands it off to the new table instead.  Examining the code in [``src/battle/battle_script_commands.c``](https://github.com/BluRosie/hg-engine/blob/main/src/battle/battle_script_commands.c), we can see:
 ```c
 BOOL BattleScriptCommandHandler(void *bw, struct BattleStruct *sp)
 {
@@ -1879,7 +1879,7 @@ const btl_scr_cmd_func NewBattleScriptCmdTable[] =
     [0xE1 - START_OF_NEW_BTL_SCR_CMDS] = btl_scr_cmd_E1_reduceweight,
 };
 ```
-Finally, we need to add a script macro to ``armips/include/battlescriptcmd.s`` at the end of the file with a blurb as to what it does:
+Finally, we need to add a script macro to [``armips/include/battlescriptcmd.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/include/battlescriptcmd.s) at the end of the file with a blurb as to what it does:
 ```arm
 // reduce attacker weight in hectograms (increments of 0.1 kg) (num can be positive or negative, negative actually increases the weight)
 .macro reduceweight,num
@@ -1918,7 +1918,7 @@ NoStatusEffect:
 ## Script Command 0xE2 - ``heavyslamdamagecalc``
 Here we make a damage calculator for the move Heavy Slam specifically.  It compares the ratio of the user's weight to the target's weight and writes the base power based on that.  The lower the target's weight compared to the attacker's weight, the more damage the move does.
 
-The code, showing exactly that happen, at the end of ``src/battle_script_commands.c`` (as well as a declaration at the beginning):
+The code, showing exactly that happen, at the end of [``src/battle/battle_script_commands.c``](https://github.com/BluRosie/hg-engine/blob/main/src/battle/battle_script_commands.c) (as well as a declaration at the beginning):
 ```c
 BOOL btl_scr_cmd_E2_heavyslamdamagecalc(void *bw, struct BattleStruct *sp)
 {
@@ -1951,13 +1951,13 @@ const btl_scr_cmd_func NewBattleScriptCmdTable[] =
     [0xE2 - START_OF_NEW_BTL_SCR_CMDS] = btl_scr_cmd_E2_heavyslamdamagecalc,
 };
 ```
-Finally, add a battle script macro for the command to ``armips/include/battlescriptcmd.s``:
+Finally, add a battle script macro for the command to [``armips/include/battlescriptcmd.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/include/battlescriptcmd.s):
 ```
 .macro heavyslamdamagecalc
     .word 0xE2
 .endmacro
 ```
-The command in action from usage in a battle script, specifically just the ``battle_eff_seq`` script.  This doesn't even require a subscript!  Based on the one for Gyro Ball (``armips/move/battle_eff_seq/219.s``):
+The command in action from usage in a battle script, specifically just the ``battle_eff_seq`` script.  This doesn't even require a subscript!  Based on the one for Gyro Ball ([``armips/move/battle_eff_seq/219.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/move/battle_eff_seq/219.s)):
 ```
 HeavySlamEffectScript:
     heavyslamdamagecalc
