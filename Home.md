@@ -30,6 +30,9 @@ A rough list of what all comes in this repository and the status:
 - 60 FPS battles*
 - Always set battles*
 - Fairy type*
+- Transparent textboxes*
+- [Mikelan's BDHCam routine](https://github.com/BluRosie/hg-engine/blob/main/pokehacking.com/r/20110901)*
+- Completely new evolution methods up to generation 8
 
 <sup><sub><b>*</b> - configurable at compile time, can be completely disabled, see [CONFIG.md](https://github.com/BluRosie/hg-engine/blob/main/CONFIG.md)</sub></sup>
 
