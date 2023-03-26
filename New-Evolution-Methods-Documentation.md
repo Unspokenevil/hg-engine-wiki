@@ -126,7 +126,7 @@ The Pokémon will evolve when leveling up holding an item during the night.
 
 ### Level Up Knowing Move
 
-The Pokémon will evolve when leveling up knowing a move.
+The Pokémon will evolve when leveling up knowing the specified move.
 
 ### Level Up with Another Mon in Party
 
