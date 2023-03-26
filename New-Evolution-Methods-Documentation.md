@@ -78,7 +78,7 @@ The Pokémon will evolve when being received in a trade holding the specified it
 
 ### Use Item
 
-The Pokémon will evolve when being received in a trade.
+The Pokémon will evolve when the specified item is used on it.
 
 ### Level Higher Attack
 
