@@ -130,7 +130,7 @@ The Pokémon will evolve when leveling up knowing the specified move.
 
 ### Level Up with Another Mon in Party
 
-The Pokémon will evolve when leveling up with another Pokémon in the party.
+The Pokémon will evolve when leveling up with the specified Pokémon in the party.
 
 ### Level Up a Male
 
