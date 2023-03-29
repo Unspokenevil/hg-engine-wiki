@@ -38,20 +38,19 @@ A rough list of what all comes in this repository and the status:
 
 ### Wiki Contents
 
-- Tutorials
+- Tutorials/Documentation
   - [[Editing Pokémon Data|Editing Pokémon Data]]
-  - [[Move Scripting Systems Documentation|Move Scripting Systems Documentation]] is a big tutorial with documentation at the end
-- Documentation
+  - [[Move Scripting Systems Documentation|Move Scripting Systems Documentation]]
+  - [[Trainer Pokémon Structure Documentation|Trainer Pokémon Structure Documentation]]
+  - [[Wild Pokémon Table Documentation|Wild Pokémon Table Documentation]]
+  - [[New Evolution Methods Documentation|New Evolution Methods Documentation]]
+  - [[Hidden Ability System|Hidden Ability Documentation]]
   - [[Dex Flag Expansion|Dex Flag Expansion Documentation]]
   - [[Experience Overhaul|Experience Overhaul Documentation]]
   - [[Form System|Form System Documentation]]
-  - [[Hidden Ability System|Hidden Ability Documentation]]
   - [[Item System Documentation|Item System Documentation]]
   - [[Move Data Structure|Move Data Structure Documentation]]
-  - [[Move Scripting Systems Documentation|Move Scripting Systems Documentation]]
   - [[Overworld System Documentation|Overworld System Documentation]]
-  - [[Trainer Pokémon Structure Documentation|Trainer Pokémon Structure Documentation]]
-  - [[Wild Pokémon Table Documentation|Wild Pokémon Table Documentation]]
 
 
 ### FAQ
