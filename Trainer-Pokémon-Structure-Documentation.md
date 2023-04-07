@@ -331,7 +331,7 @@ trainerdata TRAINER_JUAN_1
         nature NATURE_TIMID
         shinylock 1 // mon will be forced shiny
         additionalflags TRAINER_DATA_EXTRA_TYPE_NICKNAME // nickname will be read from here
-        nickname "KING\0\0\0\0\0\0\0"
+        nickname K_, I_, N_, G_, 0, 0, 0, 0, 0, 0, 0
         ballseal 0
     endparty
 ```
