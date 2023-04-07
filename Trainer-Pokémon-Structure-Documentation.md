@@ -88,7 +88,7 @@ New fields added:
 - ``spdef`` is conditionally read depending on the mon data ``additionalflags`` having the flag ``TRAINER_DATA_EXTRA_TYPE_SP_DEF`` set.  This will set the Special Defense stat to this value instead of calculating it.
 - ``types[]`` is conditionally read depending on the mon data ``additionalflags`` having the flag ``TRAINER_DATA_EXTRA_TYPE_TYPES`` set.  This will set the mon to have the types specified instead of the ones specified in the base stats.
 - ``ppcounts[]`` is conditionally read depending on the mon data ``additionalflags`` having the flag ``TRAINER_DATA_EXTRA_TYPE_PP_COUNTS`` set.  This will set the mon
-- ``nickname[]`` is conditionally read depending on the mon data ``additionalflags`` having the flag ``TRAINER_DATA_EXTRA_TYPE_NICKNAME`` set.  This is the string nickname that the Pokémon will have.  (currently unimplemented fully)
+- ``nickname[]`` is conditionally read depending on the mon data ``additionalflags`` having the flag ``TRAINER_DATA_EXTRA_TYPE_NICKNAME`` set.  This is the string nickname that the Pokémon will have.
 
 Trainers are now all editable in the repository itself.  Pokeditor plans on supporting them eventually as well, and I may end up continuing a fork of DSPRE that will end up supporting this, depending on demand.  This is done in the armips files located in [armips/data/trainers/trainers.s](https://github.com/BluRosie/hg-engine/blob/main/armips/data/trainers/trainers.s).  As can be seen in there, the existing trainers have been dumped and are editable directly in that file.  These are then built on building the repository and automatically injected into the ROM.
 
@@ -202,9 +202,11 @@ forces the mon to have the pp counts specified by num1, num2, num3, and num4, in
 
 nickname let0, let1, let2, ..., let9, let10
 (conditional depending on additionalflags TRAINER_DATA_EXTRA_TYPE_NICKNAME)
-forces the mon to have the nickname spelled out in the letters.
-letters are defined by the letter followed by an underscore, i.e. a mon with the nickname "KING" should be spelled out as
-nickname K_, I_, N_, G_, 0, 0, 0, 0, 0, 0, 0
+forces the mon to have the nickname spelled out in the letters.  this needs to be a string terminated with 0xFFFF, or "_end"
+letters are defined by the letter preceded by an underscore, i.e. a mon with the nickname "KING" should be spelled out as
+nickname _K, _I, _N, _G, _end, 0, 0, 0, 0, 0, 0
+note that lowercase letters have the underscore on either side of the letter, such that "Snowbunny" becomes:
+nickname _S, _n_, _o_, _w_, _b_, _u_, _n_, _n_, _y_, _end, 0
 
 endparty
 ends the party file that is currently open
@@ -333,7 +335,7 @@ trainerdata TRAINER_JUAN_1
         nature NATURE_TIMID
         shinylock 1 // mon will be forced shiny
         additionalflags TRAINER_DATA_EXTRA_TYPE_NICKNAME // nickname will be read from here
-        nickname K_, I_, N_, G_, 0, 0, 0, 0, 0, 0, 0
+        nickname _K, _I, _N, _G, _end, 0, 0, 0, 0, 0, 0
         ballseal 0
     endparty
 ```
