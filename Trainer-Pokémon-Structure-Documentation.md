@@ -200,9 +200,11 @@ ppcounts num1, num2, num3, num4
 (conditional depending on additionalflags TRAINER_DATA_EXTRA_TYPE_PP_COUNTS
 forces the mon to have the pp counts specified by num1, num2, num3, and num4, in order of the moves specified above
 
-nickname "string"
+nickname let0, let1, let2, ..., let9, let10
 (conditional depending on additionalflags TRAINER_DATA_EXTRA_TYPE_NICKNAME)
-forces the mon to have the nickname specified in the "string".  should be null padded, i.e. \0 out to 11 characters
+forces the mon to have the nickname spelled out in the letters.
+letters are defined by the letter followed by an underscore, i.e. a mon with the nickname "KING" should be spelled out as
+nickname K_, I_, N_, G_, 0, 0, 0, 0, 0, 0, 0
 
 endparty
 ends the party file that is currently open
