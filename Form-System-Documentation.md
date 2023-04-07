@@ -457,7 +457,7 @@ Along with new forms, various new methods to change specific Pokémon forms have
 ### Significant Gender Differences
 While Gen 4 was the generation that introduced gender differences, the things that could differ between genders was very limited.  As a result, significant gender differences (that at least change icons between genders) require separate forms.
 
-Unfezant, Frillish, Jellicent, Pyroar, Meowstic, and Basculegion are currently the only ones this applies to.  Specifying that a Frillish should appear in the wild will make it so that only male Frillish will appear in the wild.  The wild entries will also need a separate entry for female Frillish.  This goes for all of the listed Pokémon as well.
+Unfezant, Frillish, Jellicent, Pyroar, Meowstic, and Basculegion are currently the only ones this applies to.  These wild Pokémon--when generated--will swap between the forms at a 50/50 rate except for Pyroar, which is female 7/8 of the time in accordance with the gender split of future generations.  This is governed in [`src/pokemon.c`](https://github.com/BluRosie/hg-engine/blob/main/src/pokemon.c#L3171) in `UpdatePassiveForms`.
 
 Tranquill, Litleo, Espurr, and White Stripe Basculin all have their evolutions tweaked to force females to evolve into the female form.  Specifically, when a female evolves, it will set its form to the female form.  This is done by an evolution table overhaul that allows us to specify forms as such:
 
