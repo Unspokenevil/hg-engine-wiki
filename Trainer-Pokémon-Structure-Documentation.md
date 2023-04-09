@@ -202,11 +202,11 @@ forces the mon to have the pp counts specified by num1, num2, num3, and num4, in
 
 nickname let0, let1, let2, ..., let9, let10
 (conditional depending on additionalflags TRAINER_DATA_EXTRA_TYPE_NICKNAME)
-forces the mon to have the nickname spelled out in the letters.  this needs to be a string terminated with 0xFFFF, or "_end"
+forces the mon to have the nickname spelled out in the letters.  this needs to be a string terminated with 0xFFFF, or "_endstr"
 letters are defined by the letter preceded by an underscore, i.e. a mon with the nickname "KING" should be spelled out as
-nickname _K, _I, _N, _G, _end, 0, 0, 0, 0, 0, 0
+nickname _K, _I, _N, _G, _endstr, 0, 0, 0, 0, 0, 0
 note that lowercase letters have the underscore on either side of the letter, such that "Snowbunny" becomes:
-nickname _S, _n_, _o_, _w_, _b_, _u_, _n_, _n_, _y_, _end, 0
+nickname _S, _n_, _o_, _w_, _b_, _u_, _n_, _n_, _y_, _endstr, 0
 
 endparty
 ends the party file that is currently open
@@ -335,7 +335,7 @@ trainerdata TRAINER_JUAN_1
         nature NATURE_TIMID
         shinylock 1 // mon will be forced shiny
         additionalflags TRAINER_DATA_EXTRA_TYPE_NICKNAME // nickname will be read from here
-        nickname _K, _I, _N, _G, _end, 0, 0, 0, 0, 0, 0
+        nickname _K, _I, _N, _G, _endstr, 0, 0, 0, 0, 0, 0
         ballseal 0
     endparty
 ```
