@@ -1927,7 +1927,7 @@ BOOL btl_scr_cmd_E2_heavyslamdamagecalc(void *bw, struct BattleStruct *sp)
     IncrementBattleScriptPtr(sp, 1);
 
     // grab the ratio of defense weight/attack weight as a % to 2 decimal places
-    ratio = (sp->battlemon[sp->defence_client].weight * 1000) / sp->battlemon[sp->attack_client].weight;
+    ratio = (sp->battlemon[sp->defence_client].weight * 10000) / sp->battlemon[sp->attack_client].weight;
 
     if (ratio <= 2000)      // < 20.00%
         sp->damage_power = 120;
