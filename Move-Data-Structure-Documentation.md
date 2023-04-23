@@ -52,3 +52,23 @@ A short description of each parameter:
   - ``FLAG_HIDE_SHADOW`` determines whether or not the target's shadow is made invisible for the duration of the move.
 - ``appeal`` has something to do with contest effects and is unused in Heart Gold.
 - ``contesttype`` has something to do with contest effects and is unused in Heart Gold.
+
+An example ``movedata`` entry is as follows:
+
+```
+movedata MOVE_KARATE_CHOP, "Karate Chop"
+    battleeffect 43
+    pss SPLIT_PHYSICAL
+    basepower 50
+    type TYPE_FIGHTING
+    accuracy 100
+    pp 25
+    effectchance 0
+    target MOVE_TARGET_SELECTED
+    priority 0
+    flags FLAG_KEEP_HP_BAR | FLAG_KINGS_ROCK | FLAG_MIRROR_MOVE | FLAG_PROTECT | FLAG_CONTACT
+    appeal 0x05
+    contesttype CONTEST_TOUGH
+    terminatedata
+    movedescription MOVE_KARATE_CHOP, "The foe is attacked\nwith a sharp chop.\nIt has a high\ncritical-hit ratio.\n"
+```
