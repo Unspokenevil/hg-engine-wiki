@@ -417,20 +417,22 @@ Moves that are learned on evolution are not yet supported.  However, when they a
 
 Each Pokémon gets a file in the personal narc detailing a number of things, particularly base stats, TM learnsets, gender ratio (number of Pokémon that will be female out of 254), ev yields, etc.
 
-Hidden abilities are not included here to maintain compatibility with existing tools.
+Hidden abilities are not included here to maintain compatibility with existing tools.  Base experience is also not identified in this file because later generations use values higher than 255.
 
 TM learnsets appear here as constants that are defined in a separate file, ``tmlearnset.s``.  This is to avoid cluttering this file.
 
 ``basestats`` and ``evyields`` are listed in the order HP, Attack, Defense, Speed, Sp. Attack, and Sp. Defense, as they are internally.
 
+The string defined in the header data of the mondata entry is the name of the Pokémon as it appears in the game.  The end of the mondata entry for the species lists the dex descriptions, height, and weight of each.
+
 Example ``mondata`` entry:
 
 ```
-mondata SPECIES_GLIGAR
+mondata SPECIES_GLIGAR, "Gligar"
     basestats 65, 75, 105, 85, 35, 65
     types TYPE_GROUND, TYPE_FLYING
     catchrate 60
-    baseexp 108
+    baseexp 0 // defined in baseexp.s
     evyields 0, 0, 1, 0, 0, 0
     items ITEM_NONE, ITEM_NONE
     genderratio 127
@@ -442,6 +444,10 @@ mondata SPECIES_GLIGAR
     runchance 0
     colorflip BODY_COLOR_PURPLE, 0
     tmdata SPECIES_GLIGAR_TM_DATA_0, SPECIES_GLIGAR_TM_DATA_1, SPECIES_GLIGAR_TM_DATA_2, SPECIES_GLIGAR_TM_DATA_3
+    mondexentry SPECIES_GLIGAR, "It flies straight at its target’s\nface, then clamps down on the\nstartled victim to inject poison."
+    mondexclassification SPECIES_GLIGAR, "FlyScorpion Pokémon"
+    mondexheight SPECIES_GLIGAR, "3’07”"
+    mondexweight SPECIES_GLIGAR, "142.9 lbs."
 ```
 
 ### ``regionaldex.s``
