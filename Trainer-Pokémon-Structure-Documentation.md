@@ -102,8 +102,8 @@ description of macro
 
 // trainer data macros
 
-trainerdata num
-creates the trainer data file for index num
+trainerdata num, "name"
+creates the trainer data file for index num with the name to be written as a string as name
 
 trainermontype flags
 specifies the trainer data_type
@@ -214,7 +214,7 @@ ends the party file that is currently open
 
 A fully decked out trainer using this system is buildable using macros that are already specified by the assembler armips.  The definitions of these can be changed in [armips/include/macros.s](https://github.com/BluRosie/hg-engine/blob/main/armips/include/macros.s) near the end.  Here is an example of a trainer that utilizes new features of this system extensively:
 ```
-trainerdata TRAINER_JUAN_1
+trainerdata TRAINER_JUAN_1, "Juan"
     trainermontype TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_MOVES | TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_ABILITY | TRAINER_DATA_TYPE_BALL | TRAINER_DATA_TYPE_IV_EV_SET | TRAINER_DATA_TYPE_NATURE_SET | TRAINER_DATA_TYPE_SHINY_LOCK | TRAINER_DATA_TYPE_ADDITIONAL_FLAGS
     trainerclass TRAINER_CLASS_LEADER_6
     battletype SINGLE_BATTLE
