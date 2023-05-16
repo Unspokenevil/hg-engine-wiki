@@ -217,14 +217,14 @@ A fully decked out trainer using this system is buildable using macros that are 
 trainerdata TRAINER_JUAN_1, "Juan"
     trainermontype TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_MOVES | TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_ABILITY | TRAINER_DATA_TYPE_BALL | TRAINER_DATA_TYPE_IV_EV_SET | TRAINER_DATA_TYPE_NATURE_SET | TRAINER_DATA_TYPE_SHINY_LOCK | TRAINER_DATA_TYPE_ADDITIONAL_FLAGS
     trainerclass TRAINER_CLASS_LEADER_6
-    battletype SINGLE_BATTLE
+    battletype 0
     nummons 6
     item ITEM_HYPER_POTION 
     item ITEM_HYPER_POTION 
     item ITEM_NONE 
     item ITEM_NONE
     aiflags F_PRIORITIZE_SUPER_EFFECTIVE | F_EVALUATE_ATTACKS | F_EXPERT_ATTACKS
-    battletype2 0
+    battletype2 SINGLE_BATTLE
     endentry
 
     // Juan1
