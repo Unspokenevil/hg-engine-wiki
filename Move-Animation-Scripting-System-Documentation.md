@@ -17,7 +17,6 @@ This documentation is inherently aiming to be less thorough than the similar [[M
 
 The average move script will look something like this (see [Quiver Dance's animation](https://github.com/BluRosie/hg-engine/blob/main/armips/move/move_anim/486.s))
 ```
-
 a010_486:
     loadparticlefromspa 0, 499
     waitparticle
