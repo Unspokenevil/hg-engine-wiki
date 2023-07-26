@@ -304,7 +304,7 @@ trainerdata TRAINER_JUAN_1, "Juan"
         ivs 250
         abilityslot 0
         level 46
-        monwithform SPECIES_ROTOM, 3 // rotom wash
+        monwithform SPECIES_ROTOM, 2 // rotom wash
         item ITEM_NONE
         move MOVE_WATER_PULSE
         move MOVE_DOUBLE_TEAM
