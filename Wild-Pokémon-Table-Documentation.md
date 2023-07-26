@@ -165,7 +165,8 @@ pokemon SPECIES_MAGIKARP
 .close
 ```
 </details>
-If you wanted a Pokémon with a form to appear in the wild, any `pokemon` slot would just change to a `monwithform`, and any `encounter` into an `encounterwithform`:
+
+If you wanted a Pokémon with a form to appear in the wild, any ``pokemon`` slot would just change to a ``monwithform``, and any ``encounter`` into an ``encounterwithform``:
 
 ```
 pokemon SPECIES_GEODUDE
