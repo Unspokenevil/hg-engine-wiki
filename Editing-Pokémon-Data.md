@@ -337,36 +337,103 @@ terminateevodata
 The currently supported evolution methods:
 
 ```
-EVO_NONE                      equ 0
-EVO_HAPPINESS                 equ 1
-EVO_HAPPINESS_DAY             equ 2
-EVO_HAPPINESS_NIGHT           equ 3
-EVO_LEVEL_UP                  equ 4
-EVO_TRADE                     equ 5
-EVO_TRADE_ITEM                equ 6
-EVO_USE_ITEM                  equ 7
-EVO_LEVEL_MORE_ATTACK         equ 8
-EVO_LEVEL_ATK_DEF_EQUAL       equ 9
-EVO_LEVEL_MORE_DEFENSE        equ 10
-EVO_LEVEL_PID_LOW             equ 11
-EVO_LEVEL_PID_HIGH            equ 12
-EVO_LEVEL_GEN_NEW_MON_1       equ 13
-EVO_LEVEL_GEN_NEW_MON_2       equ 14
-EVO_MAX_BEAUTY                equ 15
-EVO_USE_ITEM_MALE             equ 16
-EVO_USE_ITEM_FEMALE           equ 17
-EVO_USE_ITEM_DAY              equ 18
-EVO_USE_ITEM_NIGHT            equ 19
-EVO_KNOWS_MOVE                equ 20
-EVO_MON_IN_PARTY              equ 21
-EVO_LEVEL_MALE                equ 22
-EVO_LEVEL_FEMALE              equ 23
-EVO_LEVEL_ELECTRIC_FIELD      equ 24
-EVO_LEVEL_MOSSY_STONE         equ 25
-EVO_LEVEL_ICY_STONE           equ 26
+EVO_NONE                         equ 0
+EVO_HAPPINESS                    equ 1
+EVO_HAPPINESS_DAY                equ 2
+EVO_HAPPINESS_NIGHT              equ 3
+EVO_LEVEL_UP                     equ 4
+EVO_TRADE                        equ 5
+EVO_TRADE_ITEM                   equ 6
+EVO_USE_ITEM                     equ 7
+EVO_LEVEL_MORE_ATTACK            equ 8
+EVO_LEVEL_ATK_DEF_EQUAL          equ 9
+EVO_LEVEL_MORE_DEFENSE           equ 10
+EVO_LEVEL_PID_LOW                equ 11
+EVO_LEVEL_PID_HIGH               equ 12
+EVO_LEVEL_GEN_NEW_MON_1          equ 13
+EVO_LEVEL_GEN_NEW_MON_2          equ 14
+EVO_MAX_BEAUTY                   equ 15
+EVO_USE_ITEM_MALE                equ 16
+EVO_USE_ITEM_FEMALE              equ 17
+EVO_USE_ITEM_DAY                 equ 18
+EVO_USE_ITEM_NIGHT               equ 19
+EVO_KNOWS_MOVE                   equ 20
+EVO_MON_IN_PARTY                 equ 21
+EVO_LEVEL_MALE                   equ 22
+EVO_LEVEL_FEMALE                 equ 23
+EVO_LEVEL_ELECTRIC_FIELD         equ 24
+EVO_LEVEL_MOSSY_STONE            equ 25
+EVO_LEVEL_ICY_STONE              equ 26
+EVO_LEVEL_DAY                    equ 27
+EVO_LEVEL_NIGHT                  equ 28
+EVO_LEVEL_DUSK                   equ 29
+EVO_LEVEL_RAIN                   equ 30
+EVO_HAS_MOVE_TYPE                equ 31
+EVO_LEVEL_DARK_TYPE_MON_IN_PARTY equ 32
+EVO_TRADE_SPECIFIC_MON           equ 33
+EVO_LEVEL_NATURE_AMPED           equ 34
+EVO_LEVEL_NATURE_LOW_KEY         equ 35
+EVO_AMOUNT_OF_CRITICAL_HITS      equ 36 // hardcoded to 3 critical hits
+EVO_HURT_IN_BATTLE_AMOUNT        equ 37
 ```
 
-Pending further research, this is what we are sticking with.  Placeholder evolutions exist for Pokémon that will need extra programming with completely new methods to determine how to evolve them.
+Pokémon that evolve via `EVO_HAPPINESS`, `EVO_HAPPINESS_DAY`, and `EVO_HAPPINESS_DAY` evolve upon level up when their friendship value is over 220 (and at the time of day specified.
+
+Pokémon that evolve via `EVO_LEVEL_UP` evolve at the specified level.
+
+Pokémon that evolve via `EVO_TRADE` or `EVO_USE_ITEM` evolve upon being traded (while holding their item if specified).
+
+Pokémon that evolve via `EVO_USE_ITEM` evolve when the specified item is used on them.
+
+Pokémon that evolve via `EVO_LEVEL_MORE_ATTACK`, `EVO_LEVEL_ATK_DEF_EQUAL`, `EVO_LEVEL_MORE_DEFENSE`, `EVO_LEVEL_PID_LOW`, `EVO_LEVEL_PID_HIGH` all evolve at the specified level under the conditions in the name.
+
+Pokémon that evolve via `EVO_LEVEL_GEN_NEW_MON_1` evolve into the Pokémon at the level specified.  The game will also trigger a new identical Pokémon at the same level as specified by the `EVO_LEVEL_GEN_NEW_MON_2` entry.
+
+Pokémon that evolve via `EVO_MAX_BEAUTY` evolve when their Beauty contest stat surpasses the specified number.
+
+Pokémon that evolve via `EVO_USE_ITEM_MALE`, `EVO_USE_ITEM_FEMALE`, `EVO_USE_ITEM_DAY`, `EVO_USE_ITEM_NIGHT` evolve when the specified item is used on them under the condition specified in the name of the method.
+
+Pokémon that evolve via `EVO_MON_IN_PARTY` evolve upon level up when the specified Pokémon species is in the party.
+
+Pokémon that evolve via `EVO_LEVEL_MALE`, `EVO_LEVEL_FEMALE` evolve when they reach the specified level and are specifically the sex that is specified in the name of the method.
+
+Pokémon that evolve via `EVO_LEVEL_ELECTRIC_FIELD` evolve when leveled up in Route 43 or in the Power Plant.
+
+Pokémon that evolve via `EVO_LEVEL_MOSSY_STONE` evolve when leveled up in Ilex or Viridian Forests.
+
+Pokémon that evolve via`EVO_LEVEL_ICY_STONE` evolve when leveled up in the lowest level of Ice Path or Seafoam Islands.
+
+Pokémon that evolve via `EVO_LEVEL_DAY`, `EVO_LEVEL_NIGHT`, `EVO_LEVEL_DUSK`, `EVO_LEVEL_RAIN`
+
+Pokémon that evolve via `EVO_HAS_MOVE_TYPE` evolve when leveled up knowing a move that has the specified type.
+
+Pokémon that evolve via `EVO_LEVEL_DARK_TYPE_MON_IN_PARTY` evolve when a Dark-type Pokémon is in the party at the same time and the specified level is reached.
+
+Pokémon that evolve via `EVO_TRADE_SPECIFIC_MON` evolve when traded with a specific other Pokémon.
+
+Pokémon that evolve via `EVO_LEVEL_NATURE_AMPED` evolve when they have any one of the "amped" natures and reached the specified level.  See the list of natures that are "low-key" to determine which nature yours is.
+
+Pokémon that evolve via `EVO_LEVEL_NATURE_LOW_KEY` evolve when they have any one of the "low-key" natures and reached the specified level.  The low-key natures are:
+
+```c
+case NATURE_ADAMANT:
+case NATURE_BRAVE:
+case NATURE_DOCILE:
+case NATURE_HARDY:
+case NATURE_HASTY:
+case NATURE_IMPISH:
+case NATURE_JOLLY:
+case NATURE_LAX:
+case NATURE_NAIVE:
+case NATURE_NAUGHTY:
+case NATURE_QUIRKY:
+case NATURE_RASH:
+case NATURE_SASSY:
+```
+
+Pokémon that evolve via `EVO_AMOUNT_OF_CRITICAL_HITS` need to get 3 critical hits in a single appearance in battle to evolve upon level up after this has occurred.  Switching out or fainting resets the counter, it needs to be in one appearance.
+
+Pokémon that evolve via `EVO_HURT_IN_BATTLE_AMOUNT` evolve when they have sustained damage in excess of the amount specified and level up while their HP is down.
 
 ### ``heighttable.s``
 
@@ -466,7 +533,7 @@ The byte at offset 0x2C describes the back animation.
 
 There are then 3 bytes at offset 0x56 that each describe the y offset (moving down being positive), the shadow's x offset (moving right being positive), and the size of the shadow (0-3 for no shadow to largest shadow).
 
-This appears in ``sprietoffsets.s`` as:
+This appears in ``spriteoffsets.s`` as:
 
 ```
 dataentry SPECIES_SIMIPOUR  ,  2, 5, -7,  -1,  SHADOW_SIZE_MEDIUM
@@ -562,7 +629,6 @@ Known instances of these are:
 - Pokéathlon stats
 - dex forms that appear when viewing the forms tab (default is gender)
 - where the dex screen flashes when a species appears there (can edit where a species appears within the constraints of the areas already defined)
-- adding new evolution methods
 - adding new TM's
 - editing the moves taught by TM's
 - footprints
