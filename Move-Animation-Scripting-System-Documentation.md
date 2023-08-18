@@ -124,7 +124,7 @@ These are actually thus defined as helpful script macros.  These will be covered
 
 For now, Quiver Dance uses `callfunction 34, 6, 2, 0, 1, red | green << 5 | blue << 10, 10, 15, "NaN", "NaN", "NaN", "NaN"` which shades the attacking mon the RGB555 color defined by the components red/green/blue, here 31, 31, 31 which shades the Pokémon white.  The macro that can replace this is `shadeattackingmon red, green, blue`.
 
-`callfunction 36, 5, 3, 0, 1, 10, 264, "NaN", "NaN", "NaN", "NaN", "NaN"` shakes the target Pokémon 3 times with a magnitude of 10.  The macro that can replace this is `shaketargetmon 3, 10`.
+`callfunction 36, 5, 3, 0, 1, 10, 264, "NaN", "NaN", "NaN", "NaN", "NaN"` shakes the target Pokémon 3 times with a magnitude of 10.  The macro that can replace this is `shaketargetmon 3, 10`.  Note that Quiver Dance's target is the attacker, so this `callfunction` works just fine.
 
 Now we get to the `addparticle` command.
 
@@ -213,3 +213,92 @@ shakes the screen
 rotateattackerincircle
 rotates attacker in a circle like rolling kick and agility
 ```
+Covered in this documentation are older scripts that were made before the convenience macros were defined, which is why they aren't used.
+
+Looking at another animation script, this time for [Heavy Slam](https://github.com/BluRosie/hg-engine/blob/main/armips/move/move_anim/487.s):
+```
+a010_487:
+    loadparticlefromspa 0, 500
+    waitparticle
+
+// slide mon
+    playsepan 1925, -117
+    callfunction 57, 4, 4, -16, 8, 258, "NaN", "NaN", "NaN", "NaN", "NaN", "NaN" // slide mon down a little bit
+    waitstate
+    wait 15
+    playsepan 1847, 117
+    callfunction 57, 4, 4, 32, -16, 258, "NaN", "NaN", "NaN", "NaN", "NaN", "NaN" // slide mon up forward
+    waitstate
+
+// hit + clouds
+    playsepanmod 1993, -117, 117, 4, 2
+    addparticle 0, 1, 4
+    addparticle 0, 0, 4
+    callfunction 36, 5, 4, 0, 1, 7, 264, "NaN", "NaN", "NaN", "NaN", "NaN" // shake mon
+    callfunction 57, 4, 4, -16, 8, 258, "NaN", "NaN", "NaN", "NaN", "NaN", "NaN" // return mon to original pos
+    waitstate
+    end
+
+    unloadparticle 0
+    waitstate
+    end
+```
+Here, we look at all the same things:
+
+`loadparticlefromspa` loads SPA 500 into particle slot 0.  We see from the `addparticle` commands later on that the emitters 1 and 0 are used, and place the particles at the target's position:
+
+![](resources/Move-Animation-Scripting-System-Documentation/nitroeffect-heavyslam.gif)
+
+A new command here is `playsepanmod`:
+
+```
+playsepanmod id, panstart, panend, panadd, time
+plays sound effect "id" starting at pan "panstart" moving to "panend" in steps of "panadd" every time period "time" in frames
+- id is the sound effect id to play
+- panstart is the pan to start at
+- panend is the pan to end at
+- panadd is the step size
+- time is the step time
+```
+Running through the script again and replacing each `callfunction` with its convenience macro:
+```
+a010_487:
+    loadparticlefromspa 0, 500
+    waitparticle
+
+// slide mon
+    playsepan 1925, -117
+    slideattackingmon -16, 8
+    waitstate
+    wait 15
+    playsepan 1847, 117
+    slideattackingmon 32, -16
+    waitstate
+
+// hit + clouds
+    playsepanmod 1993, -117, 117, 4, 2
+    addparticle 0, 1, 4
+    addparticle 0, 0, 4
+    shaketargetmon 4, 7 // 4 times magnitude 7
+    slideattackingmon -16, 8
+    waitstate
+
+    unloadparticle 0
+    waitstate
+    end
+```
+`loadparticlefromspa` loads SPA 500 into particle slot 0.  `waitparticle` pauses until that is done.
+
+Sound effect 1925 is played so our left ear hears it.  The Pokémon is slid to its left 16 pixels and down 8 pixels, which is followed by a `waitstate` to wait for the slide to complete.
+
+It stays down here an additional half second before playing sound effect 1847 in the right ear and sliding the attacking mon to its right 32 and forward 16 pixels.  Another `waitstate`.
+
+The sound effect 1993 is played from -117 to 117 in steps of 4 every 2 frames.  At the same time, emitters 0 and 1 are placed at the target's position, and a target shake of magnitude 7 for 4 times is initiated.  Also at the same time, the attacking Pokémon returns to its original position.  `waitstate`.
+
+Particle slot 0 is unloaded, and the script ends.
+
+![](resources/Move-Animation-Scripting-System-Documentation/heavyslam.gif)
+
+## Editing SPA Files
+
+working on it
