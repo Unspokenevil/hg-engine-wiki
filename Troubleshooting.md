@@ -13,10 +13,16 @@ This specific error was caused by specifying `pokemon SPECIES_RATTATA_ALOLAN` in
 </details>
 
 <details>
-<summary>Build fails when it can't find "csc.exe"</summary>
+<summary>Build fails when it can't find "msc" from an active repository before 11 Sept. 2023</summary>
 <br>
 
-Make sure you added your .NET framework file path to the PATH system environment variable.  Just to make sure, add it to both the specific user's PATH and the System's PATH in both of the panes of the window that pops up.  Make sure to close and reopen the WSL terminal.
+After trying to deal with all of .NET's interoperability issues with WSL, I finally chose to switch on that date to just using `mono` instead.  Existing repositories just need to run:
+```
+sudo apt install mono-devel
+make clean_tools --jobs
+make build_tools --jobs
+```
+before running `make --jobs` again.  This will fix the hanging issue as well for `pngtobtx0` and `swav2swar`.
 </details>
 
 <details>
