@@ -301,4 +301,102 @@ Particle slot 0 is unloaded, and the script ends.
 
 ## Editing SPA Files
 
-working on it
+SPA files can be edited in Nitro Effect Maker.  For this purpose, it converts the SPA file to its own iSPA format, which is a text-based representation of the SPA file with associated TGA images dumped to the same directory.
+
+For what its worth, Aseprite can at least view these images.  May still need NitroPaint to actually edit them and be able to import them back into the SPA file.
+
+Nitro Effect Maker, when opening an SPA, will have everything grayed out in the main (non-viewer) window.  Just Unpack the SPA to its own directory to get the iSPA file with all the parameters laid out before you.
+
+I won't go much into all the different parameters, as messing around with each will allow you to instantly view the result in the viewer.  Tweak the parameters of each emitter as you see fit.
+
+Gen 4 has a move animation script command that seems to emit a particle towards the opponent, but I haven't been able to get this to work.  For this purpose, I've mostly just had my emitters travel along an axis--see Round below.
+
+![](resources/Move-Animation-Scripting-System-Documentation/round.gif)
+
+![](resources/Move-Animation-Scripting-System-Documentation/rounddoubles.gif)
+
+This clearly has its weaknesses--there needs to be a second emitter that travels along the axis back towards the player, and doubles are slightly off and would require the target shaking or something to clarify the target.  But this is what I have for now.
+
+Scripts that do this would have to look something like this (see [Round's script](https://github.com/BluRosie/hg-engine/blob/main/armips/move/move_anim/499.s)):
+
+```
+a010_499:
+    loadparticlefromspa 0, 510
+    waitparticle
+
+// place circles around user
+    addparticle 0, 6, 3
+    addparticle 0, 5, 3
+    wait 10
+    
+    jumpifside 0, playerPart, enemyPart
+    end
+
+playerPart:
+// shoot off blue - emitter that shoots towards enemy
+    addparticle 0, 7, 3
+    wait 8
+// shoot off notes - emitter that shoots towards enemy
+    addparticle 0, 4, 3
+
+    wait 60
+    callfunction 34, 5, 8, 1, 1, red | green << 5 | blue << 10, 12, "NaN", "NaN", "NaN", "NaN", "NaN" // shades target mon rgb555 color
+	
+	wait 5
+    callfunction 36, 5, 3, 0, 1, 2, 264, "NaN", "NaN", "NaN", "NaN", "NaN" // shake target mon
+    
+    wait 55
+    unloadparticle 0
+    waitstate
+    end
+
+// may have to duplicate, not sure there is a goto command for these.  could use jumpifside with both addresses being the target i guess
+
+enemyPart:
+// shoot off blue - emitter that shoots back towards player
+    addparticle 0, 8, 3
+    wait 8
+// shoot off notes - emitter that shoots back towards player
+    addparticle 0, 9, 3
+
+    wait 60
+    callfunction 34, 5, 8, 1, 1, red | green << 5 | blue << 10, 12, "NaN", "NaN", "NaN", "NaN", "NaN" // shades target mon rgb555 color
+	
+	wait 5
+    callfunction 36, 5, 3, 0, 1, 2, 264, "NaN", "NaN", "NaN", "NaN", "NaN" // shake target mon
+    
+    wait 55
+    unloadparticle 0
+    waitstate
+    end
+```
+
+Here, we introduce one more command:
+
+```
+jumpifside side, jumpAddrIfEq, jumpAddrIfNe
+jumps to "jumpAddrIfEq" if the battler currently using a move is on "side" side.  otherwise jumpAddrIfNe.  may function as a call as well, since every instance of it has an "end" immediately after.
+- side is 0 or 1 depending on player or enemy side (respectively)
+- jumpAddrIfEq is the place to jump to if the battler currently using a move is on the side specified
+- jumpAddrIfNe is the place to jump to otherwise
+```
+
+This allows us a little freedom with placing emitters.  We can see that adding emitters 7 and 4 at the move user's position still sends the particles off towards the enemy, and emitters 8 and 9 send them back to the player from the target's position.
+
+### Grabbing SPA Files From B2W2
+
+A lot of the initial work can be relieved if we take SPA's from Black 2/White 2.  Those games also use some sort of scripting system in combination with SPA files to render moves.  As I understand it, [hzla's Pokeweb](https://github.com/hzla/Pokeweb) can at least somewhat edit these scripts and SPA's.
+
+Either way, manually grabbing them can be done.
+
+White 2's a065 has the move animation scripts.  Format is at least somewhat similar to HGSS.  Because of this, we can actually just search for certain bytes to find which SPA the move uses so we can grab it ourselves.
+
+Opening up a move animation script, we just search for `06 00` or `07 00`.  The 2 bytes immediately following are the SPA that this move uses (even if there are multiple SPA's, there are multiple `06 00` entries loading each one).  Make sure to convert from little endian!
+
+![](resources/Move-Animation-Scripting-System-Documentation/roundb2w2script.png)
+
+This number is then the file index in the a006 narc.  We can confirm it using Nitro Effect Maker again (by opening the file from an unpacked a006 narc):
+
+![](resources/Move-Animation-Scripting-System-Documentation/roundspa.gif)
+
+This file can be placed directly in hg-engine's [`rawdata/move_spa`](https://github.com/BluRosie/hg-engine/tree/main/rawdata/move_spa) directory and used with the new index given to it.  Just have to make sure that the naming convention is followed--the file should be prefixed with `9_` and such.  Can keep the `.spa` file extension or not, that's entirely up to you.
