@@ -395,6 +395,8 @@ Opening up a move animation script, we just search for `06 00` or `07 00`.  The 
 
 ![](resources/Move-Animation-Scripting-System-Documentation/roundb2w2script.png)
 
+Here we see that immediately after `06 00` we have `9C 02`.  This gives 0x29C, which is 668 in decimal.
+
 This number is then the file index in the a006 narc.  We can confirm it using Nitro Effect Maker again (by opening the file from an unpacked a006 narc):
 
 ![](resources/Move-Animation-Scripting-System-Documentation/roundspa.gif)
