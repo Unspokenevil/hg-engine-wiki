@@ -111,9 +111,6 @@ specifies the trainer data_type
 trainerclass num
 specifies the trainer class
 
-battletype num
-specifies the battle type (single or double) that ensues when facing this trainer
-
 nummons num
 tells the game to read num mons from the trainer party file
 
@@ -123,8 +120,8 @@ defines the hold items of the trainer
 aiflags flags
 defines the ai flags of the trainer.  not many are usable, it seems, but are labeled as they are in pokeditor
 
-battletype2 num
-not 100% sure what this is, but seems to define more battle type-like things
+battletype num
+specifies the battle type (single or double) that ensues when facing this trainer
 
 endentry
 terminates the trainer data entry
@@ -217,14 +214,13 @@ A fully decked out trainer using this system is buildable using macros that are 
 trainerdata TRAINER_JUAN_1, "Juan"
     trainermontype TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_MOVES | TRAINER_DATA_TYPE_ITEMS | TRAINER_DATA_TYPE_ABILITY | TRAINER_DATA_TYPE_BALL | TRAINER_DATA_TYPE_IV_EV_SET | TRAINER_DATA_TYPE_NATURE_SET | TRAINER_DATA_TYPE_SHINY_LOCK | TRAINER_DATA_TYPE_ADDITIONAL_FLAGS
     trainerclass TRAINER_CLASS_LEADER_6
-    battletype 0
     nummons 6
     item ITEM_HYPER_POTION 
     item ITEM_HYPER_POTION 
     item ITEM_NONE 
     item ITEM_NONE
     aiflags F_PRIORITIZE_SUPER_EFFECTIVE | F_EVALUATE_ATTACKS | F_EXPERT_ATTACKS
-    battletype2 SINGLE_BATTLE
+    battletype SINGLE_BATTLE
     endentry
 
     // Juan1
