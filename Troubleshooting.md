@@ -13,7 +13,7 @@ This specific error was caused by specifying `pokemon SPECIES_RATTATA_ALOLAN` in
 </details>
 
 <details>
-<summary>Build fails when it can't find "msc" from an active repository before 11 Sept. 2023</summary>
+<summary>Tools build fails when it can't find "msc" from an active repository before 11 Sept. 2023</summary>
 <br>
 
 After trying to deal with all of .NET's interoperability issues with WSL, I finally chose to switch on that date to just using `mono` instead.  Existing repositories just need to run:
@@ -22,7 +22,7 @@ sudo apt install mono-devel
 make clean_tools --jobs
 make build_tools --jobs
 ```
-before running `make --jobs` again.  This will fix the hanging issue as well for `pngtobtx0` and `swav2swar`.
+before running `make --jobs` again.  This will fix the hanging issue as well for `pngtobtx0` and `swav2swar`.  This was changed in [this commit](https://github.com/BluRosie/hg-engine/commit/e3151980745de629abe8120632c1fe952f1818f7).
 </details>
 
 <details>
@@ -51,6 +51,13 @@ The correct file will show "Windows (CR LF)" at the bottom right of the editor i
 <br>
 
 Remove the `--jobs` from the command, running just `make build_tools`.  It will take longer, but will take less memory, and thus won't crash WSL.
+</details>
+
+<details>
+<summary>Trainers aren't building with an error about battletype2</summary>
+<br>
+
+The old trainer structure was a little misinformed, and fields we had labeled were wrong.  DSPRE also reads the trainer class as a 2-byte field instead of just a single byte field as the code reads it.  To fit in nicely, we made the trainer class a 2-byte field and fixed the old `battletype2` field to be just `battletype`, deleting the original `battletype` field that was directly after the `trainerclass` field.  This was changed in [this commit](https://github.com/BluRosie/hg-engine/commit/46a604edd4d1f2d3502b28a934de6ce5990e3247).
 </details>
 
 If all of this fails/your problem isn't present, please join [the Kingdom of DS Hacking Discord server](https://discord.gg/zAtqJDW2jC) and wait the 11-minute probationary period before asking your question in `#hg-feature-expansions`.
