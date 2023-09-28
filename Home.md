@@ -94,6 +94,17 @@ This includes optional donations, streamer-tailored hacks, whatever.  There is a
 </details>
 
 <details>
+<summary>My TM learnsets are still in armips/data/tmlearnset.s (and I am looking to update to beyond 28 September 2023)</summary>
+<br>
+
+Before updating via `git pull [hg-engine] main`, make sure that your repository can build in its existing format.
+
+Then run `git pull [hg-engine] main`, where `[hg-engine]` is the remote name that you have given the main repository.
+
+Finally, to update, make sure there are files in ``build/a002`` (normally `mondata_*`).  Run `python3 scripts/tm_learnset.py --dump armips/data/tmlearnset.txt`.  This will dump the TM data in the new format for insertion.  It automatically handles everything, including dumping the moves from the `include/constants/moves.h`/species from `include/constants/species.h` and correlating them with what is in the ROM.
+</details>
+
+<details>
 <summary>Where can I get help for this?</summary>
 <br>
 
@@ -101,3 +112,4 @@ First, check [[Troubleshooting|Troubleshooting]] and see if your problem is ther
 
 From there, join the [Kingdom of DS Hacking Discord server](https://discord.gg/zAtqJDW2jC).  Read the rules there and make sure you're comfortable in the 11-minute anti-spam probationary period that every new join goes through in that server.  Once you get access, head over to `#hg-feature-expansions` and ask there.  *Please do not reask your question*.  It will be addressed if possible.
 </details>
+
