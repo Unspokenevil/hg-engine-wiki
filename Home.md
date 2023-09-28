@@ -102,6 +102,8 @@ Before updating via `git pull [hg-engine] main`, make sure that your repository 
 Then run `git pull [hg-engine] main`, where `[hg-engine]` is the remote name that you have given the main repository.
 
 Finally, to update, make sure there are files in ``build/a002`` (normally `mondata_*`).  Run `python3 scripts/tm_learnset.py --dump armips/data/tmlearnset.txt`.  This will dump the TM data in the new format for insertion.  It automatically handles everything, including dumping the moves from the `include/constants/moves.h`/species from `include/constants/species.h` and correlating them with what is in the ROM.
+
+From there, delete all your `tmdata` entries in `armips/data/mondata.s` and then the `armips/data/tmlearnset.s`.
 </details>
 
 <details>
