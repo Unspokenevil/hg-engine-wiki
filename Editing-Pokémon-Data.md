@@ -14,6 +14,7 @@ Files discussed are all in ``armips/data``.  These are discussed in alphabetical
 - ``pokedex/pokedexdata.s``
 - ``pokedex/weight.s``
 - ``trainers/trainers.s`` is discussed in [[Trainer Pokémon Structure Documentation|Trainer Pokémon Structure Documentation]].
+- ``trainers/trainertext.s`` is also discussed in [[Trainer Pokémon Structure Documentation|Trainer Pokémon Structure Documentation]].
 - ``babymons.s``
 - ``baseexp.s``
 - ``eggmoves.s``
@@ -28,7 +29,7 @@ Files discussed are all in ``armips/data``.  These are discussed in alphabetical
 - ``moves.s`` is discussed in [[Move Data Structure Documentation|Move Data Structure Documentation]].
 - ``regionaldex.s``
 - ``spriteoffsets.s``
-- ``tmlearnset.s``
+- ``tmlearnset.txt``
 - ``tutordata.s``
 
 Finally, this repo also builds all (most) of the graphics files.  Due to differences in how the sprites are stored, the sprites are formatted differently, so it is important to pay attention to exactly how sprites are formatted to properly use and add entries.
@@ -486,7 +487,7 @@ Each Pokémon gets a file in the personal narc detailing a number of things, par
 
 Hidden abilities are not included here to maintain compatibility with existing tools.  Base experience is also not identified in this file because later generations use values higher than 255.
 
-TM learnsets appear here as constants that are defined in a separate file, ``tmlearnset.s``.  This is to avoid cluttering this file.
+TM learnsets are technically defined in the mondata, but for this project they are defined in ``tmlearnset.txt`` for formatting convenience.
 
 ``basestats`` and ``evyields`` are listed in the order HP, Attack, Defense, Speed, Sp. Attack, and Sp. Defense, as they are internally.
 
@@ -545,17 +546,49 @@ Where the format is:
 dataentry species, monfrontanim, monbackanim, monoffy, shadowoffx, shadowsize
 ```
 
-### ``tmlearnset.s``
+### ``tmlearnset.txt``
 
-This file is included by ``mondata.s`` to define the TM's that each species can learn.
+This file is used in tandem with ``mondata.s`` to define the TM's that each species can learn.
 
 The format is 4 4-byte words for a total of 128 bits.  TM's 1-32 go in the first word, TM's 33-64 go in the second word, TM's 65-92 and HM's 1-4 in the third word, and HM's 5-8 in the final word.
 
-There are constants defined for each TM that look like TM### where each TM has its own number.  The ability to change which move is taught by which TM is currently in the works, but manually updating this list is an exercise left to the user.
+The list is defined by TM for ease of editing.  The format is:
+```
+TM###: MOVE_NAME_HERE
+    SPECIES_NAME_HERE
+    SPECIES_OTHER_HERE
+    ...
+```
 
-Each new constant needs to be `or`'d with each other to ensure that all of the data is properly put in the array.
+Any line that doesn't start with TM/HM/SPECIES is discarded as a comment.
 
-Expanding this to include more TM's is also in the works.  There are currently placeholder constants for every base form through Enamorus.
+The TM move specified will automatically be written over the ARM9 entry as well.
+
+The move constants are taken directly from [``include/constants/moves.h``](https://github.com/BluRosie/hg-engine/blob/main/include/constants/moves.h), while the species names are directly from [`include/constants/species.h`](https://github.com/BluRosie/hg-engine/blob/main/include/constants/species.h).  This is done for both dumping from the ROM as well as building to allow for full integration.  The only requirement is that the species and moves are defined in ascending order so that the Python parser I wrote likes it.
+
+An example:
+
+```
+TM048: MOVE_SKILL_SWAP
+    SPECIES_BUTTERFREE
+    SPECIES_VENONAT
+    SPECIES_VENOMOTH
+    SPECIES_ABRA
+    SPECIES_KADABRA
+    SPECIES_ALAKAZAM
+    SPECIES_SLOWPOKE
+    SPECIES_SLOWBRO
+    SPECIES_GASTLY
+    SPECIES_HAUNTER
+    SPECIES_GENGAR
+    SPECIES_DROWZEE
+    SPECIES_HYPNO
+...
+```
+
+The item icon and palette will still have to be modified, else the original type's item icon will be displayed.
+
+Expanding this to include more TM's is also in the works.
 
 ### ``tutordata.s``
 

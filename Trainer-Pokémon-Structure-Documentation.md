@@ -2,6 +2,8 @@
 
 Trainers have both a data entry that specifies details about the trainer itself and a file that details the party that they have.  This page will detail the structure of the file that the party takes.
 
+Trainers also have a table that defines the text printed at various points in interacting with them, from the overworld to during battles.  This is covered at the end.
+
 The vanilla fully-featured trainer mon structure:
 
 ```c
@@ -194,7 +196,7 @@ types type1, type2
 forces the mon to have the two types type1 and type2 instead of the ones in its base stat structure
 
 ppcounts num1, num2, num3, num4
-(conditional depending on additionalflags TRAINER_DATA_EXTRA_TYPE_PP_COUNTS
+(conditional depending on additionalflags TRAINER_DATA_EXTRA_TYPE_PP_COUNTS)
 forces the mon to have the pp counts specified by num1, num2, num3, and num4, in order of the moves specified above
 
 nickname let0, let1, let2, ..., let9, let10
@@ -335,3 +337,119 @@ trainerdata TRAINER_JUAN_1, "Juan"
         ballseal 0
     endparty
 ```
+
+### Trainer Text Table
+Trainer text is built through the file at [``armips/data/trainers/trainertext.s``](https://github.com/BluRosie/hg-engine/blob/main/armips/data/trainers/trainertext.s).
+
+The original structure is very strange.  There is a text lookup table, and a text entry table.
+
+The text lookup table is an array of `u16`s that has an entry per trainer which is the offset in the text entry table.  This is NARC a131 subfile 0.
+
+The text entry table has the following structure:
+
+```c
+typedef struct
+{
+    u16 trainerId;
+    u16 context;
+}
+```
+
+The text entry table is indexed by the *text archive* 728.  a028 file 728.  In order to get from trainer ID to text ID, the offset is read from the text lookup table and iterated through while searching for a `context`.  Each entry in this table corresponds to one text entry in a028 file 728.
+
+In making this dynamically editable, I chose to put the text string in the final parameter of the `textentrydata` macro.  It is completely dynamically created from there with a little help of a Python script that parses the file directly.
+
+There are a number of contexts:
+
+```thumb
+TEXT_NOTICE_IN_OVERWORLD equ 0
+TEXT_DEFEATED_IN_BATTLE equ 1
+TEXT_DEFEATED_IN_OVERWORLD equ 2
+TEXT_DOUBLE_NOTICE_IN_OVERWORLD_1 equ 3
+TEXT_DOUBLE_DEFEATED_IN_BATTLE_1 equ 4
+TEXT_DOUBLE_DEFEATED_IN_OVERWORLD_1 equ 5
+TEXT_DOUBLE_ONLY_1_POKEMON_1 equ 6
+TEXT_DOUBLE_NOTICE_IN_OVERWORLD_2 equ 7
+TEXT_DOUBLE_DEFEATED_IN_BATTLE_2 equ 8
+TEXT_DOUBLE_DEFEATED_IN_OVERWORLD_2 equ 9
+TEXT_DOUBLE_ONLY_1_POKEMON_2 equ 10
+TEXT_LAST_MON_CRITICAL equ 15
+TEXT_LAST_MON_SENT_OUT equ 16
+TEXT_REMATCH_IN_OVERWORLD equ 17
+TEXT_REMATCH_IN_OVERWORLD_DOUBLE_1 equ 18
+TEXT_REMATCH_IN_OVERWORLD_DOUBLE_2 equ 19
+TEXT_PLAYER_LOSES equ 20
+```
+
+`TEXT_NOTICE_IN_OVERWORLD` is the message that is displayed when the trainer first notices you in the overworld.
+
+`TEXT_DEFEATED_IN_BATTLE` is the message that is displayed when the trainer is defeated in the battle.
+
+`TEXT_DEFEATED_IN_OVERWORLD` is the message that is displayed after the trainer is defeated in the overworld.
+
+`TEXT_DOUBLE_NOTICE_IN_OVERWORLD_1` is the message that is displayed when the first person of a doubles pair first notices you in the overworld.
+
+`TEXT_DOUBLE_DEFEATED_IN_BATTLE_1` is the message that is displayed when the first person of a doubles pair is defeated in battle.
+
+`TEXT_DOUBLE_DEFEATED_IN_OVERWORLD_1` is the message that is displayed after the first person of a doubles pair is defeated in the overworld.
+
+`TEXT_DOUBLE_ONLY_1_POKEMON_1` is the message that is displayed in battle when the first person of a doubles pair only has one Pokémon.
+
+`TEXT_DOUBLE_NOTICE_IN_OVERWORLD_2` is the message that is displayed when the second person of a doubles pair first notices you in the overworld.
+
+`TEXT_DOUBLE_DEFEATED_IN_BATTLE_2` is the message that is displayed when the second person of a doubles pair is defeated in battle by.
+
+`TEXT_DOUBLE_DEFEATED_IN_OVERWORLD_2` is the message that is displayed after the second person of a doubles pair is defeated in the overworld.
+
+`TEXT_DOUBLE_ONLY_1_POKEMON_2` is the message that is displayed in battle when the second person of a doubles pair only has one Pokémon.
+
+`TEXT_LAST_MON_CRITICAL` is the message that is displayed when the last Pokémon a trainer is battling with has low HP.  There is no equivalent for doubles.
+
+`TEXT_LAST_MON_SENT_OUT` is the message that is displayed when the last Pokémon is sent out in battle.
+
+`TEXT_REMATCH_IN_OVERWORLD` is the message that is displayed when approaching a trainer for a rematch.
+
+`TEXT_REMATCH_IN_OVERWORLD_DOUBLE_1` is the message that is displayed when approaching the first person of a doubles pair for a rematch in the overworld.
+
+`TEXT_REMATCH_IN_OVERWORLD_DOUBLE_2` is the message that is displayed when approaching the second person of a doubles pair for a rematch in the overworld.
+
+`TEXT_PLAYER_LOSES` is the message that is displayed in battle before whiteout when the player loses.  There is no equivalent for doubles.
+
+These must be ordered in the file in ascending order.  The entry for the current trainer is assumed done when the next context is less than the current context that is being checked for.
+
+The string is then placed after all that with quotes.  An example few entries:
+
+```thumb
+_1860: // Trainer 679
+    trainertextentry 679, TEXT_NOTICE_IN_OVERWORLD, "Oh, you are a cute little Trainer!\nWhy don’t you battle me?\r"
+    trainertextentry 679, TEXT_DEFEATED_IN_BATTLE, "You’re good...\n"
+    trainertextentry 679, TEXT_DEFEATED_IN_OVERWORLD, "Oh, I’ve learned something. There are\npeople like you out there who are very\fskilled even though they’re young...\n"
+
+_186C: // Trainer 680
+    trainertextentry 680, TEXT_NOTICE_IN_OVERWORLD, "Hey hey there, you young Trainer!\nWon’t you battle with me?\r"
+    trainertextentry 680, TEXT_DEFEATED_IN_BATTLE, "Wow, you’re strong...\n"
+    trainertextentry 680, TEXT_DEFEATED_IN_OVERWORLD, "You...\nI wonder what your future holds...\n"
+```
+
+These are the beauties right before Ecruteak.  The single-message exclusive contexts will never be displayed for multi battles.  It appears like the `TEXT_LAST_MON_CRITICAL` and `TEXT_LAST_MON_SENT_OUT` contexts are not checked for in normal trainer battles as well, may just be for scripted battles or something.
+
+If you want to add text displayed when there is only one Pokémon left, it needs to be added after the other entries:
+
+```thumb
+_1860: // Trainer 679
+    trainertextentry 679, TEXT_NOTICE_IN_OVERWORLD, "Oh, you are a cute little Trainer!\nWhy don’t you battle me?\r"
+    trainertextentry 679, TEXT_DEFEATED_IN_BATTLE, "You’re good...\n"
+    trainertextentry 679, TEXT_DEFEATED_IN_OVERWORLD, "Oh, I’ve learned something. There are\npeople like you out there who are very\fskilled even though they’re young...\n"
+    trainertextentry 679, TEXT_LAST_MON_SENT_OUT, "How can you do this\nto my Pokémon?"
+
+_186C: // Trainer 680
+    trainertextentry 680, TEXT_NOTICE_IN_OVERWORLD, "This is a test message.\nHappy hacking!\r"
+    trainertextentry 680, TEXT_DEFEATED_IN_BATTLE, "Wow, you’re strong...\n"
+    trainertextentry 680, TEXT_DEFEATED_IN_OVERWORLD, "You...\nI wonder what your future holds...\n"
+```
+
+After inserting that entry, the text lookup table is automatically recompiled and adjusted for the new entry.  The text lookup table is at the bottom of the file, and there is no need to edit it unless you are repurposing any of the dummy trainers.  In that case, you can replace their entry in the text lookup table with a new label and add it to the text entry table just fine.  For dumping convenience, the current text lookup table's labels are just the offsets.
+
+If you would like to dump the trainer text from your ROM that is already under way, you just have to run `./tools/source/dumptools/trainer_text.sh`.  This will extract your trainer text lookup table and offset table and output it to `armips/data/trainers/trainertext.s` in a usable format.
+
+![](resources/Trainer-Pokémon-Structure-Documentation/test-message.png)
