@@ -452,4 +452,4 @@ After inserting that entry, the text lookup table is automatically recompiled an
 
 If you would like to dump the trainer text from your ROM that is already under way, you just have to run `./tools/source/dumptools/trainer_text.sh`.  This will extract your trainer text lookup table and offset table and output it to `armips/data/trainers/trainertext.s` in a usable format.
 
-![](resources/Trainer-Pokémon-Structure-Documentation/test-message.png)
+![](resources/Trainer-Pokemon-Structure-Documentation/test-message.png)
