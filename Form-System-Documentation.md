@@ -475,7 +475,7 @@ evodata SPECIES_LITLEO
 terminateevodata
 ```
 
-Specifying a form of 0 in the evolution doesn't actually change forms upon evolution.  This can be solved by specifying an invalid form for the Pokémon in the form field, such as is done for White-Stripe Basculin, with form 2, to evolve into Basculegion:
+Specifying a form of 0 in the evolution doesn't actually change forms upon evolution.  This can be solved by specifying an invalid form for the Pokémon in the form field, such as is done for White-Stripe Basculin, with form 0, to evolve into Basculegion:
 
 ```
 // evolution methods/parameters are placeholder until those have been implemented
@@ -556,10 +556,10 @@ Wild Vivillon will default to Meadow form until the player sets their location i
 
 </details>
 
-### Aegislash Blade - TODO
-Aegislash with Stance Change will transform into Blade Form when attacking in battle, and Shield Form when not attacking in battle.
+### Aegislash Blade
+Aegislash with Stance Change will transform into Blade Form when attacking in battle, and Shield Form when using King's Shield in battle.  It also reverts when switching and on battle end.
 
-### Xerneas Active - TODO
+### Xerneas Active
 In battle, Xerneas turns into Active Forme.  It reverts at the end of the battle.
 
 ### Zygarde Stages - TODO
