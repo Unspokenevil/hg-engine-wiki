@@ -303,6 +303,8 @@ Particle slot 0 is unloaded, and the script ends.
 
 SPA files can be edited in Nitro Effect Maker.  For this purpose, it converts the SPA file to its own iSPA format, which is a text-based representation of the SPA file with associated TGA images dumped to the same directory.
 
+A list of all of the files that are in the vanilla game can be found [at this spreadsheet](https://docs.google.com/spreadsheets/d/1hE3LaJ2RhuTFVxZLti6b74yFTGgj2vY9SnW4jcqLqYA/edit#gid=0).
+
 For what its worth, Aseprite can at least view these images.  May still need NitroPaint to actually edit them and be able to import them back into the SPA file.
 
 Nitro Effect Maker, when opening an SPA, will have everything grayed out in the main (non-viewer) window.  Just Unpack the SPA to its own directory to get the iSPA file with all the parameters laid out before you.
