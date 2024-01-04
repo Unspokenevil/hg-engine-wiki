@@ -18,24 +18,28 @@ There is no timeline for this.  I have been working with a small team on this si
 
 ### Current Status
 A rough list of what all comes in this repository and the status:
-- Mega Evolution*
-- Hidden Abilities* (detailed in [[Hidden Ability Documentation|Hidden Ability Documentation]])
-- Level-influence experience system* (as in gens 5, 7, and 8, detailed in [[Experience Overhaul Documentation|Experience Overhaul Documentation]])
-- [Brand new Abilities](https://github.com/users/BluRosie/projects/1)
-- Brand new forms (current support detailed in [[Form System Documentation|Form System Documentation]])
-- Brand new Moves (work in progress, currently [a third of the way through Gen 5](https://github.com/users/BluRosie/projects/4))
-- All Pokémon through gen 8 have data defined.  All of the data is built from files in this repository.  For editing, see [[Editing Pokémon Data|Editing Pokémon Data]].  We are working on getting sprites done for all of the Pokémon in the style of HeartGold.  Reach out to me if you would like to help!
+- All Pokémon through Gen 9 Teal Mask DLC have data defined.  All of the data is built from files in this repository.  For editing, see [[Editing Pokémon Data|Editing Pokémon Data]].  We are working on getting sprites done for all of the Pokémon in the style of HeartGold.  Reach out to me if you would like to help!
+- [Ability Expansion](https://github.com/users/BluRosie/projects/1)
+- Move Expansion
+- Item Expansion (see [[Item System Documentation|Item System Documentation]])
+- Mega Evolution and Primal Reversion*
 - Completely customizable trainers, including specifying IV's, EV's, shininess, and even specifying specific stat values (see [[Trainer Pokémon Structure Documentation|Trainer Pokémon Structure Documentation]])
-- Wild Pokémon can have their form specified (see [[Wild Pokémon Table Documentation|Wild Pokémon Table Documentation]])
+- Fairy type*
+- Hidden Abilities* (detailed in [[Hidden Ability Documentation|Hidden Ability Documentation]])
+- Updated Effects for Existing [Moves](https://github.com/users/BluRosie/projects/3) and [Abilities](https://github.com/users/BluRosie/projects/2)
+- Level-influence experience system* (as in gens 5, 7, and 8, detailed in [[Experience Overhaul Documentation|Experience Overhaul Documentation]])
+- Brand new forms (current support detailed in [[Form System Documentation|Form System Documentation]])
+- Wild and Gift Pokémon can have their form specified (see [[Wild Pokémon Table Documentation|Wild Pokémon Table Documentation]])
 - 60 FPS battles*
 - Always set battles*
-- Fairy type*
 - Transparent textboxes*
 - [Mikelan's BDHCam routine](https://github.com/BluRosie/hg-engine/blob/main/pokehacking.com/r/20110901)*
 - Completely new evolution methods up to generation 8 (see [[New Evolution Methods Documentation|New Evolution Methods Documentation]])
 - Wild Double Battles*
 - Capture Experience*
 - Critical Captures*
+- EV/IV Viewer in the Summary Screen*
+- Support for Level Caps*
 
 <sup><sub><b>*</b> - configurable at compile time, can be completely disabled, see [CONFIG.md](https://github.com/BluRosie/hg-engine/blob/main/CONFIG.md)</sub></sup>
 
