@@ -2,7 +2,7 @@
 
 The repo builds all information from all Pokémon from files that are already within the repo.  Most of these are text files with the intent of being all of portable, easy to edit, and trackable via git.
 
-Files discussed are all in ``armips/data``.  These are discussed in alphabetical order as follows, or listed as unknown if they are unknown and not covered:
+Files discussed are mostly in ``armips/data``.  These are discussed in alphabetical order as follows, or listed as unknown if they are unknown and not covered:
 - ``pokedex/sortlists/*.s``
 - ``pokedex/000.s`` - unknown
 - ``pokedex/002.s`` - unknown
@@ -16,12 +16,10 @@ Files discussed are all in ``armips/data``.  These are discussed in alphabetical
 - ``trainers/trainers.s`` is discussed in [[Trainer Pokémon Structure Documentation|Trainer Pokémon Structure Documentation]].
 - ``trainers/trainertext.s`` is also discussed in [[Trainer Pokémon Structure Documentation|Trainer Pokémon Structure Documentation]].
 - ``babymons.s``
-- ``baseexp.s``
 - ``eggmoves.s``
 - ``encounters.s`` is discussed in [[Wild Pokémon Table Documentation|Wild Pokémon Table Documentation]].
 - ``evodata.s``
 - ``heighttable.s``
-- ``hiddenabilities.s`` is discussed in [[Hidden Ability Documentation|Hidden Ability Documentation]].
 - ``iconpalettetable.s``
 - ``levelupdata.s``
 - ``mondata.s``
@@ -30,7 +28,11 @@ Files discussed are all in ``armips/data``.  These are discussed in alphabetical
 - ``regionaldex.s``
 - ``spriteoffsets.s``
 - ``tmlearnset.txt``
-- ``tutordata.s``
+- ``tutordata.txt``
+
+Other relevant files are in `data`, and are just C files:
+- ``BaseExperienceTable.c``
+- ``HiddenAbilityTable.c`` is discussed in [[Hidden Ability Documentation|Hidden Ability Documentation]].
 
 Finally, this repo also builds all (most) of the graphics files.  Due to differences in how the sprites are stored, the sprites are formatted differently, so it is important to pay attention to exactly how sprites are formatted to properly use and add entries.
 
@@ -74,7 +76,7 @@ Every file contains all of the species that belong to that category with a halfw
 
 ### ``pokedex/areadata.s``
 
-``areadata.s`` describes where on the region map a Pokémon can appear.  These are separated into routes and cities vs. special areas.  
+``areadata.s`` describes where on the region map a Pokémon can appear.  These are separated into routes and cities vs. special areas.
 
 Special areas are distinct from routes and cities in that they are the landmarks (i.e. Sprout Tower, Mt. Silver, Mt. Moon, etc.)
 
@@ -260,10 +262,6 @@ babymon SPECIES_TRAPINCH, SPECIES_TRAPINCH
 babymon SPECIES_VIBRAVA, SPECIES_TRAPINCH
 babymon SPECIES_FLYGON, SPECIES_TRAPINCH
 ```
-
-### ``baseexp.s``
-
-Starting in generation 5, Pokémon have base experience yields of over 255.  This is the file that lists all of them for every Pokémon, with a 2-byte halfword entry per Pokémon that defines the base experience as used in the calculator.  This is part of the ``Experience Overhaul Documentation`` as well.
 
 ### ``eggmoves.s``
 
@@ -460,7 +458,7 @@ In this table located in the synthetic overlay, each Pokémon gets a byte that i
 
 Forms are originally coded to load an icon from after the end of the normal species defines.  This is actually the primary decision to make new species start at 544 instead of 494--old form icons take all the way up until 543.  As a result, new form icons function similarly.
 
-Exceptions involving gender are coded on a case-by-case basis, and are currently just Frillish, Jellicent, Meowstic, and Pyroar.
+Exceptions involving gender are coded on a case-by-case basis, and are currently just Frillish, Jellicent, Meowstic, Pyroar, Indeedee, and Oinkologne.
 
 ### ``levelupdata.s``
 
@@ -524,7 +522,7 @@ Each Pokémon gets a halfword that tells the game the regional dex number of the
 
 ### ``spriteoffsets.s``
 
-Each Pokémon gets 0x59 bytes sequentially that describes primarily the animation that it receives.  Inside of this, however, are also global sprite descriptions that aren't fully known yet but have entirely to do with the animations that play for each species when viewed in the summary screen or when coming out of a Ball.
+Each Pokémon gets 0x59 bytes sequentially that describes primarily the animation that it receives.  Inside of this, however, are also global sprite descriptions that aren't fully known yet but have entirely to do with the animations that play for each species when viewed in the summary screen or when coming out of a Ball.  Lhea actually fully documented it [here](https://github.com/BluRosie/hg-engine/issues/146), and incorporating that into the repository is in the works.
 
 New mons are prefilled with Bulbasaur's data as placeholder.
 
@@ -590,53 +588,49 @@ The item icon and palette will still have to be modified, else the original type
 
 Expanding this to include more TM's is also in the works.
 
-### ``tutordata.s``
+### ``tutordata.txt``
 
 Each species gets 2 4-byte words to define the Tutor moves that each species can learn.  This goes for a total of 64 bits, of which 52 are used--all from the first word and 20 from the second.
 
-Each move can only be handled within its own word--``TUTOR_DIVE`` when placed into the second word will correspond to ``TUTOR_TRICK`` and will teach that instead.  Care needs to be exercised to ensure that everything is configured properly here.
-
-A particularly involved tutor move setup is Lugia's example:
-
+The list here is defined by tutor and move for ease of editing.  The format is:
 ```
-tutordata SPECIES_LUGIA, \
-                  TUTOR_DIVE | TUTOR_MUD_SLAP | TUTOR_ICY_WIND | \
-                  TUTOR_IRON_HEAD | TUTOR_AQUA_TAIL | TUTOR_OMINOUS_WIND | TUTOR_SNORE | TUTOR_AIR_CUTTER | \
-                  TUTOR_ANCIENT_POWER | TUTOR_SIGNAL_BEAM | TUTOR_ZEN_HEADBUTT | \
-                  TUTOR_EARTH_POWER | TUTOR_TWISTER  | 0, \
-                  TUTOR_TRICK | TUTOR_SWIFT | \
-                  TUTOR_TAILWIND | \
-                  TUTOR_SKY_ATTACK | TUTOR_HEADBUTT | \
-                  0
+TUTOR_#####: MOVE_NAME_HERE BP_COST
+    SPECIES_NAME_HERE
+    SPECIES_OTHER_HERE
 ```
 
-Here, everything before ``TUTOR_TRICK`` is in the first word (while everything after and including is in the second word).  To armips, the ``\\`` character shows that the same line is continued on the next line--this is to ensure that nothing is graphically cluttered when dumping and is not necessary.
+Any line that doesn't start with TUTOR or SPECIES is discarded as a comment.
 
-Each new constant needs to be `or`'d with all the other ``TUTOR_*`` constants in its word, all of it coming together to describe the moves that the Pokémon can learn.
+The move name and BP cost specified are automatically written over the ARM9 entry.
 
-Changing tutor moves is actually currently documented inside of ``documentation/ov1_23AE0_movetutordata.s``.  This just needs to be adapted to the repo format for use.  There are not currently plans to expand this.
+The TUTOR_##### can be any of `TUTOR_TOP_LEFT`, `TUTOR_TOP_RIGHT`, `TUTOR_BOTTOM_RIGHT`, or `TUTOR_HEADBUTT`.  Note that the first `TUTOR_HEADBUTT` entry is the only one that is ever read, and the others are discarded.  Additionally it can not have a BP cost or teach anything but Headbutt.
 
-An example of the first few tutor move entries:
+The move constants are taken directly from [``include/constants/moves.h``](https://github.com/BluRosie/hg-engine/blob/main/include/constants/moves.h), while the species names are directly from [`include/constants/species.h`](https://github.com/BluRosie/hg-engine/blob/main/include/constants/species.h).  This is done for both dumping from the ROM as well as building to allow for full integration.  The only requirement is that the species and moves are defined in ascending order so that the Python parser I wrote likes it.
 
+An example:
 ```
-tutormove MOVE_DIVE, 40, TUTOR_TOP_LEFT
-tutormove MOVE_MUD_SLAP, 32, TUTOR_TOP_RIGHT
-tutormove MOVE_FURY_CUTTER, 32, TUTOR_TOP_LEFT
+TUTOR_TOP_LEFT: MOVE_THUNDER_PUNCH 64
+    SPECIES_CHARMANDER
+    SPECIES_CHARMELEON
+    SPECIES_CHARIZARD
+    SPECIES_PIKACHU
+    SPECIES_RAICHU
+    SPECIES_NIDOQUEEN
+    SPECIES_NIDOKING
+    SPECIES_CLEFAIRY
+    SPECIES_CLEFABLE
+    SPECIES_JIGGLYPUFF
+    SPECIES_WIGGLYTUFF
+    SPECIES_MANKEY
+    SPECIES_PRIMEAPE
+    SPECIES_RAICHU_ALOLAN
 ```
 
-With the format being:
+Expanding this to include more tutors is also in the works.
 
-```
-tutormove move, bp, tutorid
-```
+### ``data/BaseExperienceTable.c``
 
-Note that the Headbutt tutor has its own ID and actually has an entry here where it costs 0 BP to teach.  I am unaware if changing this will automatically reflect it.
-
-The ``TOP_LEFT``, ``TOP_RIGHT``, and ``BOTTOM_RIGHT`` designations are based on the tutors' locations in the house and are arbitrary in that sense.  There is likely a script command parameter differentiating all of them, so this may be really easy to expand if there aren't any limiters and the code is all based around this table.
-
-### ``data/graphics/icongfx``
-
-The name format for this is a 4-letter number containing the species.  The image must be indexed to one of the 3 already-existing icon palettes and must be 4bpp in that each pixel is 4 bits, and building this is handled by ``nitrogfx``, the tool from the decomps.  Ideally, all of the sprites are built using this tool eventually, as it is very flexible.
+Starting in generation 5, Pokémon have base experience yields of over 255.  This is the file that lists all of them for every Pokémon, with a 2-byte halfword entry per Pokémon that defines the base experience as used in the calculator.  This is part of the [[Experience Overhaul Documentation|Experience Overhaul Documentation]] as well.
 
 ### ``data/graphics/overworlds``
 
@@ -646,11 +640,19 @@ The image handler from this is very versatile and indexes the image on its own. 
 
 ### ``data/graphics/sprites``
 
-Each species gets a folder with its 4-digit ID on it.  Inside of this folder, there are 2 more folders, male and female.  Finally, each of these folders has a ``front.png`` and a ``back.png`` with a ``.key`` file for each.  The shiny palette is derived entirely from the male back sprite in the instance it exist, otherwise the female back sprite is used, while the normal palette is derived from the male front sprite (the female front sprite if the male front sprite doesn't exist).
+Each species and form gets a folder with its name.  Inside of this folder, there are 2 more folders, male and female.  Finally, each of these folders has a ``front.png`` and a ``back.png`` with a ``.key`` file for each.  The shiny palette is derived entirely from the male back sprite in the instance it exist, otherwise the female back sprite is used, while the normal palette is derived from the male front sprite (the female front sprite if the male front sprite doesn't exist).
 
 Be careful in creating shiny backsprite palettes to ensure that all colors are handled properly.  Genderless Pokémon only have male sprites.  Solely male or female Pokémon only have the sprites that correspond with their gender.
 
-Similar to the icons, ``nitrogfx`` is used for these.  All the sprites that are currently in the repository have their 0-index color set to be transparent, but this is not necessary at all.
+Additionally, in each folder, there is an "icon.png".  This is the Pokémon's icon.  It must be indexed to one of the existing icon palettes, which can be downloaded as attachments here:
+
+[pal0.pal](resources/Editing-Pokemon-Data/pal0.pal)
+[pal1.pal](resources/Editing-Pokemon-Data/pal1.pal)
+[pal2.pal](resources/Editing-Pokemon-Data/pal2.pal)
+
+This then corresponds to its entry in `armips/data/iconpalettetable.s`.
+
+``nitrogfx`` is used for these.  All the sprites except the icons that are currently in the repository have their 0-index color set to be transparent, but this is not necessary at all.
 
 The top left 2 pixels in the first row also can not be any sprite data--they must be transparent.  This is due to how the encryption key is stored in the file, and it being messed up when other data is present there.  The ``.key`` files contain this encryption key, and is just a 4-byte file containing the key.  This can safely be copied from any other sprite and function just fine.
 

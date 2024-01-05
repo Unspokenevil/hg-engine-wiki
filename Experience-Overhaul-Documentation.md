@@ -1,5 +1,5 @@
 # Experience Overhaul Documentation
-Starting in Gen 5, Pokémon levels scaled the experience in such a way that Pokémon who defeated a much higher-level opponent gained far more experience compared to a higher-level Pokémon defeating a weaker foe.  hg-engine allows for the user to choose what experience system is best for their hack among those that are present in the official series.
+Starting in Gen 5, Pokémon levels scaled the experience in such a way that Pokémon who defeated a much higher-level opponent gained far more experience compared to a higher-level Pokémon defeating a weaker foe.  hg-engine allows for the user to choose what experience system is best for their hack among those that are present in the official series.  All of the base experiences have been moved into their own file, [``data/BaseExperienceTable.c``](https://github.com/BluRosie/hg-engine/blob/main/data/BaseExperienceTable.c).
 
 ### Scaled Rate
 The formula for the experience without any multipliers is as such:
