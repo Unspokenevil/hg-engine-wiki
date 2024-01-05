@@ -44,21 +44,23 @@ For trainers, setting the ``abilityslot`` field to a value of 2 will give the Po
 In the event that you are looking to code access to the hidden ability in a ``PartyPokemon`` structure, the best way to access the hidden ability bit is:
 
 ```c
-u32 doesMonHaveHiddenAbility = GetMonData(partyPokemon, ID_PARA_dummy_p2_2, NULL) & 1;
+u32 doesMonHaveHiddenAbility = GetMonData(partyPokemon, MON_DATA_RESERVED_113, NULL) & 1;
 ```
 
-Because there is no separation between this bit and the rest of the bits in ``ID_PARA_dummy_p2_2``, the best way to set this bit would then be something like:
+Because there is no separation between this bit and the rest of the bits in ``MON_DATA_RESERVED_113``, the best way to set this bit would then be something like:
 
 ```c
-u16 dummy_p2_2 = GetMonData(partyPokemon, ID_PARA_dummy_p2_2, NULL);
+u16 dummy_p2_2 = GetMonData(partyPokemon, MON_DATA_RESERVED_113, NULL);
 dummy_p2_2 |= 1;
-SetMonData(partyPokemon, ID_PARA_dummy_p2_2, &dummy_p2_2);
+SetMonData(partyPokemon, MON_DATA_RESERVED_113, &dummy_p2_2);
 ```
 
 There are macros for this for both ``partyPokemon`` and ``boxPokemon``:
 ```c
+u32 var = GET_MON_HIDDEN_ABILITY_BIT(mon);
 SET_MON_HIDDEN_ABILTY_BIT(mon);
 //and
+u32 var = GET_BOX_MON_HIDDEN_ABILITY_BIT(mon);
 SET_BOX_MON_HIDDEN_ABILTY_BIT(boxmon);
 ```
 Hidden abilities are not currently passed through breeding subject to further research.
