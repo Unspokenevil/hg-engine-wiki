@@ -38,7 +38,6 @@ Finally, this repo also builds all (most) of the graphics files.  Due to differe
 
 The graphics currently supported are:
 
-- ``data/graphics/icongfx``
 - ``data/graphics/overworlds``
 - ``data/graphics/sprites``
 
@@ -665,5 +664,4 @@ Known instances of these are:
 - dex forms that appear when viewing the forms tab (default is gender)
 - where the dex screen flashes when a species appears there (can edit where a species appears within the constraints of the areas already defined)
 - adding new TM's
-- editing the moves taught by TM's
 - footprints

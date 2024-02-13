@@ -19,6 +19,7 @@ There is no timeline for this.  I have been working with a small team on this si
 ### Current Status
 A rough list of what all comes in this repository and the status:
 - All Pokémon through Gen 9 Teal Mask DLC have data defined.  All of the data is built from files in this repository.  For editing, see [[Editing Pokémon Data|Editing Pokémon Data]].  We are working on getting sprites done for all of the Pokémon in the style of HeartGold.  Reach out to me if you would like to help!
+- A total of 30 PC Boxes*
 - [Ability Expansion](https://github.com/users/BluRosie/projects/1)
 - Move Expansion
 - Item Expansion (see [[Item System Documentation|Item System Documentation]])

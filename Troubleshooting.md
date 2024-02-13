@@ -16,6 +16,8 @@ This specific error was caused by specifying `pokemon SPECIES_RATTATA_ALOLAN` in
 <summary>Tools build fails when it can't find "msc" from an active repository before 11 Sept. 2023</summary>
 <br>
 
+Tools are now built automatically.  It is recommended you update.
+
 After trying to deal with all of .NET's interoperability issues with WSL, I finally chose to switch on that date to just using `mono` instead.  Existing repositories just need to run:
 ```
 sudo apt install mono-devel
@@ -29,7 +31,7 @@ before running `make --jobs` again.  This will fix the hanging issue as well for
 <summary>Build fails when it "doesn't have permissions" for any reason</summary>
 <br>
 
-Try running it again with `sudo` in front:  `sudo make build_tools --jobs`
+Try running it again with `sudo` in front:  `sudo make -jX`
 </details>
 
 <details>
@@ -47,10 +49,10 @@ The correct file will show "Windows (CR LF)" at the bottom right of the editor i
 </details>
 
 <details>
-<summary>WSL fully crashes out when building armips</summary>
+<summary>WSL fully crashes out when building something, particularly creating swars</summary>
 <br>
 
-Remove the `--jobs` from the command, running just `make build_tools`.  It will take longer, but will take less memory, and thus won't crash WSL.
+Remove the `-jX` from the command, running just `make`.  It will take longer, but will take less memory, and thus won't crash WSL.
 </details>
 
 <details>
