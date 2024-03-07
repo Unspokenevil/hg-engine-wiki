@@ -28,6 +28,17 @@ before running `make --jobs` again.  This will fix the hanging issue as well for
 </details>
 
 <details>
+<summary>Build fails with nitrogfx failing to be found (on a repository last updated before 7 March 2024)</summary>
+<br>
+
+Run these two commands to reinitialize the nitrogfx submodule as found [here](https://github.com/red031000/nitrogfx):
+```
+git submodule init
+git submodule update
+```
+</details>
+
+<details>
 <summary>Build fails when it "doesn't have permissions" for any reason</summary>
 <br>
 
