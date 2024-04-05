@@ -48,7 +48,7 @@ typedef	struct
     u8 nature;
     u8 shinylock;
     u32 additionalflags;
-    u8 status;
+    u32 status;
     u16 hp;
     u16 atk;
     u16 def;
